@@ -1,0 +1,30 @@
+{
+    "TortoiseSVN.tortoiseSVNProcExePath": "c:/Program Files/TortoiseSVN/bin/TortoiseProc.exe",
+    "svn.ignoreMissingSvnWarning": true,
+    "TortoiseSVN.autoCloseUpdateDialog": true,
+    "editor.renameOnType": true,
+    "favorites.sortDirection": "ASC",
+    "todo-tree.general.rootFolder": "c:\\Users\\LG\\Project\\scgas\\fms_work\\fms_prototype\\Source\\Client\\scgas_pt\\",
+    "svn.defaultCheckoutDirectory": "c:\\Users\\LG\\Project\\scgas\\fms_work\\fms_prototype\\Source\\Client\\scgas_pt\\",
+    "svn.previousCommitsUser": "pwrlove",
+    "svn.refresh.remoteChanges": true,
+    "svn.sourceControl.combineExternalIfSameServer": true,
+    "sqltools.connections": [
+        {
+            "previewLimit": 50,
+            "driver": "SQLite",
+            "name": "SCGGAS",
+            "group": "SCGGAS",
+            "database": "${workspaceFolder:scgas_pt}/Debug/APP_DBF/SCGGAS.db"
+        }
+    ],
+    "bookmarks.sideBar.expanded": true,
+    "files.associations": {
+        "*.mc": "c",
+        "*.lib": "c",
+        "include.h": "c",
+        "globalcard.h": "c",
+        "defevent.h": "c",
+        "sqldb.h": "c"
+    }
+}

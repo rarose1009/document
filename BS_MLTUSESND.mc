@@ -1,0 +1,181 @@
+/*----------------------------------------------------------------------------------
+	Project Name:
+	Smart Application : 카드 기본폼
+	Smart Version : Smart 1.0
+	Copyright(c) 2014  ValueCMD Co., Ltd.
+----------------------------------------------------------------------------------*/
+card BS_MLTUSESND
+{
+	#include <include.h>
+	#include "globalcard.h"
+	
+//	#define USE_ON_EXIT
+//	#define USE_ON_CHAR
+//	#define USE_ON_KEY
+//	#define USE_ON_DRAW
+//	#define USE_ON_TIMER
+//	#define USE_ON_POINTING
+//	#define USE_ON_SELECT
+
+	#include "DefEvent.h"
+	
+	//BUTTON ID define
+	BEGIN_BUTTON_ID()
+		DEF_BUTTON_ID ( BID_SEND )		//자료송신
+	//화면 상단 공통 메뉴 모음
+		DEF_BUTTON_ID ( BID_HOME )		//홈
+		DEF_BUTTON_ID ( BID_MENU )		//메뉴
+		DEF_BUTTON_ID ( BID_KEYBOARD )	//키보드
+		DEF_BUTTON_ID ( BID_SCREEN )	//화면 상하
+		DEF_BUTTON_ID ( BID_CMMNWORK )	//공통업무
+		DEF_BUTTON_ID ( BID_PREV )		//이전
+		DEF_BUTTON_ID ( BID_EXIT )		//종료
+	END_BUTTON_ID()
+	
+	BEGIN_OBJECT_ID()
+		DEF_OBJECT_ID ( TXT_TITLE )			//타이틀
+		DEF_OBJECT_ID ( TXT_LIST )			//목록
+		DEF_OBJECT_ID ( TXT_OBJECT )		//대상
+		DEF_OBJECT_ID ( TXT_SEND )			//송신
+		DEF_OBJECT_ID ( TXT_NSEND )			//미송신
+		DEF_OBJECT_ID ( TXT_SCRSLT )		//점검결과
+		DEF_OBJECT_ID ( TXT_CHNGINFO )		//변경정보
+		DEF_OBJECT_ID ( TXT_DATA1 )
+		DEF_OBJECT_ID ( TXT_DATA2 )
+		DEF_OBJECT_ID ( TXT_DATA3 )
+		DEF_OBJECT_ID ( TXT_DATA4 )
+		DEF_OBJECT_ID ( TXT_DATA5 )
+		DEF_OBJECT_ID ( TXT_DATA6 )
+	END_OBJECT_ID()
+	
+	#define INIT_MAIN	1
+	
+	void SetStyle(void);
+	
+	// 메인 다이얼로그
+	//---------------------------------------------------------------
+	DlgObject	DlgRes[] = 
+	{
+		NORM_DLG ("", "", DLGSTY_HSCROLLBAR|DLGSTY_VSCROLLBAR|DLGSTY_TITLE, 0, MAINBKCOLOR, WHITE, BLUE, TITLE_HEIGHT, 0),		
+		//타이틀
+		DLG_TEXT(TX, TY, STWD, STHT, 0, 0, EDITSTY_BORDER, EDITSTY_BOLD, TXTFRCOLOR, TXTCTRLBK, TXT_TITLE, "특 정 점 검 - 다 중 이 용 시 설 송 신"),
+		
+		//화면 공통 메뉴
+		DLG_BUTTON(STARTX,      5, 145, 70, 0, 0, BUTSTY_BOLD, BUTSTY_BORDER, BTNMENUFRCOLOR, BTNCTRLMNBKCOLOR, CALL_FUNC , "", BID_HOME, "HOME"),
+		DLG_BUTTON(STARTX+150,  5, 135, 70, 0, 0, BUTSTY_BOLD, BUTSTY_BORDER, BTNMENUFRCOLOR, BTNCTRLMNBKCOLOR, CALL_FUNC , "", BID_MENU, "메뉴"),
+		DLG_BUTTON(STARTX+290,  5, 135, 70, 0, 0, BUTSTY_BOLD, BUTSTY_BORDER, BTNMENUFRCOLOR, BTNCTRLMNBKCOLOR, CALL_FUNC , "", BID_KEYBOARD, "자판"),
+		DLG_BUTTON(STARTX+430,  5, 135, 70, 0, 0, BUTSTY_BOLD, BUTSTY_BORDER, BTNMENUFRCOLOR, BTNCTRLMNBKCOLOR, CALL_FUNC , "", BID_SCREEN,  "화면"),
+		DLG_BUTTON(STARTX+570,  5, 135, 70, 0, 0, BUTSTY_BOLD, BUTSTY_BORDER, BTNMENUFRCOLOR, BTNCTRLMNBKCOLOR, CALL_FUNC , "", BID_CMMNWORK,"공통"),
+		DLG_BUTTON(STARTX+710,  5, 135, 70, 0, 0, BUTSTY_BOLD, BUTSTY_BORDER, BTNMENUFRCOLOR, BTNCTRLMNBKCOLOR, CALL_FUNC , "", BID_PREV,  "이전"),
+		DLG_BUTTON(STARTX+850,  5, 130, 70, 0, 0, BUTSTY_BOLD, BUTSTY_BORDER, BTNMENUFRCOLOR, BTNCTRLMNBKCOLOR, CALL_FUNC , "", BID_EXIT, "종료"),
+			
+		DLG_BUTTON(STARTX+200, STARTY+500, 600, 70, 0, 0, BUTSTY_BOLD, BUTSTY_BORDER, BTNMENUFRCOLOR, BTNCTRLBKCOLOR, CALL_FUNC , "", BID_SEND, "자료 송신"),
+		
+		DLG_TEXT(STARTX, STARTY+170, 300, 80, 0, 0, 0, EDITSTY_BORDER, TXTFRCOLOR, TXTCTRLBK, TXT_LIST, "목록"),
+		DLG_TEXT(STARTX+300, STARTY+170, 250, 80, 0, 0, 0, EDITSTY_BORDER, TXTFRCOLOR, TXTCTRLBK, TXT_OBJECT, "대상"),
+		DLG_TEXT(STARTX+550, STARTY+170, 200, 80, 0, 0, 0, EDITSTY_BORDER, TXTFRCOLOR, TXTCTRLBK, TXT_SEND, "송신"),
+		DLG_TEXT(STARTX+750, STARTY+170, 225, 80, 0, 0, 0, EDITSTY_BORDER, TXTFRCOLOR, TXTCTRLBK, TXT_NSEND, "미송신"),
+		DLG_TEXT(STARTX, STARTY+250, 300, 80, 0, 0, 0, EDITSTY_BORDER, TXTFRCOLOR, TXTCTRLBK, TXT_SCRSLT, "점검결과"),
+		DLG_TEXT(STARTX+300, STARTY+250, 250, 80, 0, 0, 0, EDITSTY_BORDER, TXTFRCOLOR, TXTINCTRLBK, TXT_DATA1, ""),
+		DLG_TEXT(STARTX+550, STARTY+250, 200, 80, 0, 0, 0, EDITSTY_BORDER, TXTFRCOLOR, TXTINCTRLBK, TXT_DATA2, ""),
+		DLG_TEXT(STARTX+750, STARTY+250, 225, 80, 0, 0, 0, EDITSTY_BORDER, TXTFRCOLOR, TXTINCTRLBK, TXT_DATA3, ""),
+		DLG_TEXT(STARTX, STARTY+330, 300, 80, 0, 0, 0, EDITSTY_BORDER, TXTFRCOLOR, TXTCTRLBK, TXT_CHNGINFO, "변경정보"),
+		DLG_TEXT(STARTX+300, STARTY+330, 250, 80, 0, 0, 0, EDITSTY_BORDER, TXTFRCOLOR, TXTINCTRLBK, TXT_DATA4, ""),
+		DLG_TEXT(STARTX+550, STARTY+330, 200, 80, 0, 0, 0, EDITSTY_BORDER, TXTFRCOLOR, TXTINCTRLBK, TXT_DATA5, ""),
+		DLG_TEXT(STARTX+750, STARTY+330, 225, 80, 0, 0, 0, EDITSTY_BORDER, TXTFRCOLOR, TXTINCTRLBK, TXT_DATA6, ""),
+	};	
+	
+	// PDA 다이얼로그
+	//---------------------------------------------------------------
+	DlgObject	DlgRes_P[] = 
+	{
+		NORM_DLG ("", "", DLGSTY_HSCROLLBAR|DLGSTY_VSCROLLBAR|DLGSTY_TITLE, 0, MAINBKCOLOR, WHITE, BLUE, TITLE_HEIGHT, 0),		
+			
+		DLG_BUTTON(STARTX+200, STARTY+650, 600, 100, 0, 0, BUTSTY_BOLD, BUTSTY_BORDER, BTNMENUFRCOLOR, BTNCTRLBKCOLOR, CALL_FUNC , "", BID_SEND, "자료 송신"),
+		
+		DLG_TEXT(STARTX, STARTY+150, 300, 100, 0, 0, 0, EDITSTY_BORDER, TXTFRCOLOR, TXTCTRLBK, TXT_LIST, "목록"),
+		DLG_TEXT(STARTX+300, STARTY+150, 250, 100, 0, 0, 0, EDITSTY_BORDER, TXTFRCOLOR, TXTCTRLBK, TXT_OBJECT, "대상"),
+		DLG_TEXT(STARTX+550, STARTY+150, 200, 100, 0, 0, 0, EDITSTY_BORDER, TXTFRCOLOR, TXTCTRLBK, TXT_SEND, "송신"),
+		DLG_TEXT(STARTX+750, STARTY+150, 225, 100, 0, 0, 0, EDITSTY_BORDER, TXTFRCOLOR, TXTCTRLBK, TXT_NSEND, "미송신"),
+		DLG_TEXT(STARTX, STARTY+250, 300, 100, 0, 0, 0, EDITSTY_BORDER, TXTFRCOLOR, TXTCTRLBK, TXT_SCRSLT, "점검결과"),
+		DLG_TEXT(STARTX+300, STARTY+250, 250, 100, 0, 0, 0, EDITSTY_BORDER, TXTFRCOLOR, TXTINCTRLBK, TXT_DATA1, ""),
+		DLG_TEXT(STARTX+550, STARTY+250, 200, 100, 0, 0, 0, EDITSTY_BORDER, TXTFRCOLOR, TXTINCTRLBK, TXT_DATA2, ""),
+		DLG_TEXT(STARTX+750, STARTY+250, 225, 100, 0, 0, 0, EDITSTY_BORDER, TXTFRCOLOR, TXTINCTRLBK, TXT_DATA3, ""),
+		DLG_TEXT(STARTX, STARTY+350, 300, 100, 0, 0, 0, EDITSTY_BORDER, TXTFRCOLOR, TXTCTRLBK, TXT_CHNGINFO, "변경정보"),
+		DLG_TEXT(STARTX+300, STARTY+350, 250, 100, 0, 0, 0, EDITSTY_BORDER, TXTFRCOLOR, TXTINCTRLBK, TXT_DATA4, ""),
+		DLG_TEXT(STARTX+550, STARTY+350, 200, 100, 0, 0, 0, EDITSTY_BORDER, TXTFRCOLOR, TXTINCTRLBK, TXT_DATA5, ""),
+		DLG_TEXT(STARTX+750, STARTY+350, 225, 100, 0, 0, 0, EDITSTY_BORDER, TXTFRCOLOR, TXTINCTRLBK, TXT_DATA6, ""),
+	};
+	//----------------------------------------------------------------------
+	bool	main (quad MsgType, quad wParam, quad lParam)
+	{
+		EVENT_HANDLER (MsgType, wParam, lParam);
+		return TRUE;
+	}
+	
+//┌─────────────────────────────────────┐
+//│ 				   『	OnInit Function  』  				              │
+//└─────────────────────────────────────┘
+	void	OnInit(char bFirst)
+	{
+		switch (bFirst)
+		{
+			case INIT_MAIN:
+				switch (theDevInfo.m_nType)
+				{
+					case FAMILY_PDA:	
+						CREATE_DIALOG_OBJECT (DlgRes_P, SIZEOF(DlgRes_P));
+						SetStyle();
+						break;
+					default:
+						CREATE_DIALOG_OBJECT (DlgRes, SIZEOF(DlgRes));
+						EditCtrl_SetAlign( Get_hDlgCtrlByID(TXT_TITLE), EDITALIGN_MIDDLE);
+						
+						SetStyle();
+						break;		
+				}
+				break;
+		}
+	}
+
+//-----------------------------------------------------------------
+void	SetStyle(void)
+{
+	EditCtrl_SetAlign( Get_hDlgCtrlByID(TXT_LIST), EDITALIGN_CENTER|EDITALIGN_MIDDLE);
+	EditCtrl_SetAlign( Get_hDlgCtrlByID(TXT_OBJECT), EDITALIGN_CENTER|EDITALIGN_MIDDLE);
+	EditCtrl_SetAlign( Get_hDlgCtrlByID(TXT_SEND), EDITALIGN_CENTER|EDITALIGN_MIDDLE);
+	EditCtrl_SetAlign( Get_hDlgCtrlByID(TXT_NSEND), EDITALIGN_CENTER|EDITALIGN_MIDDLE);
+	EditCtrl_SetAlign( Get_hDlgCtrlByID(TXT_SCRSLT), EDITALIGN_CENTER|EDITALIGN_MIDDLE);
+	EditCtrl_SetAlign( Get_hDlgCtrlByID(TXT_CHNGINFO), EDITALIGN_CENTER|EDITALIGN_MIDDLE);
+}
+
+//------------------------------------------------------------------
+	void	OnButton(long ID)
+	{	
+		switch(ID)
+		{					
+			case BID_SEND:
+				break;
+			case BID_HOME:
+				Card_Move("MENU");
+				break;
+			case BID_MENU:
+				Card_Move("BS_MENU");
+				break;
+			case BID_KEYBOARD:
+				break;
+			case BID_SCREEN:
+				break;
+			case BID_CMMNWORK:
+				break;
+			case BID_PREV:
+				Card_Move("BS_DMMENU");
+				break;	
+			case BID_EXIT:
+				g_Exit();
+				break;
+		}
+	}		
+}
+
+

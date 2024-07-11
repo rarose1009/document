@@ -1,0 +1,548 @@
+/*----------------------------------------------------------------------------------
+	Project Name: Smart long operation 모듈 (Biglong.lib)
+	Smart Application : 카드 기본폼
+	Smart Version : Smart 1.0
+	Copyright(c) 2014  ValueCMD Co., Ltd.
+	----------	------		------------------------------------------------------
+	2014.10.01	dkjung		v 3.0.1		: Create 스마트폰 포팅
+----------------------------------------------------------------------------------*/
+// [APP_SET] 
+// 큰수를 계산하지 않는 경우에는 이 모듈을 사용할 필요는 없음.
+
+// dkjung 2003-12-09
+// big long 형 연산을 위한 구조체
+typedef struct _REG
+{
+	long c;		// carry
+	long b;		// borrow
+	long ov;	// overflow
+	long hi;
+	long lo;
+} REG;
+
+#define MUL10(a, b)		Mul10x(1, a, b)
+#define MUL100(a, b)	Mul10x(2, a, b)
+#define MUL1000(a, b)	Mul10x(3, a, b)
+#define MUL10000(a, b)	Mul10x(4, a, b)
+#define DIV10(a, b)		Div10x(1, a, b)
+#define DIV100(a, b)	Div10x(2, a, b)
+#define DIV1000(a, b)	Div10x(3, a, b)
+#define DIV10000(a, b)	Div10x(4, a, b)
+
+long Clr		(REG* pax);
+long GetDiff	(REG* pax, REG* pbx);
+long Load		(char* px, REG* pax); // px  -> pax
+long Store		(REG* pax, char* px); // pax -> px
+long Add		(REG* pax, REG* pbx, REG* pcx);
+long Sub		(REG* pax, REG* pbx, REG* pcx);
+long Mul		(REG* pax, REG* pbx, REG* pcx);
+long Mul10x		(long x, REG* pax, REG* pbx);
+long Div		(REG* pax, REG* pbx, REG* pqx, REG* prx);
+long Div10x		(long x, REG* pax, REG* pbx);
+long Cmp		(REG* pax, REG* pbx);
+
+// c = a + b
+long Str_Add	(char* a, char* b, char* c);
+// c = a - b
+long Str_Sub	(char* a, char* b, char* c);
+
+// c = a * b (a>0, b>0)
+long Str_Mul	(char* a, char* b, char* c);
+long Str_Mul10x	(long x, char* a, char* c);
+
+// c = a / b (a>0, b>0, b!=0)
+long Str_Div	(char* a, char* b, char* c, char* d);
+long Str_Div10x	(long x, char* a, char* c);
+	
+//---------------------------------------------------------------
+long Str_Add (char* a, char* b, char* c)
+{
+	REG ax, bx, cx;
+
+	if ( !(a && b && c) )
+		return -1;
+
+	Load (a, &ax);
+	Load (b, &bx);
+
+	if (Add (&ax, &bx, &cx) < 0)
+		return -1;
+
+	Store (&cx, c);
+
+	return 0;
+}
+
+//---------------------------------------------------------------
+long Str_Sub (char* a, char* b, char* c)
+{
+	REG ax, bx, cx;
+
+	if ( !(a && b && c) )
+		return -1;
+
+	Load (a, &ax);
+	Load (b, &bx);
+
+	if (Sub (&ax, &bx, &cx) < 0)
+		return -1;
+
+	Store (&cx, c);
+
+	return 0;
+}
+
+//---------------------------------------------------------------
+long Str_Mul (char* a, char* b, char* c)
+{
+	REG ax, bx, cx;
+
+	if ( !(a && b && c) )
+		return -1;
+
+	Load (a, &ax);
+	Load (b, &bx);
+
+	if (Mul (&ax, &bx, &cx) < 0)
+		return -1;
+
+	Store (&cx, c);
+
+	return 0;
+}
+
+//---------------------------------------------------------------
+long Str_Mul10x	(long x, char* a, char* c)
+{
+	REG ax, cx;
+
+	if ( !(a && c) )
+		return -1;
+
+	Load (a, &ax);
+
+	if (Mul10x (x, &ax, &cx) < 0)
+		return -1;
+
+	Store (&cx, c);
+
+	return 0;
+}
+
+//---------------------------------------------------------------
+long Str_Div (char* a, char* b, char* c, char* d)
+{
+	REG ax, bx, cx, dx;
+
+	if ( !(a && b && c) )
+		return -1;
+
+	Load (a, &ax);
+	Load (b, &bx);
+
+	if (Div (&ax, &bx, &cx, &dx) < 0)
+		return -1;
+
+	Store (&cx, c);
+	Store (&dx, d);
+
+	return 0;
+}
+
+//---------------------------------------------------------------
+long Str_Div10x	(long x, char* a, char* c)
+{
+	REG ax, cx;
+
+	if ( !(a && c) )
+		return -1;
+
+	Load (a, &ax);
+
+	if (Div10x (x, &ax, &cx) < 0)
+		return -1;
+
+	Store (&cx, c);
+
+	return 0;
+}
+
+//---------------------------------------------------------------
+long Clr (REG* pax)
+{
+	if (pax==NULL)
+		return -1;
+
+	memset (pax, 0, sizeof(REG));
+
+	return 0;
+}
+
+//---------------------------------------------------------------
+long GetDiff (REG* pax, REG* pbx)
+{
+	long na;
+	long nb;
+	char szAX[32];
+	char szBX[32];
+
+	Store (pax, szAX);
+	Store (pbx, szBX);
+
+	na = strlen (szAX);
+	nb = strlen (szBX);
+
+	return (na > nb)?(na-nb):(nb-na);
+}
+
+// 스트링 포맷의 수를 big long형으로 변환
+// 저장 방향 px  -> pax
+//---------------------------------------------------------------
+long Load (char* px, REG* pax)
+{
+	long nx;
+	char szBuf[32];
+
+	if (pax==NULL || px==NULL)
+		return -1;
+
+	memset (pax, 0, sizeof(REG));
+
+	nx = strlen (px);
+
+	if (nx > 8)
+	{
+		memcpy (szBuf, &px[nx-8], 8);
+		szBuf[8] = '\0';
+		pax->lo = atoi(szBuf);
+
+		memcpy (szBuf, px, nx-8);
+		szBuf[nx-8] = '\0';
+		pax->hi = atoi(szBuf);
+	}
+	else
+	{
+		memcpy (szBuf, px, nx);
+		szBuf[nx] = '\0';
+		pax->lo = atoi(szBuf);
+		pax->hi = 0;
+	}
+
+	return 0;
+}
+
+// big long 형의 수를 스트링 포맷의 수로 변환
+// 저장 방향 pax -> px
+//---------------------------------------------------------------
+long Store (REG* pax, char* px)
+{
+	long i, n;
+	char szSrc[32];
+	char szDst[32];
+
+	if (pax == NULL || px == NULL)
+		return -1;
+
+	if (pax->hi>0 && pax->lo==0)
+	{
+		itoa (pax->hi, px, 10);
+		strcat (px, "00000000");
+	}
+	else if (pax->hi==0)
+	{
+		itoa (pax->lo, px, 10);
+	}
+	else
+	{
+		itoa (pax->hi, px, 10);
+		strcpy(szDst, "00000000");
+		itoa (pax->lo, szSrc, 10);
+
+		n = strlen(szSrc);
+
+		for (i=0; i<n; i++)
+		{
+			szDst[7-i] = szSrc[n-i-1];
+		}
+
+		strcat (px, szDst);
+	}
+
+	return 0;
+}
+
+//---------------------------------------------------------------
+long Add (REG* pax, REG* pbx, REG* pcx)
+{
+	pcx->c = 0;
+	pcx->hi = 0;
+	pcx->lo = 0;
+
+	pcx->lo = pax->lo + pbx->lo;
+	if (pcx->lo >= 100000000)
+	{
+		long temp;
+
+		temp = pcx->lo;
+		pcx->lo -= 100000000;
+		pcx->c = (temp-pcx->lo)/100000000;
+	}
+
+	pcx->hi = pax->hi + pbx->hi + pcx->c;
+
+	return 0;
+}
+
+//---------------------------------------------------------------
+long Sub (REG* pax, REG* pbx, REG* pcx)
+{
+	pcx->b = 0;
+	pcx->hi = 0;
+	pcx->lo = 0;
+
+	pcx->lo = pax->lo - pbx->lo;
+	if (pcx->lo < 0)
+	{
+		pcx->lo = (pax->lo+100000000) - pbx->lo;
+		pcx->b = 1;
+	}
+
+	//if(pax->hi > 0 || pbx->hi > 0)
+	pcx->hi = pax->hi - pbx->hi - pcx->b;
+
+	return 0;
+}
+
+//---------------------------------------------------------------
+long Mul10x	(long x, REG* pax, REG* pbx)
+{
+	long i, nx;
+	char szAX[64];
+
+	if (pax->hi==0 && pax->lo==0)
+	{
+		pbx->hi = 0;
+		pbx->lo = 0;
+		return 0;
+	}
+
+	Store (pax, szAX);
+
+	nx = strlen (szAX);
+	for (i=0; i<x; i++)
+	{
+		szAX[nx + i] = '0';	// 0을 삽입.
+	}
+	
+	szAX[nx + x] = '\0';	// NULL을 삽입.
+
+	Load (szAX, pbx);
+	
+	return 0;
+}
+
+//---------------------------------------------------------------
+long Mul (REG* pax, REG* pbx, REG* pcx)
+{
+	REG cx;
+	REG dx;
+	REG res;
+	REG sum;
+	REG Multiplier;
+	long i, k, nx;
+	char szCount[64];
+
+	if (pax->hi==0 && pax->lo==0)
+	{
+		pcx->hi = 0;
+		pcx->lo = 0;
+		return 0;
+	}
+	else if (pbx->hi==0 && pbx->lo==0)
+	{
+		pcx->hi = 0;
+		pcx->lo = 0;
+		return 0;
+	}
+
+	Clr (pcx);
+	Clr (&sum);
+
+	// 둘 중 큰 수를 더해야 빠르다.
+	// pax >= pbx
+	if (Cmp( pax, pbx ) >= 0)
+	{
+		cx = *pbx;
+		dx = *pax;
+	}
+	else
+	{
+		cx = *pax;
+		dx = *pbx;
+	}
+
+	Store (&cx, szCount);
+	nx = strlen (szCount);
+	Mul10x	(nx-1, &dx, &Multiplier);
+
+	// 연산 처리.
+	for (i=0; i<nx; i++)
+	{
+		k = szCount[i] - '0';
+
+		while (k > 0)
+		{
+			Add (&Multiplier, &sum, &res);
+			sum = res;
+			k--;
+		}
+
+		DIV10 (&Multiplier, &res);
+		Multiplier = res;
+	}
+
+	*pcx = sum;
+
+	return 0;
+}
+
+//---------------------------------------------------------------
+long Div10x (long x, REG* pax, REG* pbx)
+{
+	long nx;
+	char szAX[32];
+
+	if (pax->hi==0 && pax->lo==0)
+	{
+		pbx->hi = 0;
+		pbx->lo = 0;
+		return 0;
+	}
+
+	Clr(pbx);
+
+	Store (pax, szAX);
+
+	nx = strlen (szAX);
+	if (nx >= x)
+	{
+		szAX[nx-x] = '\0';	// 맨 아래 자리를 버린다.
+	}
+	else
+		szAX[0] = '\0';	// 맨 아래 자리를 버린다.
+
+	Load (szAX, pbx);
+	
+	return 0;
+}
+
+// pax = pqx * pbx + prx
+//---------------------------------------------------------------
+long Div (REG* pax, REG* pbx, REG* pqx, REG* prx)
+{
+	REG res;
+	REG rem;
+	REG divisor;
+	long nx;
+	long i, k;
+
+	char szCount[64];
+
+	// Divided by zero
+	if (pbx->hi==0 && pbx->lo==0)
+		return -1;
+	// 1로 나누는 경우
+	else if (pbx->hi==0 && pbx->lo==1)
+	{
+		prx->hi = 0;
+		prx->lo = 0;
+		*pqx = *pax;
+		return 0;
+	}
+	// 피제수가 0인 경우
+	else if (pax->hi==0 && pax->lo==0)
+	{
+		prx->hi = 0;
+		prx->lo = 0;
+		pqx->hi = 0;
+		pqx->lo = 0;
+		return 0;
+	}
+
+	memset (szCount, 0, 64);
+
+	rem = *pax;
+
+	nx = GetDiff (pax, pbx);
+	Mul10x	(nx, pbx, &divisor);
+
+	for (i=0; i<nx+1; i++)
+	{
+		szCount[i] = '0';
+	}
+
+	for (i=0; i<nx+1; i++)
+	{
+		k = 0;
+
+		while (Cmp( &rem, &divisor ) >= 0)
+		{
+			Sub (&rem, &divisor, &res);
+			rem = res;
+			k++;
+			//PRINT ("rem     = %d %d", rem.hi, rem.lo, 0);
+			//PRINT ("res     = %d %d", res.hi, res.lo, 0);
+			//PRINT ("divisor = %d %d, k=%d", divisor.hi, divisor.lo, k);
+		}
+
+		szCount[i] = k + '0';
+
+		if (Cmp( &rem, pbx ) < 0)
+		{
+			break;
+		}
+
+		DIV10 (&divisor, &res);
+		divisor = res;
+		//PRINT ("res     = %d %d", res.hi, res.lo, 0);
+		//PRINT ("divisor = %d %d", divisor.hi, divisor.lo, 0);
+		//PRINT ("szCount = %s ", szCount, 0, 0);
+	}
+
+	// 몫
+	Load (szCount, pqx);
+
+	// 나머지
+	*prx = rem;
+
+	return 0;
+}
+
+// Big long 형의 두 수 크기를 비교한다.
+// a==b -> 0, a>b -> 1 a<b -> -1
+//---------------------------------------------------------------
+long Cmp (REG* pax, REG* pbx)
+{
+	char szAX[32];
+	char szBX[32];
+	long nAx, nBx;
+	long nRet;
+
+	Store (pax, szAX);
+	Store (pbx, szBX);
+
+	nAx = strlen(szAX);
+	nBx = strlen(szBX);
+
+	// 길이가 같은 경우
+	if (nAx == nBx)
+	{
+		nRet = memcmp (szAX, szBX, nAx);
+		if ( nRet == 0)
+			return 0;
+		else
+			return ( (nRet>0)? 1:-1 );
+	}
+
+	return ((nAx>nBx)? 1:-1);
+}

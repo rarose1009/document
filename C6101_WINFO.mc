@@ -1,0 +1,8829 @@
+/*----------------------------------------------------------------------------------
+	Project Name:
+	Smart Application : 카드 기본폼
+	Smart Version : Smart 1.0
+	Copyright(c) 2014  ValueCMD Co., Ltd.
+----------------------------------------------------------------------------------*/
+card C6101_WINFO
+{
+	#include <include.h>
+	#include "globalcard.h"
+	#include "SQL.lib"
+	#include "SQLdb.h"
+		
+//	#define USE_ON_EXIT
+	#define USE_ON_CHAR
+//	#define USE_ON_KEY
+//	#define USE_ON_DRAW
+//	#define USE_ON_TIMER
+	#define USE_ON_POINTING
+	#define USE_ON_SELECT
+//	#define USE_ON_GRIDCTRL
+	#define USE_ON_TASK
+	
+	#include "DefEvent.h"
+	
+	//BUTTON ID define
+	BEGIN_BUTTON_ID()
+		DEF_BUTTON_ID ( BID_SMS )			//문자메세지
+		DEF_BUTTON_ID ( BID_SMSOK )			//문자메세지
+		DEF_BUTTON_ID ( BID_HP  )			//핸드폰 전화걸기
+		DEF_BUTTON_ID ( BID_TEL )			//집전화 전화걸기
+		DEF_BUTTON_ID ( BID_ADDR )			//주소
+		DEF_BUTTON_ID ( BID_PAYINFO )		//납부정보
+		DEF_BUTTON_ID ( BID_JOBCHG )		//업무변경
+		DEF_BUTTON_ID ( BID_POSCHG )		//설치장소
+		DEF_BUTTON_ID ( BID_UNDEFINE )		//미확인
+		DEF_BUTTON_ID ( BID_JOBSTART )		//작업시작
+		DEF_BUTTON_ID ( BID_MEMO )          //약속메모
+		
+		DEF_BUTTON_ID ( BID_BILL )			//요금조회
+		
+		DEF_BUTTON_ID ( BID_HISTORY )		//상담이력
+		DEF_BUTTON_ID ( BID_DAYRCV )		//재수신
+		DEF_BUTTON_ID ( BID_CLOSE )			//
+//납부방법
+		DEF_BUTTON_ID ( BID_SUBCLOSE )			//
+//SMS
+		DEF_BUTTON_ID ( BID_SNDSMS )			//	
+		DEF_BUTTON_ID ( BID_SMS01 )			//	
+		DEF_BUTTON_ID ( BID_SMS02 )			//	
+		DEF_BUTTON_ID ( BID_SMS03 )			//	
+		DEF_BUTTON_ID ( BID_SMS04 )			//	
+		DEF_BUTTON_ID ( BID_SMS05 )			//	
+		//DEF_BUTTON_ID ( BID_SMS06 )			//	
+		//DEF_BUTTON_ID ( BID_SMS07 )			//	
+		//DEF_BUTTON_ID ( BID_SMS08 )			//	
+//미확인		
+		DEF_BUTTON_ID ( BID_SNDUNDFINE )			//
+//업무변경		
+		DEF_BUTTON_ID ( BID_SNDJOBCHG )			//
+//설치장소	
+		DEF_BUTTON_ID ( BID_SNDPOSCHG )			//
+//약속메모
+		DEF_BUTTON_ID ( BID_MEMO_OK )
+		
+		DEF_BUTTON_ID ( BID_SNDMTR )			//
+		DEF_BUTTON_ID ( BID_SNDADDR )			//
+		
+		DEF_BUTTON_ID ( BID_USE )			//사용계약
+		DEF_BUTTON_ID ( BID_REUSE )			//사용재계약
+		DEF_BUTTON_ID ( BID_USESMS )		//사용계약서 발송
+		DEF_BUTTON_ID ( BID_NAME_KEEP )		//
+		DEF_BUTTON_ID ( BID_NAME_CHANGE )	//
+		DEF_BUTTON_ID ( BID_NAME_NEW )
+		
+		DEF_BUTTON_ID ( BID_POS01 )			//	
+		DEF_BUTTON_ID ( BID_POS02 )			//	
+		DEF_BUTTON_ID ( BID_POS03 )			//	
+		DEF_BUTTON_ID ( BID_UP )			//	
+		DEF_BUTTON_ID ( BID_DOWN )			//	
+		DEF_BUTTON_ID ( BID_UP2 )			//	
+		DEF_BUTTON_ID ( BID_DOWN2 )			//	
+		DEF_BUTTON_ID ( BID_USE_CONT_NUM )			// 사용계약번호
+		
+		
+	//화면 상단 공통 메뉴 모음
+		DEF_BUTTON_ID ( BID_HOME )		//홈
+		DEF_BUTTON_ID ( BID_MENU )		//메뉴
+		DEF_BUTTON_ID ( BID_KEYBOARD )	//키보드
+		DEF_BUTTON_ID ( BID_SCREEN )	//화면 상하
+		DEF_BUTTON_ID ( BID_CMMNWORK )	//공통업무
+		DEF_BUTTON_ID ( BID_PREV )		//이전
+		DEF_BUTTON_ID ( BID_EXIT )		//종료
+	END_BUTTON_ID()
+	
+	BEGIN_OBJECT_ID()
+		DEF_OBJECT_ID ( TXT_TITLE )		//타이틀
+		DEF_OBJECT_ID ( TXT_BORDER )
+		DEF_OBJECT_ID ( ICON_TITLE )		//타이틀
+		
+		DEF_OBJECT_ID ( TXT_PAGE )
+		DEF_OBJECT_ID ( TTL_CLASS_NM )
+		DEF_OBJECT_ID ( TXT_CLASS_NM )
+		DEF_OBJECT_ID ( TTL_RECEIVE_DTM )
+		DEF_OBJECT_ID ( TXT_RECEIVE_DTM )
+		DEF_OBJECT_ID ( TTL_REQ_NM )
+		DEF_OBJECT_ID ( TXT_REQ_NM )
+		DEF_OBJECT_ID ( TTL_REQ_TEL )
+		DEF_OBJECT_ID ( TXT_REQ_TEL )
+		DEF_OBJECT_ID ( TTL_REQ_CP )
+		DEF_OBJECT_ID ( TXT_REQ_CP )
+
+		DEF_OBJECT_ID ( TTL_ADDR )
+		DEF_OBJECT_ID ( TXT_ADDR )
+		DEF_OBJECT_ID ( TXT_ADDR2 )
+		DEF_OBJECT_ID ( TXT_ADDR3 )
+		DEF_OBJECT_ID ( TTL_MEMO )
+		DEF_OBJECT_ID ( TXT_MEMO )
+		
+		DEF_OBJECT_ID ( TTL_CUST )
+		DEF_OBJECT_ID ( TTL_CUST_NM )
+		DEF_OBJECT_ID ( TXT_CUST_NM )
+		DEF_OBJECT_ID ( TTL_FIRM_TEL )
+		DEF_OBJECT_ID ( TXT_FIRM_TEL )
+		DEF_OBJECT_ID ( TTL_SOC_NUM )
+		DEF_OBJECT_ID ( TXT_SOC_NUM )
+		DEF_OBJECT_ID ( TTL_MTR_ID_NUM )
+		
+		DEF_OBJECT_ID ( TTL_DATA01 )
+		DEF_OBJECT_ID ( TTL_DATA02 )
+		DEF_OBJECT_ID ( TTL_DATA03 )
+		DEF_OBJECT_ID ( TTL_DATA04 )
+		DEF_OBJECT_ID ( TTL_DATA05 )
+		DEF_OBJECT_ID ( TTL_DATA06 )
+		
+		DEF_OBJECT_ID ( TXT_DATA01 )
+		DEF_OBJECT_ID ( TXT_DATA02 )
+		DEF_OBJECT_ID ( TXT_DATA03 )
+		DEF_OBJECT_ID ( TXT_DATA04 )
+		DEF_OBJECT_ID ( TXT_DATA05 )
+		DEF_OBJECT_ID ( TXT_DATA06 )
+		DEF_OBJECT_ID ( TXT_DATA07 )
+		DEF_OBJECT_ID ( TXT_DATA08 )
+		DEF_OBJECT_ID ( TXT_DATA09 )
+
+//약속메모
+		DEF_OBJECT_ID ( TXT_MEMO_DATA1 )
+
+		DEF_OBJECT_ID ( TXT_EDIT01 )
+		DEF_OBJECT_ID ( TXT_EDIT02 )
+		DEF_OBJECT_ID ( TXT_EDIT03 )
+		DEF_OBJECT_ID ( TXT_EDIT04 )
+		DEF_OBJECT_ID ( TXT_EDIT05 )
+		DEF_OBJECT_ID ( TXT_EDIT06 )
+		DEF_OBJECT_ID ( TXT_EDIT07 )
+		
+		DEF_OBJECT_ID ( TTL_SERVADD )
+		
+		DEF_OBJECT_ID ( TTL_UNDFINE )
+		DEF_OBJECT_ID ( CMB_UNDFINE )
+		DEF_OBJECT_ID ( CMB_MTR )
+		DEF_OBJECT_ID ( CMB_JOBCHG )
+		DEF_OBJECT_ID ( ID_GRIDLIST )
+		DEF_OBJECT_ID ( ID_TBLLIST )
+		DEF_OBJECT_ID ( ID_BILLLIST )
+		
+	END_OBJECT_ID()
+	
+	#define INIT_MAIN	  1
+	#define INIT_MAIN_1	  2
+	#define INIT_UNDEFINE 3
+	#define INIT_JOBCHG   4
+	#define INIT_SMS      5
+	#define INIT_POSCHG   6
+	#define INIT_PAYINFO  7
+	#define INIT_BILL     8
+	#define INIT_MEMO     9
+	#define INIT_USEDOC   10
+	
+	#define 	SYH			(CHT+10)
+	#define 	Line(x)	    (STARTY+20+SYH*x)
+	 
+	//-------------------------------------------------------------------------------------------------	
+	//	Table정의에 관련된 내용들
+	//-------------------------------------------------------------------------------------------------
+	#define		ROW 	    7					// table의 행개수
+	#define		COL 	    7					// table의 열개수
+	#define		GRID_H		(CHT+20)			// table 행 높이
+	#define		GRID_H_P	(CHT+48)			// table 행 높이 PDA
+	#define		GRID_CLR	TRANSPARENT   		// table 클리어 color
+	#define		GRID_X		STARTX 			    // table 시작x좌표
+	#define		MAXCHAR		101 			    // table에 들어갈수 있는 최대  char 길이
+	#define		GRID_Y		STARTY+(SYH+20)*5+7  	    //table 시작y좌표
+	#define		GRID_Y_P	STARTY+200  	    //table 시작y좌표 PDA
+	#define		GRID_ENDY	(GRID_Y+(ROW+1)*GRID_H) //table마지막 row의 Y값
+	
+	char	m_szTableBuf [COL*(ROW+1)*MAXCHAR]; // 각 CELL에 들어가 텍스트 내용을 담은 버퍼
+		
+	Column m_stGridTitle[] = {
+		{"고객",           CWD*9,  EDITALIGN_CENTER|EDITALIGN_MIDDLE, TABLE_TEXT, 0},
+		{"주소",           CWD*30+23, EDITALIGN_LEFT|EDITALIGN_MIDDLE,   TABLE_TEXT, 0},
+		{"CUST_NUM",       0,      EDITALIGN_CENTER|EDITALIGN_MIDDLE, TABLE_TEXT, 0},
+		{"USE_CONT_NUM",   0,      EDITALIGN_CENTER|EDITALIGN_MIDDLE, TABLE_TEXT, 0},
+		{"INST_PLACE_NUM", 0,      EDITALIGN_CENTER|EDITALIGN_MIDDLE, TABLE_TEXT, 0},
+		{"ZIP_SEQ",        0,      EDITALIGN_CENTER|EDITALIGN_MIDDLE, TABLE_TEXT, 0},
+		{"ETC_ADDR",       0,      EDITALIGN_CENTER|EDITALIGN_MIDDLE, TABLE_TEXT, 0}
+	};
+	
+	#define		ROW2 	    14					// table의 행개수
+	#define		COL2 	    4					// table의 열개수
+	#define		GRID_H2		(CHT+15)			// table 행 높이
+	#define		GRID_X2		STARTX	 			// table 시작x좌표
+	#define		MAXCHAR2	51 			    	// table에 들어갈수 있는 최대  char 길이
+	#define		GRID_Y2		STARTY-29 	//table 시작y좌표
+	#define		GRID_ENDY2	(GRID_Y2+(ROW2+1)*GRID_H2) //table마지막 row의 Y값
+	
+	Column m_stGridTitle2[] = {
+		{"정산일자", CWD*13, EDITALIGN_CENTER|EDITALIGN_MIDDLE, TABLE_TEXT, 0},
+		{"지침", 	 CWD*8, EDITALIGN_CENTER|EDITALIGN_MIDDLE, TABLE_TEXT, 0},
+		{"사용량", 	 CWD*8, EDITALIGN_RIGHT|EDITALIGN_MIDDLE, TABLE_TEXT, 0},
+		{"총미납액", CWD*10+23, EDITALIGN_RIGHT|EDITALIGN_MIDDLE, TABLE_TEXT, 0}
+	};
+	
+	#define		ROW3 	    100
+	//그리드 타이틀
+	Column m_stGridCtrl_Title[] = {
+		{ "업무"	,  200, EDITALIGN_CENTER|EDITALIGN_MIDDLE, GCTYPE_TEXTCTRL	, 32},
+		{ "민원분류",  770, EDITALIGN_LEFT|EDITALIGN_MIDDLE, GCTYPE_TEXTCTRL	, 32},
+		{ ""		,  31 , 0, GCTYPE_TEXTCTRL	, 1}
+	};
+	
+	#define RcvAssignseq	"RcvAssignseq.txt"
+	#define RcvAssignseq_Len	10
+	
+	//사용계약서 넘겨주는 기본 데이터 struct(기존 데이터)
+	typedef struct _USEDATA
+	{
+		char USE_CONT_NUM        [20]; 
+		char BIZ_REGI_NUM        [20];
+		char CUST_NUM            [20];
+		char OWNHOUSE_TEL_DDD    [6];
+		char OWNHOUSE_TEL_EXN    [6];
+		char OWNHOUSE_TEL_NUM    [6];
+		char CP_DDD              [6];
+		char CP_EXN              [6];
+		char CP_NUM              [6];
+		char INST_PLACE_NUM      [20];
+		
+		char SOC_NUM             [20];
+		char GENDER              [10];
+		char SAFE_KEY            [20];
+		char LMS_TEL_DDD         [6];
+		char LMS_TEL_EXN         [6];
+		char LMS_TEL_NUM         [6];
+		char EMAIL_REQ_ID        [50];
+		char EMAIL_REQ_ADDR      [50];
+		char BILING_METHOD       [50];
+		char PAYMENT_METHOD      [50];
+		char CUST_NM             [50];
+		char BNK_CD              [20];
+		char BNK_BRANCH_NM       [50];
+		char DEPOSITOR_NM        [50];
+		char DEPOSITOR_TEL_DDD   [6];
+		char DEPOSITOR_TEL_EXN   [6];
+		char DEPOSITOR_TEL_NUM   [6];
+		char DEFRAY_ACCOUNT_NUM  [50];
+		char DEPOSITOR_BIRTH_DATE[20];
+		char DEPOSITOR_RELAT_CD  [20];
+		char CUST_RELAT_CD       [20];
+		char REQ_NM              [50];
+		char REQ_TEL_DDD         [6];
+		char REQ_TEL_EXN         [6];
+		char REQ_TEL_NUM         [6];
+		char INFO_USE_AGREE_YN   [5];
+		char INFO_USE_YN         [5];
+		char INFO_USE_YN4        [5];
+		char INFO_USE_YN5        [5];
+		char CURR_ADDR_UNION     [500];
+		char NEW_ADDR_UNION      [500];
+	}	USEDATA;
+	
+	USEDATA m_stUsedata;
+	
+	//청구방법 해제시 필요한 기존 대상 정보
+	typedef struct _CANCELDATA
+	{
+		char SAFE_KEY            [20];
+		char PAYMENT_METHOD      [50];
+		char BNK_CD              [20];
+		char DEPOSITOR_NM        [50];
+		char DEFRAY_ACCOUNT_NUM  [50];
+		char DEPOSITOR_BIRTH_DATE[20];
+		char DEPOSITOR_RELAT_CD  [20];
+		char LMS_TEL_DDD         [5];
+		char LMS_TEL_EXN         [5];
+		char LMS_TEL_NUM         [5];
+		char EMAIL_REQ_ADDR      [100];		
+	}	CANCELDATA;
+	
+	CANCELDATA m_stCancelData;
+	
+	//사용계약서에서 넘어오는 저장 struct(변경 데이터)
+	typedef struct _OZDATA
+	{
+		char USE_CONT_NUM        [20];
+		char BRANCH_CD           [10];
+		char CENTER_CD           [10];
+		char INST_PLACE_NUM      [20];
+		char CUST_NUM            [20];
+		char CUST_NM             [50];
+		char CHG_CUST_TYPE       [10];
+		char DATA_COL_TYPE       [10];
+		char TRAN_FLAG           [10];
+		char GENDER              [10];
+		char INFO_USE_AGREE_YN   [5];
+		char INFO_USE_YN         [5];
+		char INFO_USE_YN4        [5];
+		char INFO_USE_YN5        [5];
+		char RMK                 [300];
+		char TRAN_REQ_YMD        [20];
+		char TRANS_FLAG          [10];
+		char LMS_TEL_DDD         [5];
+		char LMS_TEL_EXN         [5];
+		char LMS_TEL_NUM         [5];
+		char EMAIL_REQ_ADDR      [100];
+		char PAYMENT_METHOD      [30];
+		char BILING_METHOD       [30];
+		char PAY_METHOD_TYPE     [30];
+		char BILL_METHOD_TYPE    [30];
+		char BNK_TYPE            [20];
+		char BNK_CD              [20];
+		char BNK_BRANCH_NM       [100];
+		char DEPOSITOR_NM        [50];
+		char DEPOSITOR_TEL_DDD   [5];
+		char DEPOSITOR_TEL_EXN   [5];
+		char DEPOSITOR_TEL_NUM   [5];
+		char DEFRAY_ACCOUNT_NUM  [50];
+		char DEPOSITOR_BIRTH_DATE[20];
+		char DEPOSITOR_RELAT_CD  [10];
+		char CUST_RELAT_CD       [10];
+		char REQ_NM              [50];
+		char REQ_TEL_DDD         [5];
+		char REQ_TEL_EXN         [5];
+		char REQ_TEL_NUM         [5];
+		char OZ_TRAN_REQ_FLAG    [10];
+		char SOC_NUM             [20];
+		char OWNHOUSE_TEL_DDD    [5];
+		char OWNHOUSE_TEL_EXN    [5];
+		char OWNHOUSE_TEL_NUM    [5];
+		char CP_DDD              [5];
+		char CP_EXN              [5];
+		char CP_NUM              [5];
+		char OZ_EMAIL_REQ_FLAG   [10];
+		char OZ_LMS_REQ_FLAG     [10];
+		char CARD_VALID_PERIOD   [30];
+		char CARD_JOIN_YN        [10];
+		char PDFPATH			 [256];
+		char ADDR_UNION          [500];
+		char CHK_CHG_USERINFO_FLAG  [5];
+		char INFO_USE_YN6        [5];
+	}	OZDATA;
+
+	OZDATA m_stOzData;
+	
+	//ozview body 핸들
+	handle m_hBody = NULL;
+	long m_lDocFlag = 0;	//명의유지 = 2, 명의변경 = 3 flag
+	long m_lReActionFlag = 0; //m_lReActionFlag = 0 default , m_lReActionFlag = 1 오즈 저장 실패 후 오즈 재실행
+	
+	
+	char m_szTableBuf2 [COL2*(ROW2+1)*MAXCHAR2];
+	
+	long m_lTotpage;
+	long m_lpage;
+	long m_lTotpage2;
+	long m_lpage2;	
+	long m_lActIndex;
+	long m_bFirst;
+	char m_szCnt_page[11];     //인덱스 문자열(현재 페이지)
+	
+	SQLITE m_sql = NULL;
+	handle m_hdb = NULL;
+	handle m_hstmt = NULL;
+	long nsms_flag1 = 0; 
+	long nsms_flag2 = 0; 
+	long nsms_flag3 = 0; 
+	
+	long npos_flag1 = 0; 
+	long npos_flag2 = 0; 
+	long m_bill_cnt = 0;
+	long m_mincnt = -1;
+	long m_nTotal = 5;
+	long m_nCurr = 0;
+	
+	char m_szCivil_serv_class_cd[6+1];
+	char m_szCivil_serv_class_nm[50+1];
+	char m_szPda_duty_flag_nm[20+1];
+	char m_szPda_duty_flag[10+1];
+	
+	char m_szCust_num[20];
+	char m_szUse_cont_num[20];
+	char m_szInst_place_num[20];
+	char m_szEtc_addr[100];
+	char m_szZip_seq[20];
+	char m_szTrans_info_rslt[300];
+	
+	handle m_hGrid = NULL;
+	long m_nSelectedIndex = -1;
+	
+	long m_lGridIndex = -1;
+	long m_lGridRow = -1;
+	long m_nPosX = 0;
+	long m_nPosY = 0;
+	long m_nMoveFlag = 0;
+	long m_nScrollY = 0;
+	
+	char m_szUse_cont_num2[20];
+	
+	char m_szSupply_Yn[2];
+	
+	void SetBtnImg(void);
+	void SetStyle(void);
+	void SetData(void);
+	void ReDraw(void);
+
+	void SetCombo(void);
+	bool Start_Init(void);
+	void Set_OnceItem(void);
+	long Sql_SetGrid( void );
+	long Sql_SetCombo(char* szSql, long CTRLID );
+	//sms 송신관련
+	void Call_Tel(long nButtonID);
+	void Snd_SMS(void);
+	long Rcv_Sms(void);
+	void fsgetitem(char* szSource, char* szTarget, int id, int len );
+	void fsgetitem2(char* szSource, char* szTarget, int id, int len );
+	
+	void Snd_UnDefie(void);
+	long Rcv_UnDefie(void);
+	void Snd_Jobchg(void);
+	long Rcv_Jobchg(void);
+	void Snd_PosChg(void);
+	long Rcv_PosChg(void);
+	long Save_Min_PosChg(void);
+	long Chk_Json_62504(void);
+	bool SetJsonToDB( DBInfo* info, SQLITE sql, handle json, long nCnt );
+	bool SetJsonToDB_PosChg( DBInfo* info, SQLITE sql, handle hitem, long nTCnt );
+	
+	void Snd_Srchmtr(void);
+	long Rcv_Srchmtr(void);
+	void Snd_Srchaddr(void);
+	long Rcv_Srchaddr(void);
+	void Sub_Draw(void);
+	
+	void Snd_BillCnt(void);
+	long Rcv_Billcnt(void);
+	long Chk_Json_62508(void);
+	
+	void Snd_GetHistoryYn(void);
+	long Rcv_GetHistoryYn(void);
+	long Chk_Json_62702(void);
+	
+	void Snd_Bill(void);
+	long Rcv_Bill(void);
+	void Bill_Draw(void);
+	
+	long Rcv_62604(void);
+	long TR62604(void);	
+	long Chk_Json_62604(void);
+	
+	long Rcv_62602(void);
+	long TR62602(void);
+	
+	long Rcv_Data(void);
+	long TR82256(void);
+	long Rev_SetData(long nservicenum);
+	void SetJsonBody(SQLITE sql);
+	void SetJsonArray_Bank(SQLITE sql);
+	void SetJsonArray_Payment(void);
+	void OzView(void);
+	void Rcv_OzData(char* OzData);
+	long Snd_OzView(void);
+	long TR822566(void);
+	
+	long Rev68402(char* promise_assign_seq, long flag);
+	
+	void RcvDayMin(void);
+	long TR68402(void);
+	long Save_Min(void);
+	bool SetJsonToDB( DBInfo* info, SQLITE sql, handle json, long nCnt );	
+	long SND68404(void);
+	bool Save_assignseq( handle json, long nCnt );
+	long TR68404(void);
+	long Add_Item(handle pj);
+	bool DeleteOldData(void);
+
+	long Rcv_History(void);
+	long TR24265(void);
+	
+	long Chk_chgUserInfo(void);
+	
+	void Snd_ServAddCnt(void);
+	long Rcv_ServAddCnt(void);
+	long Chk_Json_62802(void);
+	
+	void Snd_FR62803(void);
+	long Rcv_FR6280(void);
+	long Chk_Json_62803(void);
+
+	void Chk_UseCont(void);
+	long Rcv_UseContChk(void);
+	long Chk_Json_62902(void);
+	
+	SysButCtrl SysButRes_MAIN[] =
+	 {
+		  SYS_BUT_IMG (  BTNX_1, BTNY_1, BTNWD_1, BTNHT_1, 0, 0, BUTSTY_BOLD , 0, 0, 0, OBJ_BUT, GID_HOME,  0),
+		  SYS_BUT_IMG (  BTNX_2, BTNY_1, BTNWD_1, BTNHT_1, 0, 0, BUTSTY_BOLD , 0, 0, 0, OBJ_BUT, GID_KEYBOARD,  0),
+		  SYS_BUT_IMG (  BTNX_3, BTNY_1, BTNWD_1, BTNHT_1, 0, 0, BUTSTY_BOLD , 0, 0, 0, OBJ_BUT, GID_SCREEN, 0),
+		  SYS_BUT_IMG (  BTNX_4, BTNY_1, BTNWD_1, BTNHT_1, 0, 0, BUTSTY_BOLD , 0, 0, 0, OBJ_BUT, GID_CMMNWK,  0),
+		  SYS_BUT_IMG (  BTNX_5, BTNY_1, BTNWD_1, BTNHT_1, 0, 0, BUTSTY_BOLD , 0, 0, 0, OBJ_BUT, GID_VMEXIT, 0),
+		  SYS_BUT_IMG (  BTNX_6, BTNY_2, BTNWD_2, BTNHT_2, 0, 0, BUTSTY_BOLD|BUTSTY_BORDER , 0, TRANSPARENT, TRANSPARENT, OBJ_BUT, GID_MENU, 0),
+		  SYS_BUT_IMG (  BTNX_7, BTNY_2, BTNWD_2, BTNHT_2, 0, 0, BUTSTY_BOLD|BUTSTY_BORDER , 0, TRANSPARENT, TRANSPARENT, OBJ_BUT, GID_PREV, 0),
+	 };
+	
+	// 메인 다이얼로그
+	//----------------------------------------------------------------------------------------------------
+	DlgObject	DlgRes[] = 
+	{
+		NORM_DLG ("", "", DLGSTY_HSCROLLBAR|DLGSTY_VSCROLLBAR|DLGSTY_TITLE, 0, MAINBKCOLOR, WHITE, BLUE, TITLE_HEIGHT, 0),		
+		DLG_TEXT(0, 0, 998, BTNHT_1, 0, 0, EDITSTY_BORDER, EDITSTY_BOLD, WHITE, TRANSPARENT, TXT_BORDER, ""),
+		DLG_ICON(0, BTNY_2, ICON_TITLE, ""),
+
+		//타이틀
+		DLG_TEXT(TX, TY, STWD, STHT, 0, 0, EDITSTY_BORDER, EDITSTY_BOLD, TTLCTRLFR, TTLCTRLBK, TXT_TITLE, "민 원"),
+
+		DLG_BUTTON(STARTX,     Line(1)-5, 240, SYH+5, 0, 0, 0, BUTSTY_BORDER, BTNMENUFRCOLOR, BTNCTRLBKCOLOR, CALL_FUNC , "", BID_HISTORY, "상담이력"),
+		DLG_BUTTON(STARTX+240, Line(1)-5, 255, SYH+5, 0, 0, 0, BUTSTY_BORDER, BTNMENUFRCOLOR, BTNCTRLBKCOLOR, CALL_FUNC , "", BID_BILL, "요금조회"),
+		DLG_BUTTON(STARTX+495, Line(1)-5, 255, SYH+5, 0, 0, 0, BUTSTY_BORDER, BTNMENUFRCOLOR, BTNCTRLBKCOLOR, CALL_FUNC , "", BID_DAYRCV, "재수신"),		
+		DLG_BUTTON(STARTX+750, Line(1)-5, 250, SYH+5, 0, 0, 0, BUTSTY_BORDER, BTNMENUFRCOLOR, BTNCTRLBKCOLOR, CALL_FUNC , "", BID_SMS, "메세지"),
+				
+		DLG_TEXT( STARTX,     Line(2),  240, SYH, 0, 0, 0, EDITSTY_BORDER, TXTTTLFRCOLOR, TXTCTRLBK, TTL_CLASS_NM, "민원정보"),
+		DLG_BUTTON( STARTX,     Line(2),  240, SYH, 0, 0, 0, BUTSTY_BORDER, BTNMENUFRCOLOR, BTNCTRLBKCOLOR, CALL_FUNC , "", BID_USE_CONT_NUM, "민원정보"),
+		
+		DLG_TEXT( STARTX+240, Line(2),  760, SYH, 0, 0, 0, EDITSTY_BORDER, TXTFRCOLOR, TXTINCTRLBK, TXT_CLASS_NM, ""),
+
+		DLG_TEXT( STARTX,     Line(3),  240, SYH, 0, 0, 0, EDITSTY_BORDER, TXTTTLFRCOLOR, TXTCTRLBK, TTL_RECEIVE_DTM, "민원일자"),
+		DLG_TEXT( STARTX+240, Line(3),  300, SYH, 0, 0, 0, EDITSTY_BORDER, TXTFRCOLOR, TXTINCTRLBK, TXT_RECEIVE_DTM, ""),
+		DLG_TEXT( STARTX+540, Line(3),  210, SYH, 0, 0, 0, EDITSTY_BORDER, TXTTTLFRCOLOR, TXTCTRLBK, TTL_REQ_NM, "신청자"),
+		DLG_TEXT( STARTX+750, Line(3),  250, SYH, 0, 0, 0, EDITSTY_BORDER, TXTFRCOLOR, TXTINCTRLBK, TXT_REQ_NM, ""),
+		
+		DLG_TEXT( STARTX,     Line(4),  240, SYH, 0, 0, 0, EDITSTY_BORDER, TXTTTLFRCOLOR, TXTCTRLBK, TTL_REQ_TEL, "집전화"),
+		DLG_TEXT( STARTX+240, Line(4),  510, SYH, 0, 0, 0, EDITSTY_BORDER, TXTFRCOLOR, TXTINCTRLBK, TXT_REQ_TEL, ""),
+		DLG_BUTTON(STARTX+750,Line(4),  250, SYH, 0, 0, 0, BUTSTY_BORDER, BTNMENUFRCOLOR, BTNCTRLBKCOLOR, CALL_FUNC , "", BID_TEL, "전화걸기"),
+		
+		DLG_TEXT( STARTX,     Line(5),  240, SYH, 0, 0, 0, EDITSTY_BORDER, TXTTTLFRCOLOR, TXTCTRLBK, TTL_REQ_CP, "핸드폰"),
+		DLG_TEXT( STARTX+240, Line(5),  510, SYH, 0, 0, 0, EDITSTY_BORDER, TXTFRCOLOR, TXTINCTRLBK, TXT_REQ_CP, ""),
+		DLG_BUTTON(STARTX+750,Line(5),  250, SYH, 0, 0, 0, BUTSTY_BORDER, BTNMENUFRCOLOR, BTNCTRLBKCOLOR, CALL_FUNC , "", BID_HP, "전화걸기"),
+
+		//DLG_TEXT( STARTX,     Line(6),  240, SYH*3, 0, 0, 0, EDITSTY_BORDER, TXTFRCOLOR, TXTCTRLBK, TTL_ADDR, "지번"),
+		DLG_BUTTON(STARTX,    Line(6),  240, SYH*3, 0, 0, 0, BUTSTY_BORDER, BTNMENUFRCOLOR, BTNCTRLBKCOLOR, CALL_FUNC , "", BID_ADDR, "지번\n주소"),
+		DLG_TEXT( STARTX+240, Line(6),  760, SYH, 0, 0, 0, EDITSTY_BORDER, TXTFRCOLOR, TXTINCTRLBK, TXT_ADDR, ""),
+		DLG_TEXT( STARTX+240, Line(7),  760, SYH, 0, 0, 0, EDITSTY_BORDER, TXTFRCOLOR, TXTINCTRLBK, TXT_ADDR2, ""),
+		DLG_TEXT( STARTX+240, Line(8),  760, SYH, 0, 0, 0, EDITSTY_BORDER, TXTFRCOLOR, TXTINCTRLBK, TXT_ADDR3, ""),
+	
+		//DLG_TEXT( STARTX,     Line(9),  240, SYH*2, 0, 0, 0, EDITSTY_BORDER, TXTFRCOLOR, TXTCTRLBK, TTL_MEMO, "약속메모"),
+		DLG_BUTTON(STARTX,     Line(9), 240, SYH*2, 0, 0, 0, BUTSTY_BORDER, BTNMENUFRCOLOR, BTNCTRLBKCOLOR, CALL_FUNC , "", BID_MEMO, "약속메모"),
+		DLG_TEXT( STARTX+240, Line(9),  760, SYH*2, 0, 0, 0, EDITSTY_BORDER, TXTFRCOLOR, TXTINCTRLBK, TXT_MEMO, ""),
+
+		DLG_TEXT( STARTX,     Line(11),  240, SYH, 0, 0, EDITSTY_BORDER, 0, TXTFRCOLOR, WHITE, TTL_CUST, ">고객정보"),
+		
+		DLG_TEXT( STARTX+467,     Line(11),  535, SYH, 0, 0, EDITSTY_BORDER, 0, RED, WHITE, TTL_SERVADD, "모바일 사전접수 고객님"),
+		
+		DLG_TEXT( STARTX,     Line(12),  240, SYH, 0, 0, 0, EDITSTY_BORDER, TXTTTLFRCOLOR, TXTCTRLBK, TTL_CUST_NM, "고 객 명"),
+		DLG_TEXT( STARTX+240, Line(12),  510, SYH, 0, 0, 0, EDITSTY_BORDER, TXTFRCOLOR, TXTINCTRLBK, TXT_CUST_NM, ""),
+		DLG_BUTTON(STARTX+750,Line(12),  250, SYH, 0, 0, 0, BUTSTY_BORDER, BTNMENUFRCOLOR, BTNCTRLBKCOLOR, CALL_FUNC , "", BID_PAYINFO, "납부정보"),
+
+		DLG_TEXT( STARTX,     Line(13),  240, SYH, 0, 0, 0, EDITSTY_BORDER, TXTTTLFRCOLOR, TXTCTRLBK, TTL_SOC_NUM, "생년월일"),
+		DLG_TEXT( STARTX+240, Line(13),  760, SYH, 0, 0, 0, EDITSTY_BORDER, TXTFRCOLOR, TXTINCTRLBK, TXT_SOC_NUM, ""),
+		DLG_TEXT( STARTX,     Line(14),  240, SYH, 0, 0, 0, EDITSTY_BORDER, TXTTTLFRCOLOR, TXTCTRLBK, TTL_FIRM_TEL, "핸드폰"),
+		DLG_TEXT( STARTX+240, Line(14),  760, SYH, 0, 0, 0, EDITSTY_BORDER, TXTFRCOLOR, TXTINCTRLBK, TXT_FIRM_TEL, ""),
+		DLG_TEXT( STARTX,     Line(15),  240, SYH, 0, 0, 0, EDITSTY_BORDER, TXTTTLFRCOLOR, TXTCTRLBK, TTL_MTR_ID_NUM, "기물번호"),
+		DLG_COMBO_UP( STARTX+240, Line(15),  760, SYH*6, 248, SYH, TXTFRCOLOR, TXTINCTRLBK, CALL_FUNC, "", CMB_MTR, 10),
+		
+		DLG_BUTTON(STARTX,     Line(16), 500, 79, 0, 0, 0, BUTSTY_BORDER, BTNMENUFRCOLOR, BTNCTRLBKCOLOR, CALL_FUNC , "", BID_USE, "사용계약서작성"),
+		DLG_BUTTON(STARTX,     Line(16), 500, 79, 0, 0, 0, BUTSTY_BORDER, BTNMENUFRCOLOR, BTNCTRLBKCOLOR, CALL_FUNC , "", BID_REUSE, "사용계약서재발행"),
+		DLG_BUTTON(STARTX+500, Line(16), 500, 79, 0, 0, 0, BUTSTY_BORDER, BTNMENUFRCOLOR, BTNCTRLBKCOLOR, CALL_FUNC , "", BID_USESMS, "사용계약서발송"),
+
+		DLG_BUTTON(STARTX,     Line(16), 240, 79, 0, 0, 0, BUTSTY_BORDER, BTNMENUFRCOLOR, BTNCTRLBKCOLOR, CALL_FUNC , "", BID_JOBCHG, "업무변경"),
+		DLG_BUTTON(STARTX+240, Line(16), 255, 79, 0, 0, 0, BUTSTY_BORDER, BTNMENUFRCOLOR, BTNCTRLBKCOLOR, CALL_FUNC , "", BID_POSCHG, "설치장소"),
+		DLG_BUTTON(STARTX+495, Line(16), 255, 79, 0, 0, 0, BUTSTY_BORDER, BTNMENUFRCOLOR, BTNCTRLBKCOLOR, CALL_FUNC , "", BID_UNDEFINE, "미 확 인"),
+		DLG_BUTTON(STARTX+750, Line(16), 250, 79, 0, 0, 0, BUTSTY_BORDER, BTNMENUFRCOLOR, BTNCTRLBKCOLOR, CALL_FUNC , "", BID_JOBSTART, " 작 업 "),
+	};	
+	
+	// PDA 다이얼로그
+	//----------------------------------------------------------------------------------------------------
+	DlgObject	DlgRes_P[] = 
+	{
+		NORM_DLG ("", "", DLGSTY_HSCROLLBAR|DLGSTY_VSCROLLBAR|DLGSTY_TITLE, 0, MAINBKCOLOR, WHITE, BLUE, TITLE_HEIGHT, 0),		
+		DLG_ICON(P_TTLTX, 0, ICON_TITLE, ""),		
+		//타이틀
+		DLG_TEXT(P_TX, P_TY, P_STWD, P_STHT, 0, 0, EDITSTY_BORDER, EDITSTY_BOLD, WHITE, TRANSPARENT, TXT_TITLE, "체납 메뉴"),
+		DLG_ICON(0, BTNY_2, ICON_TITLE, ""),
+
+		//타이틀
+		DLG_TEXT(TX, TY, STWD, STHT, 0, 0, 0, EDITSTY_BORDER|EDITSTY_BOLD, TTLCTRLFR, TTLCTRLBK, TXT_TITLE, "민 원"),
+
+		DLG_BUTTON(STARTX,     Line(1), 230, SYH, 0, 0, 0, BUTSTY_BORDER, BTNMENUFRCOLOR, BTNCTRLBKCOLOR, CALL_FUNC , "", BID_BILL, "요금조회"),
+		DLG_BUTTON(STARTX+240, Line(1), 230, SYH, 0, 0, 0, BUTSTY_BORDER, BTNMENUFRCOLOR, BTNCTRLBKCOLOR, CALL_FUNC , "", BID_HISTORY, "상담이력"),
+		DLG_BUTTON(STARTX+740, Line(1), 230, SYH, 0, 0, 0, BUTSTY_BORDER, BTNMENUFRCOLOR, BTNCTRLBKCOLOR, CALL_FUNC , "", BID_SMS, "메세지"),
+		
+		DLG_TEXT( STARTX,     Line(2),  240, SYH, 0, 0, 0, EDITSTY_BORDER, TXTFRCOLOR, TXTCTRLBK, TTL_CLASS_NM, "민원정보"),
+		DLG_TEXT( STARTX+240, Line(2),  730, SYH, 0, 0, 0, EDITSTY_BORDER, TXTFRCOLOR, TXTINCTRLBK, TXT_CLASS_NM, ""),
+		DLG_TEXT( STARTX,     Line(3),  240, SYH, 0, 0, 0, EDITSTY_BORDER, TXTFRCOLOR, TXTCTRLBK, TTL_RECEIVE_DTM, "민원일자"),
+		DLG_TEXT( STARTX+240, Line(3),  300, SYH, 0, 0, 0, EDITSTY_BORDER, TXTFRCOLOR, TXTINCTRLBK, TXT_RECEIVE_DTM, ""),
+		DLG_TEXT( STARTX+540, Line(3),  200, SYH, 0, 0, 0, EDITSTY_BORDER, TXTFRCOLOR, TXTCTRLBK, TTL_REQ_NM, "신청자"),
+		DLG_TEXT( STARTX+740, Line(3),  230, SYH, 0, 0, 0, EDITSTY_BORDER, TXTFRCOLOR, TXTINCTRLBK, TXT_REQ_NM, ""),
+		DLG_TEXT( STARTX,     Line(4),  240, SYH, 0, 0, 0, EDITSTY_BORDER, TXTFRCOLOR, TXTCTRLBK, TTL_REQ_TEL, "집전화"),
+		DLG_TEXT( STARTX+240, Line(4),  730, SYH, 0, 0, 0, EDITSTY_BORDER, TXTFRCOLOR, TXTINCTRLBK, TXT_REQ_TEL, ""),
+		DLG_BUTTON(STARTX+720,Line(4),  250, SYH, 0, 0, 0, BUTSTY_BORDER, BTNMENUFRCOLOR, BTNCTRLBKCOLOR, CALL_FUNC , "", BID_TEL, "전화걸기"),
+
+		DLG_TEXT( STARTX,     Line(5),  240, SYH, 0, 0, 0, EDITSTY_BORDER, TXTFRCOLOR, TXTCTRLBK, TTL_REQ_CP, "핸드폰"),
+		DLG_TEXT( STARTX+240, Line(5),  730, SYH, 0, 0, 0, EDITSTY_BORDER, TXTFRCOLOR, TXTINCTRLBK, TXT_REQ_CP, ""),
+		DLG_BUTTON(STARTX+720,Line(5),  250, SYH, 0, 0, 0, BUTSTY_BORDER, BTNMENUFRCOLOR, BTNCTRLBKCOLOR, CALL_FUNC , "", BID_HP, "전화걸기"),
+
+		DLG_TEXT( STARTX,     Line(6),  240, SYH*3, 0, 0, 0, EDITSTY_BORDER, TXTFRCOLOR, TXTCTRLBK, TTL_ADDR, "지번"),
+		DLG_BUTTON(STARTX,    Line(6),  240, SYH*3, 0, 0, 0, BUTSTY_BORDER, BTNMENUFRCOLOR, BTNCTRLBKCOLOR, CALL_FUNC , "", BID_ADDR, "지번\n주소"),
+		DLG_TEXT( STARTX+240, Line(6),  730, SYH, 0, 0, 0, EDITSTY_BORDER, TXTFRCOLOR, TXTINCTRLBK, TXT_ADDR, ""),
+		DLG_TEXT( STARTX+240, Line(7),  730, SYH, 0, 0, 0, EDITSTY_BORDER, TXTFRCOLOR, TXTINCTRLBK, TXT_ADDR2, ""),
+		DLG_TEXT( STARTX+240, Line(8),  730, SYH, 0, 0, 0, EDITSTY_BORDER, TXTFRCOLOR, TXTINCTRLBK, TXT_ADDR3, ""),
+	
+		DLG_TEXT( STARTX,     Line(9),  240, SYH*2, 0, 0, 0, EDITSTY_BORDER, TXTFRCOLOR, TXTCTRLBK, TTL_MEMO, "약속메모"),
+		DLG_TEXT( STARTX+240, Line(9),  730, SYH*2, 0, 0, 0, EDITSTY_BORDER, TXTFRCOLOR, TXTINCTRLBK, TXT_MEMO, ""),
+
+		DLG_TEXT( STARTX,     Line(11),  240, SYH, 0, 0, EDITSTY_BORDER, 0, TXTFRCOLOR, WHITE, TTL_CUST, ">고객정보"),
+		DLG_TEXT( STARTX,     Line(12),  240, SYH, 0, 0, 0, EDITSTY_BORDER, TXTFRCOLOR, TXTCTRLBK, TTL_CUST_NM, "고 객 명"),
+		DLG_TEXT( STARTX+240, Line(12),  730, SYH, 0, 0, 0, EDITSTY_BORDER, TXTFRCOLOR, TXTINCTRLBK, TXT_CUST_NM, ""),
+		DLG_BUTTON(STARTX+720,Line(12),  250, SYH, 0, 0, 0, BUTSTY_BORDER, BTNMENUFRCOLOR, BTNCTRLBKCOLOR, CALL_FUNC , "", BID_PAYINFO, "납부정보"),
+
+		DLG_TEXT( STARTX,     Line(13),  240, SYH, 0, 0, 0, EDITSTY_BORDER, TXTFRCOLOR, TXTCTRLBK, TTL_SOC_NUM, "생년월일"),
+		DLG_TEXT( STARTX+240, Line(13),  730, SYH, 0, 0, 0, EDITSTY_BORDER, TXTFRCOLOR, TXTINCTRLBK, TXT_SOC_NUM, ""),
+		DLG_TEXT( STARTX,     Line(14),  240, SYH, 0, 0, 0, EDITSTY_BORDER, TXTFRCOLOR, TXTCTRLBK, TTL_FIRM_TEL, "핸드폰"),
+		DLG_TEXT( STARTX+240, Line(14),  730, SYH, 0, 0, 0, EDITSTY_BORDER, TXTFRCOLOR, TXTINCTRLBK, TXT_FIRM_TEL, ""),
+		DLG_TEXT( STARTX,     Line(15),  240, SYH, 0, 0, 0, EDITSTY_BORDER, TXTFRCOLOR, TXTCTRLBK, TTL_MTR_ID_NUM, "기물번호"),
+		DLG_COMBO_UP( STARTX+240, Line(15),  730, SYH*6, SYH*2, SYH, TXTFRCOLOR, TXTINCTRLBK, CALL_FUNC, "", CMB_MTR, 10),
+		
+		//DLG_BUTTON(STARTX,     Line(16)+10, 485, 50, 0, 0, 0, BUTSTY_BORDER, BTNMENUFRCOLOR, BTNCTRLBKCOLOR, CALL_FUNC , "", BID_USE, "사용계약서작성"),
+		//DLG_BUTTON(STARTX    , Line(16)+10, 485, 50, 0, 0, 0, BUTSTY_BORDER, BTNMENUFRCOLOR, BTNCTRLBKCOLOR, CALL_FUNC , "", BID_REUSE, "사용계약서재발행"),
+		//DLG_BUTTON(STARTX+490, Line(16)+10, 485, 50, 0, 0, 0, BUTSTY_BORDER, BTNMENUFRCOLOR, BTNCTRLBKCOLOR, CALL_FUNC , "", BID_USESMS, "사용계약서전송"),
+
+		DLG_BUTTON(STARTX,     Line(16)+10, 240, 50, 0, 0, 0, BUTSTY_BORDER, BTNMENUFRCOLOR, BTNCTRLBKCOLOR, CALL_FUNC , "", BID_JOBCHG, "업무변경"),
+		DLG_BUTTON(STARTX+245, Line(16)+10, 240, 50, 0, 0, 0, BUTSTY_BORDER, BTNMENUFRCOLOR, BTNCTRLBKCOLOR, CALL_FUNC , "", BID_POSCHG, "설치장소"),
+		DLG_BUTTON(STARTX+490, Line(16)+10, 240, 50, 0, 0, 0, BUTSTY_BORDER, BTNMENUFRCOLOR, BTNCTRLBKCOLOR, CALL_FUNC , "", BID_UNDEFINE, "미 확 인"),
+		DLG_BUTTON(STARTX+735, Line(16)+10, 240, 50, 0, 0, 0, BUTSTY_BORDER, BTNMENUFRCOLOR, BTNCTRLBKCOLOR, CALL_FUNC , "", BID_JOBSTART, " 작 업 "),
+	
+	};
+	
+	// 납부방법(납부정보)
+	//----------------------------------------------------------------------------------------------------
+	DlgObject	DlgRes_PAYINFO[] = 
+	{
+		NORM_DLG ("", "", DLGSTY_HSCROLLBAR|DLGSTY_VSCROLLBAR|DLGSTY_TITLE, 0, MAINBKCOLOR, WHITE, BLUE, TITLE_HEIGHT, 0),		
+		DLG_ICON(POPTX, POPTY, ICON_TITLE, ""),
+		DLG_TEXT(POPTX, POPTY, POPSTWD, POPSTHT, 0, 0, EDITSTY_BORDER, EDITSTY_BOLD, TTLCTRLFR, TTLCTRLBK, TXT_TITLE, "납부정보"),
+		DLG_BUTTON(BTNX_7, P_BTNY, BTNWD_2, BTNHT_2, 0, 0, EDITSTY_BORDER, 0, BTNMENUFRCOLOR, BTNCTRLMNBKCOLOR, CALL_FUNC , "", BID_CLOSE, ""),
+		
+		DLG_TEXT( STARTX,     STARTY-29,        240, SYH, 0, 0, 0, EDITSTY_BORDER, TXTTTLFRCOLOR, TXTCTRLBK, TTL_DATA01, "검 침 일"),
+		DLG_TEXT( STARTX+240, STARTY-29,        760, SYH, 0, 0, 0, EDITSTY_BORDER, TXTFRCOLOR, TXTINCTRLBK, TXT_DATA01, ""),
+		DLG_TEXT( STARTX,     STARTY+SYH-29,    240, SYH, 0, 0, 0, EDITSTY_BORDER, TXTTTLFRCOLOR, TXTCTRLBK, TTL_DATA02, "납 기 일"),
+		DLG_TEXT( STARTX+240, STARTY+SYH-29,    760, SYH, 0, 0, 0, EDITSTY_BORDER, TXTFRCOLOR, TXTINCTRLBK, TXT_DATA02, ""),
+		DLG_TEXT( STARTX,     STARTY+SYH*2-29,  240, SYH, 0, 0, 0, EDITSTY_BORDER, TXTTTLFRCOLOR, TXTCTRLBK, TTL_DATA03, "납부방법"),
+		DLG_TEXT( STARTX+240, STARTY+SYH*2-29,  760, SYH, 0, 0, 0, EDITSTY_BORDER, TXTFRCOLOR, TXTINCTRLBK, TXT_DATA03, ""),
+		DLG_TEXT( STARTX,     STARTY+SYH*3-29,  240, SYH, 0, 0, 0, EDITSTY_BORDER, TXTTTLFRCOLOR, TXTCTRLBK, TTL_DATA04, "은  행"),
+		DLG_TEXT( STARTX+240, STARTY+SYH*3-29,  760, SYH, 0, 0, 0, EDITSTY_BORDER, TXTFRCOLOR, TXTINCTRLBK, TXT_DATA04, ""),
+		DLG_TEXT( STARTX,     STARTY+SYH*4-29,  240, SYH, 0, 0, 0, EDITSTY_BORDER, TXTTTLFRCOLOR, TXTCTRLBK, TTL_DATA05, "예 금 주"),
+		DLG_TEXT( STARTX+240, STARTY+SYH*4-29,  760, SYH, 0, 0, 0, EDITSTY_BORDER, TXTFRCOLOR, TXTINCTRLBK, TXT_DATA05, ""),
+		DLG_TEXT( STARTX,     STARTY+SYH*5-29,  240, SYH, 0, 0, 0, EDITSTY_BORDER, TXTTTLFRCOLOR, TXTCTRLBK, TTL_DATA06, "계좌번호"),
+		DLG_TEXT( STARTX+240, STARTY+SYH*5-29,  760, SYH, 0, 0, 0, EDITSTY_BORDER, TXTFRCOLOR, TXTINCTRLBK, TXT_DATA06, ""),
+
+		DLG_BUTTON( STARTX+730, STARTY+SYH*6, 270, SYH+30, 0, 0, BUTSTY_BOLD, BUTSTY_ROUNDBORDER , BTNMENUFRCOLOR, BTNCTRLBKCOLOR, CALL_FUNC , "", BID_SUBCLOSE, "확 인"),
+	};	
+	
+	// 미확인처리
+	//----------------------------------------------------------------------------------------------------
+	DlgObject	DlgRes_UNDEFINE[] = 
+	{
+		NORM_DLG ("", "", DLGSTY_HSCROLLBAR|DLGSTY_VSCROLLBAR|DLGSTY_TITLE, 0, MAINBKCOLOR, WHITE, BLUE, TITLE_HEIGHT, 0),		
+		DLG_ICON(POPTX, POPTY, ICON_TITLE, ""),
+		DLG_TEXT(POPTX, POPTY, POPSTWD, POPSTHT, 0, 0, EDITSTY_BORDER, EDITSTY_BOLD, TTLCTRLFR, TTLCTRLBK, TXT_TITLE, "미확인등록"),
+		DLG_BUTTON(BTNX_7, P_BTNY, BTNWD_2, BTNHT_2, 0, 0, EDITSTY_BORDER, 0, BTNMENUFRCOLOR, BTNCTRLMNBKCOLOR, CALL_FUNC , "", BID_CLOSE, ""),
+		
+		DLG_TEXT(         STARTX,  STARTY, CWD*11, SYH+20, 0, 0, 0, EDITSTY_BORDER, TXTFRCOLOR, TXTCTRLBK, TTL_UNDFINE, "미확인사유"),
+		DLG_COMBO ( STARTX+CWD*11, STARTY, CWD*28, 500, 100, SYH+20, TXTFRCOLOR, TXTINCTRLBK, CALL_FUNC, "", CMB_UNDFINE, 10),
+		
+		DLG_BUTTON( STARTX+730, 300, 250, SYH+20, 0, 0, BUTSTY_BOLD, BUTSTY_ROUNDBORDER , BTNMENUFRCOLOR, BTNCTRLBKCOLOR, CALL_FUNC , "", BID_SNDUNDFINE, "등록"),
+	};	
+
+	// 업무변경
+	//----------------------------------------------------------------------------------------------------
+	DlgObject	DlgRes_JOBCHG[] = 
+	{
+		NORM_DLG ("", "", DLGSTY_HSCROLLBAR|DLGSTY_VSCROLLBAR|DLGSTY_TITLE, 0, MAINBKCOLOR, WHITE, BLUE, TITLE_HEIGHT, 0),		
+		DLG_ICON(POPTX, POPTY, ICON_TITLE, ""),
+		DLG_TEXT(POPTX, POPTY, POPSTWD, POPSTHT, 0, 0, EDITSTY_BORDER, EDITSTY_BOLD, TTLCTRLFR, TTLCTRLBK, TXT_TITLE, "업무변경"),
+		DLG_BUTTON(BTNX_7, P_BTNY, BTNWD_2, BTNHT_2, 0, 0, EDITSTY_BORDER, 0, BTNMENUFRCOLOR, BTNCTRLMNBKCOLOR, CALL_FUNC , "", BID_CLOSE, ""),
+		
+		//DLG_TEXT(    STARTX,  STARTY, CWD*11, SYH+20, 0, 0, 0, EDITSTY_BORDER, TXTFRCOLOR, TXTCTRLBK, TTL_DATA01, "업무"),
+		//DLG_COMBO2 ( STARTX+CWD*11, STARTY, CWD*28, 500, 100, SYH+20, TXTFRCOLOR, TXTINCTRLBK, CALL_FUNC, "", CMB_JOBCHG, 10),
+		
+		//#define DLG_GRID(x, y, width, height, Rem, Add, Id, rownum, head_height, body_height, scroll_delta, scroll_thick, selected_color, grid_title)\
+		{0, Id, 0, OBJ_GRD, 0, 0, 0,\
+		{{x, y, width, height, rownum, ARR_SIZE(grid_title)}, Rem, Add, head_height, body_height, scroll_delta, {(void*)scroll_thick, (void*)selected_color, grid_title}}}
+
+		//타이틀 개수를 고려해야 함(총 ROW 개수는 ROW3 + 1개 임). 
+		DLG_GRID(GRID_X, STARTY-31, 0, 858, 0, FRMSTY_BORDER|FRMSTY_ALWAYSSHOWSB|GRDSTY_STRIPE, ID_GRIDLIST, ROW3, 70, 100, 800, 80, TABLEACTIVE_COLOR, m_stGridCtrl_Title),
+		
+		DLG_TEXT(     STARTX,   929, 250, SYH+20, 0, 0, 0, EDITSTY_BORDER, TXTFRCOLOR, TXTINCTRLBK, TXT_PAGE, m_szCnt_page),
+		
+		DLG_BUTTON( STARTX+750, 929, 250, SYH+20, 0, 0, BUTSTY_BOLD, BUTSTY_ROUNDBORDER , BTNMENUFRCOLOR, BTNCTRLBKCOLOR, CALL_FUNC , "", BID_SNDJOBCHG, "확 인"),
+	};	
+	
+	// SMS송신
+	//----------------------------------------------------------------------------------------------------
+	DlgObject	DlgRes_SMS[] = 
+	{
+		NORM_DLG ("", "", DLGSTY_HSCROLLBAR|DLGSTY_VSCROLLBAR|DLGSTY_TITLE, 0, MAINBKCOLOR, WHITE, BLUE, TITLE_HEIGHT, 0),		
+		DLG_ICON(POPTX, POPTY, ICON_TITLE, ""),
+		DLG_TEXT(POPTX, POPTY, POPSTWD, POPSTHT, 0, 0, EDITSTY_BORDER, EDITSTY_BOLD, TTLCTRLFR, TTLCTRLBK, TXT_TITLE, "S M S"),
+		DLG_BUTTON(BTNX_7, P_BTNY, BTNWD_2, BTNHT_2, 0, 0, EDITSTY_BORDER, 0, BTNMENUFRCOLOR, BTNCTRLMNBKCOLOR, CALL_FUNC , "", BID_CLOSE, ""),
+		
+		DLG_TEXT( STARTX,       STARTY-27,  300, (SYH+20), 0, 0, EDITSTY_BORDER, 0, TXTFRCOLOR, TXTINCTRLBK, TTL_DATA01, ">SMS 구분"),
+
+		DLG_BUTTON(STARTX,      STARTY+(SYH+20)-27, 100, (SYH+20), 0, 0, BUTSTY_BOLD, BUTSTY_BORDER, BTNCHKFRCOLOR, BTNCTRLMNBKCOLOR, CALL_FUNC , "", BID_SMS01,  CHKOFF),
+		DLG_TEXT ( STARTX+100,	STARTY+(SYH+20)-27, 200, (SYH+20), 0, 0, 0, EDITSTY_BORDER, TXTFRCOLOR, TXTINCTRLBK, TXT_DATA01, "방문"),
+		DLG_BUTTON(STARTX+300,  STARTY+(SYH+20)-27, 100, (SYH+20), 0, 0, BUTSTY_BOLD, BUTSTY_BORDER, BTNCHKFRCOLOR, BTNCTRLMNBKCOLOR, CALL_FUNC , "", BID_SMS02,  CHKOFF),
+		DLG_TEXT ( STARTX+400,	STARTY+(SYH+20)-27, 200, (SYH+20), 0, 0, 0, EDITSTY_BORDER, TXTFRCOLOR, TXTINCTRLBK, TXT_DATA02, "지연"),
+
+		DLG_TEXT( STARTX,       STARTY+(SYH+20)*2-27, 300, (SYH+20), 0, 0, EDITSTY_BORDER, 0, TXTFRCOLOR, TXTINCTRLBK, TTL_DATA02, ">지연시간"),
+		DLG_BUTTON(STARTX,      STARTY+(SYH+20)*3-27, 100, (SYH+20), 0, 0, BUTSTY_BOLD, BUTSTY_BORDER, BTNCHKFRCOLOR, BTNCTRLMNBKCOLOR, CALL_FUNC , "", BID_SMS03,  CHKOFF),
+		DLG_TEXT ( STARTX+100,	STARTY+(SYH+20)*3-27, 200, (SYH+20), 0, 0, 0, EDITSTY_BORDER, TXTFRCOLOR, TXTINCTRLBK, TXT_DATA03, "15분"),
+		DLG_BUTTON(STARTX+300,  STARTY+(SYH+20)*3-27, 100, (SYH+20), 0, 0, BUTSTY_BOLD, BUTSTY_BORDER, BTNCHKFRCOLOR, BTNCTRLMNBKCOLOR, CALL_FUNC , "", BID_SMS04,  CHKOFF),
+		DLG_TEXT ( STARTX+400,	STARTY+(SYH+20)*3-27, 200, (SYH+20), 0, 0, 0, EDITSTY_BORDER, TXTFRCOLOR, TXTINCTRLBK, TXT_DATA04, "30분"),
+		DLG_BUTTON(STARTX+600,  STARTY+(SYH+20)*3-27, 100, (SYH+20), 0, 0, BUTSTY_BOLD, BUTSTY_BORDER, BTNCHKFRCOLOR, BTNCTRLMNBKCOLOR, CALL_FUNC , "", BID_SMS05,  CHKOFF),
+		DLG_TEXT ( STARTX+700,	STARTY+(SYH+20)*3-27, 200, (SYH+20), 0, 0, 0, EDITSTY_BORDER, TXTFRCOLOR, TXTINCTRLBK, TXT_DATA05, "60분"),
+/*
+		DLG_TEXT( STARTX,       STARTY+(SYH+20)*4, 500, (SYH+20), 0, 0, 0, EDITSTY_BORDER, TXTFRCOLOR, TXTCTRLBK, TTL_DATA03, "발송번호선택"),
+		DLG_BUTTON(STARTX,      STARTY+(SYH+20)*5, 100, (SYH+20), 0, 0, BUTSTY_BOLD, BUTSTY_BORDER, BTNCHKFRCOLOR, BTNCTRLMNBKCOLOR, CALL_FUNC , "", BID_SMS06,  CHKOFF),
+		DLG_TEXT ( STARTX+100,	STARTY+(SYH+20)*5, 200, (SYH+20), 0, 0, 0, EDITSTY_BORDER, TXTFRCOLOR, TXTINCTRLBK, TXT_DATA06, "PDA"),
+		DLG_BUTTON(STARTX+300,  STARTY+(SYH+20)*5, 100, (SYH+20), 0, 0, BUTSTY_BOLD, BUTSTY_BORDER, BTNCHKFRCOLOR, BTNCTRLMNBKCOLOR, CALL_FUNC , "", BID_SMS07,  CHKOFF),
+		DLG_TEXT ( STARTX+400,	STARTY+(SYH+20)*5, 250, (SYH+20), 0, 0, 0, EDITSTY_BORDER, TXTFRCOLOR, TXTINCTRLBK, TXT_DATA07, "휴대전화"),
+		DLG_BUTTON(STARTX+650,  STARTY+(SYH+20)*5, 100, (SYH+20), 0, 0, BUTSTY_BOLD, BUTSTY_BORDER, BTNCHKFRCOLOR, BTNCTRLMNBKCOLOR, CALL_FUNC , "", BID_SMS08,  CHKOFF),
+		DLG_TEXT ( STARTX+750,	STARTY+(SYH+20)*5, 250, (SYH+20), 0, 0, 0, EDITSTY_BORDER, TXTFRCOLOR, TXTINCTRLBK, TXT_DATA08, "직접입력"),
+
+		DLG_TEXT(  STARTX,      STARTY+(SYH+20)*6, 240, (SYH+20), 0, 0, 0, EDITSTY_BORDER, TXTFRCOLOR, TXTCTRLBK, TTL_DATA04, "직접입력"),
+		DLG_EDIT ( STARTX+240,	STARTY+(SYH+20)*6, 500, (SYH+20), 0, 0, 0, EDITSTY_BORDER, TXTFRCOLOR, TXTINCTRLBK, TXT_EDIT01, 13, ""),
+*/
+		
+		DLG_BUTTON( STARTX+750, STARTY+(SYH+20)*8, 250, SYH+20, 0, 0, BUTSTY_BOLD, BUTSTY_ROUNDBORDER , BTNMENUFRCOLOR, BTNCTRLBKCOLOR, CALL_FUNC , "", BID_SNDSMS, "보내기"),
+	};
+	
+	// 설치장소
+	//----------------------------------------------------------------------------------------------------
+	DlgObject	DlgRes_POSCHG[] = 
+	{
+		NORM_DLG ("", "", DLGSTY_HSCROLLBAR|DLGSTY_VSCROLLBAR|DLGSTY_TITLE, 0, MAINBKCOLOR, WHITE, BLUE, TITLE_HEIGHT, 0),		
+		DLG_ICON(POPTX, POPTY, ICON_TITLE, ""),
+		DLG_TEXT(POPTX, POPTY, POPSTWD, POPSTHT, 0, 0, EDITSTY_BORDER, EDITSTY_BOLD, TTLCTRLFR, TTLCTRLBK, TXT_TITLE, "설치장소조회"),
+		DLG_BUTTON(BTNX_7, P_BTNY, BTNWD_2, BTNHT_2, 0, 0, EDITSTY_BORDER, 0, BTNMENUFRCOLOR, BTNCTRLMNBKCOLOR, CALL_FUNC , "", BID_CLOSE, ""),
+		
+		DLG_TEXT(  STARTX,      STARTY-29, 240, (SYH+20), 0, 0, 0, EDITSTY_BORDER, TXTTTLFRCOLOR, TXTCTRLBK, TTL_DATA01, "기물번호"),
+		DLG_EDIT ( STARTX+240,	STARTY-29, 500, (SYH+20), 0, 0, 0, EDITSTY_BORDER, TXTFRCOLOR, EDTCTRLBK, TXT_EDIT01, 20, ""),
+		DLG_BUTTON( STARTX+740, STARTY-29, 259, (SYH+20), 0, 0, BUTSTY_BOLD, BUTSTY_ROUNDBORDER , BTNMENUFRCOLOR, BTNCTRLBKCOLOR, CALL_FUNC , "", BID_SNDMTR, "조회"),
+
+		DLG_TEXT( STARTX,       STARTY+(SYH+20), 300, (SYH+20), 0, 0, 0, EDITSTY_BORDER, TXTFRCOLOR, WHITE, TTL_DATA02, ">조회정보"),
+		DLG_BUTTON(STARTX+300,  STARTY+(SYH+20), 100, (SYH+20), 0, 0, BUTSTY_BOLD, BUTSTY_BORDER, BTNCHKFRCOLOR, BTNCTRLMNBKCOLOR, CALL_FUNC , "", BID_POS01,  CHKON),
+		DLG_TEXT ( STARTX+400,	STARTY+(SYH+20), 240, (SYH+20), 0, 0, 0, EDITSTY_BORDER, TXTFRCOLOR, TXTINCTRLBK, TXT_DATA01, "지번"),
+		DLG_BUTTON(STARTX+640,  STARTY+(SYH+20), 100, (SYH+20), 0, 0, BUTSTY_BOLD, BUTSTY_BORDER, BTNCHKFRCOLOR, BTNCTRLMNBKCOLOR, CALL_FUNC , "", BID_POS02,  CHKOFF),
+		DLG_TEXT ( STARTX+740,	STARTY+(SYH+20), 260, (SYH+20), 0, 0, 0, EDITSTY_BORDER, TXTFRCOLOR, TXTINCTRLBK, TXT_DATA02, "도로명"),
+
+		DLG_TEXT(  STARTX,      STARTY+(SYH+20)*2, 300, (SYH+20), 0, 0, 0, EDITSTY_BORDER, TXTTTLFRCOLOR, TXTCTRLBK, TTL_DATA03, "동"),
+		DLG_TEXT ( STARTX+300,	STARTY+(SYH+20)*2, 440, (SYH+20), 0, 0, 0, EDITSTY_BORDER, TXTFRCOLOR, TXTINCTRLBK, TXT_EDIT02,  ""),
+		DLG_BUTTON(STARTX+740,  STARTY+(SYH+20)*2, 260, SYH+20, 0, 0, BUTSTY_BOLD, BUTSTY_ROUNDBORDER , BTNMENUFRCOLOR, BTNCTRLBKCOLOR, CALL_FUNC , "", BID_SNDADDR, "조회"),
+
+		DLG_TEXT(  STARTX,      STARTY+(SYH+20)*3, 500, (SYH+20), 0, 0, 0, EDITSTY_BORDER, TXTTTLFRCOLOR, TXTCTRLBK, TTL_DATA04, "본번/부번"),
+		DLG_EDIT ( STARTX+500,	STARTY+(SYH+20)*3, 240, (SYH+20), 0, 0, 0, EDITSTY_BORDER, TXTFRCOLOR, EDTCTRLBK, TXT_EDIT03, 10, ""),
+		DLG_EDIT ( STARTX+740,	STARTY+(SYH+20)*3, 260, (SYH+20), 0, 0, 0, EDITSTY_BORDER, TXTFRCOLOR, EDTCTRLBK, TXT_EDIT04, 10, ""),
+		
+		DLG_BUTTON(STARTX,      STARTY+(SYH+20)*4, 100, (SYH+20), 0, 0, BUTSTY_BOLD, BUTSTY_BORDER, TXTFRCOLOR, TXTCTRLBK, CALL_FUNC , "", BID_POS03,  CHKON),
+		DLG_TEXT(  STARTX+100,  STARTY+(SYH+20)*4, 400, (SYH+20), 0, 0, 0, EDITSTY_BORDER, TXTTTLFRCOLOR, TXTCTRLBK, TTL_DATA05, "공동(건물/호수)"),
+		DLG_EDIT ( STARTX+500,	STARTY+(SYH+20)*4, 240, (SYH+20), 0, 0, 0, EDITSTY_BORDER, TXTFRCOLOR, EDTCTRLBK, TXT_EDIT05, 10, ""),
+		DLG_EDIT ( STARTX+740,	STARTY+(SYH+20)*4, 260, (SYH+20), 0, 0, 0, EDITSTY_BORDER, TXTFRCOLOR, EDTCTRLBK, TXT_EDIT06, 10, ""),
+		
+		DLG_TABLE (GRID_X, GRID_Y, ROW, COL, 0, GRID_H, 1, GRID_H, SEL_ROW, MAXCHAR, m_stGridTitle, ID_TBLLIST, m_szTableBuf),	
+				
+		DLG_BUTTON(STARTX,     STARTY+(SYH+20)*12, 150, SYH+9, 0, 0, BUTSTY_BOLD, BUTSTY_BORDER, BTNMENUFRCOLOR, BTNCTRLBKCOLOR, CALL_FUNC , "", BID_UP, "▲"),
+		DLG_BUTTON(STARTX+150, STARTY+(SYH+20)*12, 150, SYH+9, 0, 0, BUTSTY_BOLD, BUTSTY_BORDER, BTNMENUFRCOLOR, BTNCTRLBKCOLOR, CALL_FUNC , "", BID_DOWN, "▼"),
+		DLG_TEXT(  STARTX+300, STARTY+(SYH+20)*12, 250, SYH+9, 0, 0, 0, EDITSTY_BORDER, TXTFRCOLOR, TXTINCTRLBK, TXT_DATA09, m_szCnt_page),
+		DLG_BUTTON(STARTX+740, STARTY+(SYH+20)*12, 260, SYH+9, 0, 0, BUTSTY_BOLD, BUTSTY_ROUNDBORDER , BTNMENUFRCOLOR, BTNCTRLBKCOLOR, CALL_FUNC , "", BID_SNDPOSCHG, "확 정"),
+	};	
+	
+	// 요금내역
+	//----------------------------------------------------------------------------------------------------
+	DlgObject	DlgRes_BILL[] = 
+	{
+		NORM_DLG ("", "", DLGSTY_HSCROLLBAR|DLGSTY_VSCROLLBAR|DLGSTY_TITLE, 0, MAINBKCOLOR, WHITE, BLUE, TITLE_HEIGHT, 0),		
+		DLG_ICON(POPTX, POPTY, ICON_TITLE, ""),
+		DLG_TEXT(POPTX, POPTY, POPSTWD, POPSTHT, 0, 0, EDITSTY_BORDER, EDITSTY_BOLD, TTLCTRLFR, TTLCTRLBK, TXT_TITLE, "요금내역"),
+		DLG_BUTTON(BTNX_7, P_BTNY, BTNWD_2, BTNHT_2, 0, 0, EDITSTY_BORDER, 0, BTNMENUFRCOLOR, BTNCTRLMNBKCOLOR, CALL_FUNC , "", BID_SUBCLOSE, ""),
+		
+		DLG_TABLE (GRID_X2, GRID_Y2, ROW2, COL2, 0, GRID_H2, 1, GRID_H2, SEL_NONE, MAXCHAR2, m_stGridTitle2, ID_BILLLIST, m_szTableBuf2),	
+		
+		DLG_BUTTON(STARTX,      GRID_ENDY2+34, 250, SYH+20, 0, 0, BUTSTY_BOLD, BUTSTY_BORDER, BTNMENUFRCOLOR, BTNCTRLBKCOLOR, CALL_FUNC , "", BID_UP2, "▲"),
+		DLG_BUTTON(STARTX+250,  GRID_ENDY2+34, 250, SYH+20, 0, 0, BUTSTY_BOLD, BUTSTY_BORDER, BTNMENUFRCOLOR, BTNCTRLBKCOLOR, CALL_FUNC , "", BID_DOWN2, "▼"),
+		DLG_TEXT( STARTX+500,   GRID_ENDY2+34, 250, SYH+20, 0, 0, 0, EDITSTY_BORDER, TXTFRCOLOR, TXTINCTRLBK, TXT_PAGE, m_szCnt_page ),
+		DLG_BUTTON( STARTX+750, GRID_ENDY2+34, 250, SYH+20, 0, 0, BUTSTY_BOLD, BUTSTY_ROUNDBORDER , BTNMENUFRCOLOR, BTNCTRLBKCOLOR, CALL_FUNC , "", BID_SUBCLOSE, "확 인"),
+	};
+	
+	// 약속메모
+	//----------------------------------------------------------------------------------------------------
+	DlgObject	DlgRes_MEMO[] = 
+	{
+		NORM_DLG ("", "", DLGSTY_HSCROLLBAR|DLGSTY_VSCROLLBAR|DLGSTY_TITLE, 0, MAINBKCOLOR, WHITE, BLUE, TITLE_HEIGHT, 0),		
+		DLG_ICON(POPTX, POPTY, ICON_TITLE, ""),
+		DLG_TEXT(POPTX, POPTY, POPSTWD, POPSTHT, 0, 0, EDITSTY_BORDER, EDITSTY_BOLD, TTLCTRLFR, TTLCTRLBK, TXT_TITLE, "약속메모"),
+		DLG_BUTTON(BTNX_7, P_BTNY, BTNWD_2, BTNHT_2, 0, 0, EDITSTY_BORDER, 0, BTNMENUFRCOLOR, BTNCTRLMNBKCOLOR, CALL_FUNC , "", BID_MEMO_OK, ""),
+		
+		DLG_TEXT(0,   STARTY-29, CWD*40-1, SYH*17+9, 0, 0, 0, EDITSTY_BORDER, TXTFRCOLOR, TXTINCTRLBK, TXT_MEMO_DATA1, ""),
+		
+		DLG_BUTTON( STARTX+700, STARTY+(SYH*16)+29, 300, SYH+20, 0, 0, BUTSTY_BOLD, BUTSTY_ROUNDBORDER , BTNMENUFRCOLOR, BTNCTRLBKCOLOR, CALL_FUNC , "", BID_MEMO_OK, "확 인"),
+	};	
+
+	//----------------------------------------------------------------------------------------------------
+	DlgObject	DlgRes_USEDOC[] = 
+	{
+		NORM_DLG ("", "", DLGSTY_HSCROLLBAR|DLGSTY_VSCROLLBAR|DLGSTY_TITLE, 0, MAINBKCOLOR, WHITE, BLUE, TITLE_HEIGHT, 0),		
+		DLG_ICON(POPTX, POPTY, ICON_TITLE, ""),
+		DLG_TEXT(POPTX, POPTY, POPSTWD, POPSTHT, 0, 0, EDITSTY_BORDER, EDITSTY_BOLD, TTLCTRLFR, TTLCTRLBK, TXT_TITLE, "사용계약서 등록"),
+		DLG_BUTTON(BTNX_7, P_BTNY, BTNWD_2, BTNHT_2, 0, 0, EDITSTY_BORDER, 0, BTNMENUFRCOLOR, BTNCTRLMNBKCOLOR, CALL_FUNC , "", BID_SUBCLOSE, ""),
+
+		DLG_BUTTON(0,           STARTY-10 , 1000, 80, 0, 0, BUTSTY_BOLD, BUTSTY_ROUNDBORDER , BTNMENUFRCOLOR, BTNCTRLBKCOLOR, CALL_FUNC , "", BID_NAME_KEEP, "명의 유지"),
+		DLG_BUTTON(0,           STARTY+90 , 1000, 80, 0, 0, BUTSTY_BOLD, BUTSTY_ROUNDBORDER , BTNMENUFRCOLOR, BTNCTRLBKCOLOR, CALL_FUNC , "", BID_NAME_CHANGE, "명의 변경"),
+		DLG_BUTTON(0,           STARTY+190, 1000, 80, 0, 0, BUTSTY_BOLD, BUTSTY_ROUNDBORDER , BTNMENUFRCOLOR, BTNCTRLBKCOLOR, CALL_FUNC , "", BID_NAME_NEW, "신규"),
+		DLG_BUTTON(STARTX+550,	STARTY+330, 450 , 80, 0, 0, BUTSTY_BOLD, BUTSTY_ROUNDBORDER , BTNMENUFRCOLOR, BTNCTRLBKCOLOR, CALL_FUNC , "", BID_CLOSE, "닫 기")
+	};
+	
+	//----------------------------------------------------------------------------------------------------
+	bool	main (quad MsgType, quad wParam, quad lParam)
+	{
+		EVENT_HANDLER (MsgType, wParam, lParam);
+		return TRUE;
+	}
+	
+//┌─────────────────────────────────────┐
+//│ 				   『	OnInit Function  』  				              │
+//└─────────────────────────────────────┘
+	void OnInit(char bFirst)
+	{
+		//PRINT("WINFO OnInit start", 0, 0, 0);
+		//long lCnt;	
+		m_bFirst = bFirst;
+		
+		switch (bFirst)
+		{
+			case INIT_MAIN:
+				//PRINT("WINFO OnInit INIT_MAIN start", 0, 0, 0);
+				switch (theDevInfo.m_nType)
+				{
+					case FAMILY_PDA:
+						CREATE_DIALOG (DlgRes_P);
+						break;
+					default:
+						CREATE_GLOBAL_BUTTON (SysButRes_MAIN);
+						CREATE_DIALOG (DlgRes);
+						break;		
+				}
+				SetData();
+				break;
+			case INIT_MAIN_1:
+				//PRINT("WINFO OnInit INIT_MAIN_1 start", 0, 0, 0);
+				switch (theDevInfo.m_nType)
+				{
+					case FAMILY_PDA:
+						CREATE_DIALOG (DlgRes_P);
+						break;
+					default:
+						CREATE_GLOBAL_BUTTON (SysButRes_MAIN);
+						CREATE_DIALOG(DlgRes);
+						break;		
+				}
+				//데이터 재호출만 빠짐.
+				break;
+	
+			case INIT_UNDEFINE:
+				//PRINT("WINFO OnInit INIT_UNDEFINE start", 0, 0, 0);
+				CREATE_DIALOG (DlgRes_UNDEFINE);
+				break;
+				
+			case INIT_JOBCHG:
+				//PRINT("WINFO OnInit INIT_JOBCHG start", 0, 0, 0);
+			
+				CREATE_DIALOG (DlgRes_JOBCHG);
+				
+				//h : 그리드컨트롤 핸들
+				//max_row : 열 최대개수
+				//page : 현재 페이지 인덱스
+				//total : 페이지 전체 개수
+				//callback : 페이지 이동 콜백 함수
+				//#define GridCtrl_SetPageInfo(h, max_row, page, total, callback)
+				//그리드컨트롤 페이지 함수 설정
+				m_hGrid = Get_hDlgCtrlByID(ID_GRIDLIST);
+				GridCtrl_SetPageInfo(m_hGrid, ROW3, m_lpage, m_lTotpage, Sql_SetGrid);
+				m_lpage = 0;	
+				break;
+			case INIT_SMS:
+				CREATE_DIALOG (DlgRes_SMS);
+				break;
+			case INIT_POSCHG:
+				CREATE_DIALOG (DlgRes_POSCHG);
+				m_lpage = 0;
+				m_lActIndex = 0;
+				Sub_Draw();
+				break;
+			case INIT_PAYINFO:
+				CREATE_DIALOG (DlgRes_PAYINFO);
+				break;
+			case INIT_BILL:
+				CREATE_DIALOG (DlgRes_BILL);
+				break;
+			case INIT_MEMO:
+				CREATE_DIALOG (DlgRes_MEMO);
+				break;
+				
+			case INIT_USEDOC:
+				CREATE_DIALOG (DlgRes_USEDOC);
+				break;
+				
+				
+		}
+		//PRINT("WINFO OnInit switch end", 0, 0, 0);
+		SetBtnImg();
+		//PRINT("WINFO OnInit SetBtnImg end", 0, 0, 0);
+		SetStyle();
+		//PRINT("WINFO OnInit SetStyle end", 0, 0, 0);
+		ReDraw();
+		//PRINT("WINFO OnInit end", 0, 0, 0);
+	}
+	
+	//----------------------------------------------------------------------------------------------------
+	void OnButton(long ID)
+	{	
+		char szMsg[100];
+		char sztmp[20];
+		char szUse_cont_num[20];
+		
+		switch(ID)
+		{	
+			case BID_REUSE://사용재계약
+				//ON_EXIT();
+				//OnInit(INIT_USEDOC);
+				
+				g_lMobile_Inflow_Path = 5;
+				Card_Move("CM_MOBILE_USE_DOC_MENU");
+				
+				break;
+			
+			case BID_DAYRCV://재수신
+				RcvDayMin();
+				break;
+		
+			case BID_USESMS:
+				g_lCmContDocMoveFlag = 0;
+				Mem_Set((byte*)g_szInstPlaceNum, 0x00, sizeof(g_szInstPlaceNum));
+				Str_Cpy( g_szInstPlaceNum, stMw.szInst_place_num );
+				Card_Move("CM_USEDOC_SEND");
+				
+				break;
+		
+			case BID_USE:
+				//m_lDocFlag = 1;
+				//Rcv_62604();
+				
+				g_lMobile_Inflow_Path = 1;
+				Card_Move("CM_MOBILE_USE_DOC_MENU");
+				break;
+		
+			case BID_NAME_KEEP:
+				m_lDocFlag = 2;
+				Str_Cpy( m_szUse_cont_num, stMw.szUse_cont_num);
+				Rcv_Data();
+				break;
+				
+			case BID_NAME_CHANGE:
+				m_lDocFlag = 3;
+				Str_Cpy( m_szUse_cont_num, stMw.szUse_cont_num);
+				Rcv_Data();
+				break;
+				
+			case BID_NAME_NEW:
+				m_lDocFlag = 4;
+				Str_Cpy( m_szUse_cont_num, stMw.szUse_cont_num);
+				Rcv_Data();
+				break;
+				
+			case BID_POS01:
+				npos_flag1 = 0;
+				ButCtrl_SetText(Get_hDlgCtrlByID(BID_POS01), CHKON);
+				ButCtrl_SetText(Get_hDlgCtrlByID(BID_POS02), CHKOFF);
+				EditCtrl_SetStr( Get_hDlgCtrlByID(TTL_DATA03), "동");
+				EditCtrl_SetStr(Get_hDlgCtrlByID(TXT_EDIT02), stMw.szTown);
+				EditCtrl_SetStr(Get_hDlgCtrlByID(TXT_EDIT03), stMw.szAddr1_m);
+				EditCtrl_SetStr(Get_hDlgCtrlByID(TXT_EDIT04), stMw.szAddr1_s);
+				EditCtrl_SetStr(Get_hDlgCtrlByID(TXT_EDIT05), stMw.szBuilding);
+				break;
+				
+			case BID_POS02:
+				npos_flag1 = 1;
+				ButCtrl_SetText(Get_hDlgCtrlByID(BID_POS01), CHKOFF);
+				ButCtrl_SetText(Get_hDlgCtrlByID(BID_POS02), CHKON);
+				EditCtrl_SetStr( Get_hDlgCtrlByID(TTL_DATA03), "도로명");
+				EditCtrl_SetStr(Get_hDlgCtrlByID(TXT_EDIT02), stMw.szNew_road_nm);
+				EditCtrl_SetStr(Get_hDlgCtrlByID(TXT_EDIT03), stMw.szNew_addr_m);
+				EditCtrl_SetStr(Get_hDlgCtrlByID(TXT_EDIT04), stMw.szNew_addr_s);
+				EditCtrl_SetStr(Get_hDlgCtrlByID(TXT_EDIT05), stMw.szBuilding);
+				break;
+				
+			case BID_POS03:
+			
+				if( npos_flag2 == 0 )
+				{
+					npos_flag2 = 1;
+					ButCtrl_SetText(Get_hDlgCtrlByID(BID_POS03), CHKON);
+					DlgCtrl_SetEnable(this->m_hDlg, Get_iDlgCtrlByID(TXT_EDIT05), TRUE );
+					DlgCtrl_SetEnable(this->m_hDlg, Get_iDlgCtrlByID(TXT_EDIT06), TRUE );
+					DlgCtrl_SetGray( this->m_hDlg, Get_iDlgCtrlByID(TXT_EDIT05), FALSE );
+					DlgCtrl_SetGray( this->m_hDlg, Get_iDlgCtrlByID(TXT_EDIT06), FALSE );
+				}
+				else
+				{
+					npos_flag2 = 0;
+					ButCtrl_SetText(Get_hDlgCtrlByID(BID_POS03), CHKOFF);
+					DlgCtrl_SetEnable(this->m_hDlg, Get_iDlgCtrlByID(TXT_EDIT05), FALSE );
+					DlgCtrl_SetEnable(this->m_hDlg, Get_iDlgCtrlByID(TXT_EDIT06), FALSE );
+					DlgCtrl_SetGray( this->m_hDlg, Get_iDlgCtrlByID(TXT_EDIT05), TRUE );
+					DlgCtrl_SetGray( this->m_hDlg, Get_iDlgCtrlByID(TXT_EDIT06), TRUE );
+					//EditCtrl_SetStr( Get_hDlgCtrlByID(TXT_EDIT05), "");
+					//EditCtrl_SetStr( Get_hDlgCtrlByID(TXT_EDIT06), "");
+				}
+				break;
+			case BID_SNDSMS:
+				Snd_SMS();
+				break;
+			case BID_SMS01:
+				ButCtrl_SetText(Get_hDlgCtrlByID(BID_SMS01), CHKON);
+				ButCtrl_SetText(Get_hDlgCtrlByID(BID_SMS02), CHKOFF);
+				
+				EditCtrl_SetForeColorEx(Get_hDlgCtrlByID(TXT_DATA01), RED);
+				EditCtrl_SetForeColorEx(Get_hDlgCtrlByID(TXT_DATA02), TXTFRCOLOR);
+				DlgCtrl_SetEnable(this->m_hDlg, Get_iDlgCtrlByID(BID_SMS03), FALSE );
+				DlgCtrl_SetEnable(this->m_hDlg, Get_iDlgCtrlByID(BID_SMS04), FALSE );
+				DlgCtrl_SetEnable(this->m_hDlg, Get_iDlgCtrlByID(BID_SMS05), FALSE );
+				
+				ButCtrl_SetText(Get_hDlgCtrlByID(BID_SMS03), CHKON);
+				ButCtrl_SetText(Get_hDlgCtrlByID(BID_SMS04), CHKOFF);
+				ButCtrl_SetText(Get_hDlgCtrlByID(BID_SMS05), CHKOFF);
+				EditCtrl_SetForeColorEx(Get_hDlgCtrlByID(TXT_DATA03), RED);
+				EditCtrl_SetForeColorEx(Get_hDlgCtrlByID(TXT_DATA04), TXTFRCOLOR);
+				EditCtrl_SetForeColorEx(Get_hDlgCtrlByID(TXT_DATA05), TXTFRCOLOR);
+				nsms_flag1 = 0;				
+				break;
+			case BID_SMS02:
+				ButCtrl_SetText(Get_hDlgCtrlByID(BID_SMS01), CHKOFF);
+				ButCtrl_SetText(Get_hDlgCtrlByID(BID_SMS02), CHKON);
+				
+				EditCtrl_SetForeColorEx(Get_hDlgCtrlByID(TXT_DATA01), TXTFRCOLOR);
+				EditCtrl_SetForeColorEx(Get_hDlgCtrlByID(TXT_DATA02), RED);
+				
+				DlgCtrl_SetEnable(this->m_hDlg, Get_iDlgCtrlByID(BID_SMS03), TRUE );
+				DlgCtrl_SetEnable(this->m_hDlg, Get_iDlgCtrlByID(BID_SMS04), TRUE );
+				DlgCtrl_SetEnable(this->m_hDlg, Get_iDlgCtrlByID(BID_SMS05), TRUE );
+				nsms_flag1 = 1;
+				break;
+			case BID_SMS03:
+				ButCtrl_SetText(Get_hDlgCtrlByID(BID_SMS03), CHKON);
+				ButCtrl_SetText(Get_hDlgCtrlByID(BID_SMS04), CHKOFF);
+				ButCtrl_SetText(Get_hDlgCtrlByID(BID_SMS05), CHKOFF);
+				EditCtrl_SetForeColorEx(Get_hDlgCtrlByID(TXT_DATA03), RED);
+				EditCtrl_SetForeColorEx(Get_hDlgCtrlByID(TXT_DATA04), TXTFRCOLOR);
+				EditCtrl_SetForeColorEx(Get_hDlgCtrlByID(TXT_DATA05), TXTFRCOLOR);
+				nsms_flag2 = 0;
+				break;
+			case BID_SMS04:
+				ButCtrl_SetText(Get_hDlgCtrlByID(BID_SMS03), CHKOFF);
+				ButCtrl_SetText(Get_hDlgCtrlByID(BID_SMS04), CHKON);
+				ButCtrl_SetText(Get_hDlgCtrlByID(BID_SMS05), CHKOFF);
+				EditCtrl_SetForeColorEx(Get_hDlgCtrlByID(TXT_DATA03), TXTFRCOLOR);
+				EditCtrl_SetForeColorEx(Get_hDlgCtrlByID(TXT_DATA04), RED);
+				EditCtrl_SetForeColorEx(Get_hDlgCtrlByID(TXT_DATA05), TXTFRCOLOR);
+				nsms_flag2 = 1;
+				break;
+			case BID_SMS05:
+				ButCtrl_SetText(Get_hDlgCtrlByID(BID_SMS03), CHKOFF);
+				ButCtrl_SetText(Get_hDlgCtrlByID(BID_SMS04), CHKOFF);
+				ButCtrl_SetText(Get_hDlgCtrlByID(BID_SMS05), CHKON);
+				EditCtrl_SetForeColorEx(Get_hDlgCtrlByID(TXT_DATA03), TXTFRCOLOR);
+				EditCtrl_SetForeColorEx(Get_hDlgCtrlByID(TXT_DATA04), TXTFRCOLOR);
+				EditCtrl_SetForeColorEx(Get_hDlgCtrlByID(TXT_DATA05), RED);
+				nsms_flag2 = 2;
+				break;
+			
+			case BID_HISTORY:
+				if( MessageBoxEx (CONFIRM_YESNO, "상담이력 조회를 하시겠습니까?") != MB_OK)
+					break;
+				Mem_Set( (byte*)g_szINST_PLACE_NUM, 0x00, sizeof(g_szINST_PLACE_NUM) );
+				Str_Cpy(  g_szINST_PLACE_NUM, stMw.szInst_place_num );
+				//Card_Move("GM_HISTORY");
+				Rcv_History();
+				break;
+			
+			case BID_BILL:
+				if( MessageBoxEx (CONFIRM_YESNO, "요금조회를 하시겠습니까?") != MB_OK)
+					break;
+				Snd_Bill();
+				break;
+			case BID_SMS://문자메세지
+				ON_EXIT();
+				OnInit(INIT_SMS);
+				break;
+			case BID_HP://핸드폰 전화걸기
+			case BID_TEL://집전화 전화걸기
+				if( MessageBoxEx (CONFIRM_YESNO, "전화걸기를 하시겠습니까?") != MB_OK)
+					break;
+				Call_Tel(ID);
+				break;
+			case BID_PAYINFO://납부정보
+				ON_EXIT();
+				OnInit(INIT_PAYINFO);
+				break;
+			case BID_JOBCHG://업무변경
+				if( Str_Cmp(stMw.szPda_duty_flag, "10") == 0 )
+				{
+					MessageBoxEx (ERROR_OK, "전입업무는 업무변경이 불가 합니다.");
+					return;
+				}
+				ON_EXIT();
+				OnInit(INIT_JOBCHG);
+				break;
+			case BID_SNDJOBCHG://업무변경
+				Snd_Jobchg();
+				//M(확인 >> clicked!);
+				break;
+			case BID_POSCHG://설치장소
+				g_Sql_DirectExecute(" delete from rcv_tmp ");
+				ON_EXIT();
+				OnInit(INIT_POSCHG);
+				break;
+			case BID_SNDPOSCHG://설치장소변경
+				//if()
+					Snd_PosChg();
+				break;
+				
+			case BID_SNDADDR:
+				Snd_Srchaddr();
+				break;
+				
+			case BID_SNDMTR:	
+				Snd_Srchmtr();
+				break;
+			case BID_UP:
+				m_lpage--;
+				if(m_lpage < 0)
+					m_lpage = 0;
+				m_lActIndex = 0;
+				Sub_Draw();
+				break;			
+			case BID_DOWN:
+				m_lpage++;
+				if( m_lpage > m_lTotpage-1 )
+					m_lpage = m_lTotpage-1;
+				m_lActIndex = 0;
+				Sub_Draw();
+				break;
+			
+			case BID_UP2:
+				m_lpage2--;
+				if(m_lpage2 < 0)
+					m_lpage2 = 0;
+				Bill_Draw();
+				break;			
+			case BID_DOWN2:
+				m_lpage2++;
+				if( m_lpage2 > m_lTotpage2-1 )
+					m_lpage2 = m_lTotpage2-1;
+				Bill_Draw();
+				break;
+			case BID_UNDEFINE://미확인
+				if( MessageBoxEx (CONFIRM_YESNO, "미확인처리 하시겠습니까?") != MB_OK)
+					break;	
+				ON_EXIT();
+				OnInit(INIT_UNDEFINE);
+				break;
+				
+			case BID_SNDUNDFINE://미확인
+				Snd_UnDefie();
+				break;
+				
+			case BID_JOBSTART://작업시작
+				PRINT("stMw.szCivil_serv_class_cd : %s",stMw.szCivil_serv_class_cd,0,0);
+				if( Start_Init() )
+				{
+					
+					if (Str_Cmp( stMw.szCivil_serv_class_cd, "070301" ) == 0 || Str_Cmp( stMw.szCivil_serv_class_cd, "070202" ) == 0 ||
+					Str_Cmp( stMw.szCivil_serv_class_cd, "060501" ) == 0 || Str_Cmp( stMw.szCivil_serv_class_cd, "060502" ) == 0 )
+					{
+						Chk_UseCont();
+					}
+					else
+					{
+						Card_Move("C6101_WCUST");
+					}
+					// Card_Move("C6101_WCUST");
+					
+				}
+				//else
+				//	MessageBoxEx (ERROR_OK, "데이터 초기화 오류.");
+				break;
+
+			case BID_ADDR://주소
+				if( g_nAddrFlag == 0)
+				{
+					g_nAddrFlag = 1;
+				}
+				else
+				{
+					g_nAddrFlag = 0;
+				}
+				ReDraw();
+				break;
+			case BID_MEMO:
+				ON_EXIT();
+				OnInit(INIT_MEMO);
+				break;
+			case BID_MEMO_OK:
+				ON_EXIT();
+				OnInit(INIT_MAIN);
+				break;
+			case GID_HOME:
+				if( MessageBoxEx (CONFIRM_YESNO, "메인 메뉴로 나가시겠습니까?")  == MB_OK)
+				{
+					Card_Move("MENU");
+				}
+				break;
+			case GID_MENU:
+				if( MessageBoxEx (CONFIRM_YESNO, "업무 메뉴로 나가시겠습니까?")  == MB_OK)
+				{
+					Card_Move("C6101_MENU");
+				}
+				break;
+			case GID_KEYBOARD:
+				g_SHOW_SIP();
+				break;
+			case GID_SCREEN:
+				g_MOVE_DLG(400);
+				break;
+			case GID_CMMNWK:
+				break;				
+			case GID_PREV:
+				Card_Move("C6101_LST");
+				break;	
+			case GID_VMEXIT:
+				g_Exit();
+				break;
+				
+			case BID_SUBCLOSE:
+			case BID_CLOSE:
+				ON_EXIT();
+				OnInit(INIT_MAIN);
+				
+				//M(종료 >> clicked!);
+				break;
+			
+			case BID_USE_CONT_NUM:
+				Mem_Set( (byte*)szUse_cont_num, 0x00, sizeof(szUse_cont_num) );
+				Mem_Set( (byte*)sztmp, 0x00, sizeof(sztmp) );
+				Mem_Set( (byte*)szMsg, 0x00, sizeof(szMsg) );
+				
+				Mem_Cpy((byte *)szUse_cont_num, (byte *)m_szUse_cont_num2, 5);
+				Mem_Cpy((byte *)sztmp, (byte *)m_szUse_cont_num2+5, 5);	
+				
+				Str_Cpy(szMsg, "[ 사용계약번호 ]\n");
+				Str_Cat(szMsg, szUse_cont_num);
+				Str_Cat(szMsg, "-");
+				Str_Cat(szMsg, sztmp);
+				
+				MessageBoxEx (CONFIRM_OK, szMsg);
+			  	break;
+		}
+	}
+
+	//──────────────────────────────────────────────
+	void	OnTask(long nEvent, long nData)
+	{
+		char* szOzData;
+		long nRet = 0;
+
+//PRINT("nEvent : %d , nData : %d",nEvent,nData,0);		
+		if( nEvent == 1 )
+		{
+			//시스템콜
+			szOzData = (char*)System_GetResult((char*)&nRet);
+			
+			//g_Save_JsonFile(szOzData);
+			
+			Rcv_OzData(szOzData);
+		}
+	}
+	
+	//----------------------------------------------------------------------------------------------------
+	void OnChar(long nChar)
+	{
+		if( m_bFirst == INIT_SMS )
+		{
+			/*
+			if(  (Get_iDlgCtrlByID(TXT_EDIT01) == m_lActIndex )
+			&& (nChar < 48 ||  nChar > 57) )
+			{
+				MessageBoxEx (CONFIRM_OK, "숫자만 입력가능합니다.");
+				ON_KEY( 5 );
+				return;
+			}
+			*/
+		}
+	}
+	
+	//----------------------------------------------------------------------------------------------------
+	void OnPointing(long nAction, long X, long Y)
+	{
+		long lActiveIndex = -1;
+				
+		if( m_bFirst == INIT_SMS )
+		{
+			lActiveIndex = Dialog_GetActiveCtrlIndex(this->m_hDlg);	
+			m_lActIndex = lActiveIndex;
+			
+			if( POINTING_UP == nAction )
+			{
+				if( theDevInfo.m_nType > FAMILY_PDA )
+				{
+					if( X > DMS_X(STARTX+240) && X < DMS_X(STARTX+740) && Y > DMS_Y(STARTY+(SYH+20)*6) && Y < DMS_Y(STARTY+(SYH+20)*7) && nsms_flag3 == 2)
+					{
+						/*
+						if( Get_iDlgCtrlByID(TXT_EDIT01) == m_lActIndex )	
+						{
+							g_Dlgflag = 0;
+							ShowSip(TRUE);
+							g_Sipflag = 1;
+						}
+						*/
+					}
+					else
+					{
+						ShowSip(FALSE);
+						g_Sipflag = 0;
+					}
+					ON_DRAW();
+					
+				}
+			}
+		}
+		else if( m_bFirst == INIT_POSCHG )
+		{
+			lActiveIndex = Dialog_GetActiveCtrlIndex(this->m_hDlg);	
+			m_lActIndex = lActiveIndex;
+			
+			if( POINTING_UP == nAction )
+			{
+				if( theDevInfo.m_nType > FAMILY_PDA )
+				{
+					if( X > DMS_X(STARTX+240) && X < DMS_X(STARTX+740) && Y > DMS_Y(STARTY) && Y < DMS_Y(STARTY + (SYH+20))                     ||
+					    X > DMS_X(STARTX+500) && X < DMS_X(STARTX+740) && Y > DMS_Y(STARTY+(SYH+20)*3) && Y < DMS_Y(STARTY+(SYH+20)*3+(SYH+20)) ||
+					    X > DMS_X(STARTX+740) && X < DMS_X(STARTX+980) && Y > DMS_Y(STARTY+(SYH+20)*3) && Y < DMS_Y(STARTY+(SYH+20)*3+(SYH+20)) )
+					{
+						if( Get_iDlgCtrlByID(TXT_EDIT01) == m_lActIndex ||
+						    Get_iDlgCtrlByID(TXT_EDIT03) == m_lActIndex ||
+						    Get_iDlgCtrlByID(TXT_EDIT04) == m_lActIndex )	
+						{
+							g_Dlgflag = 0;
+							ShowSip(TRUE);
+							g_Sipflag = 1;
+						}
+					}
+					else if( ( X > DMS_X(STARTX+500) && X < DMS_X(STARTX+740) && Y > DMS_Y(STARTY+(SYH+20)*4) && Y < DMS_Y(STARTY+(SYH+20)*4+(SYH+20))   ||
+					           X > DMS_X(STARTX+740) && X < DMS_X(STARTX+980) && Y > DMS_Y(STARTY+(SYH+20)*4) && Y < DMS_Y(STARTY+(SYH+20)*4+(SYH+20)) ) &&
+					           npos_flag2 == 1)
+					{
+						if( Get_iDlgCtrlByID(TXT_EDIT05) == m_lActIndex ||
+						    Get_iDlgCtrlByID(TXT_EDIT06) == m_lActIndex )	
+						{
+							g_Dlgflag = 0;
+							ShowSip(TRUE);
+							g_Sipflag = 1;
+						}
+					}
+					else
+					{
+						ShowSip(FALSE);
+						g_Sipflag = 0;
+					}
+					ON_DRAW();
+					
+				}
+			}
+		}
+		else if( m_bFirst == INIT_JOBCHG )
+		{
+		
+		//페이지 이동과 엉킨다.
+		/*
+			if (nAction == POINTING_DOWN)
+			{
+				m_nPosX = X;
+				m_nPosY = Y;
+				m_nScrollY = GridCtrl_GetScrollY(m_hGrid);
+				m_nMoveFlag = 0;
+			}
+			else if (nAction == POINTING_UP)
+			{
+				if (m_nMoveFlag)
+				{
+					long y = Y - m_nPosY;
+					
+					if (y < 0)
+					{
+						// 화면 위 방향
+						m_nScrollY += 800;
+						
+						PRINT("화면 위 방향으로 감소(m_nScrollY = %d)",m_nScrollY,0,0);
+					}
+					else
+					{
+						// 화면 아래 방향
+						m_nScrollY -= 800;
+						
+						PRINT("화면 아래 방향으로 증가(m_nScrollY = %d)",m_nScrollY,0,0);
+					}
+					
+					if (m_nScrollY < 0)
+					{
+						m_nScrollY = 0;
+						if(m_lpage > 0)
+						{
+							//GridCtrl_PageEvent(PAGE_DOWN, GridCtrl_GetMaxScrollY(m_hGrid));
+							return;
+						}
+						
+						m_nScrollY = GridCtrl_GetMaxScrollY(m_hGrid);
+					}
+					else if (m_nScrollY > GridCtrl_GetMaxScrollY(m_hGrid))
+					{
+						m_nScrollY = GridCtrl_GetMaxScrollY(m_hGrid);
+						if( m_lpage <= m_lTotpage-1 )
+						{
+							//GridCtrl_PageEvent(PAGE_UP, 0);
+							return;
+						}
+						
+						m_nScrollY = 0;
+					}
+					
+					GridCtrl_SetScroll(m_hGrid, 0, m_nScrollY);
+					
+					//PRINT("Y = %d, m_nPosY = %d",Y,m_nPosY,0);
+				}			
+			}
+			else if (nAction == POINTING_MOVE)
+			{			
+				//PRINT("POINTING_MOVE -> %d",Y,0,0);
+				m_nMoveFlag = 1;
+			}
+			*/
+		}
+	}
+	
+	//----------------------------------------------------------------------------------------------------
+	void OnSelect(long Index)
+	{
+		if( INIT_JOBCHG == m_bFirst )
+		{
+			if (Index > 0)
+			{
+				m_nSelectedIndex = Index;
+				//PRINT("[%d] = %s",m_nSelectedIndex,GridCtrl_GetCellStr(m_hGrid, 1, m_nSelectedIndex),0);
+			}
+		}
+		else if( m_bFirst == INIT_POSCHG )
+		{
+			//ID_TBLLIST
+			//현재 TBL이 선택되었는지를 확인
+			if (DlgTbl_IsSelect(ID_TBLLIST))
+			{
+				// 현재 선택된 인덱스
+				Index = DlgTbl_GetActiveRow(ID_TBLLIST);
+				
+				m_lActIndex = Index - 1;
+
+				Mem_Set( (byte*)m_szCust_num, 0x00, sizeof(m_szCust_num) );
+				Mem_Set( (byte*)m_szUse_cont_num, 0x00, sizeof(m_szUse_cont_num) );
+				Mem_Set( (byte*)m_szInst_place_num, 0x00, sizeof(m_szInst_place_num) );
+				Mem_Set( (byte*)m_szZip_seq, 0x00, sizeof(m_szZip_seq) );
+				Mem_Set( (byte*)m_szEtc_addr, 0x00, sizeof(m_szEtc_addr) );
+				Str_Cpy(m_szCust_num, DlgTbl_GetStr( ID_TBLLIST, m_lActIndex, 2));
+				Str_Cpy(m_szUse_cont_num, DlgTbl_GetStr( ID_TBLLIST, m_lActIndex, 3));
+				Str_Cpy(m_szInst_place_num, DlgTbl_GetStr( ID_TBLLIST, m_lActIndex, 4));
+				Str_Cpy(m_szZip_seq, DlgTbl_GetStr( ID_TBLLIST, m_lActIndex, 5));
+				Str_Cpy(m_szEtc_addr, DlgTbl_GetStr( ID_TBLLIST, m_lActIndex, 6));
+			}
+		}
+	}
+	
+	/*
+	//----------------------------------------------------------------------------------------------------
+	void OnGridctrl(long nEvent, long nData)
+	{
+		switch(nEvent)
+		{
+			//페이지 업/다운 이벤트시
+			//데이터 다시 채워주는 코드 삽입.
+			case PAGE_UP:
+				
+				m_lpage--;
+				if(m_lpage < 0)
+				{
+					m_lpage = 0;
+					return;
+				}
+
+				//수직 스크롤 최대 이동 위치값 알아내기 
+				//nRet = GridCtrl_GetMaxScrollY(m_hGrid);
+				//GridCtrl_GetScrollY(m_hGrid);
+				//PRINT("GridCtrl_GetMaxScrollY() = %d, nData = %d", nRet,nData,0);
+				
+				MessageBoxEx(PROGRESS_LOADING, "페이지 로딩 중...");
+				
+				Sql_SetGrid();
+				
+				VmSleep(50);
+				
+				CloseMessageBoxEx();
+
+				//그리드 컨트롤 인덱스를 선택한다.
+				GridCtrl_SetIndex(ROW3);
+				//그리드 컨트롤의 스크롤 위치를 이동한다.
+				GridCtrl_SetScroll(m_hGrid, -1, nData);
+				
+				m_nScrollY = GridCtrl_GetScrollY(m_hGrid);
+				
+				ON_DRAW();
+				break;
+				
+			case PAGE_DOWN:
+				m_lpage++;
+				if( m_lpage > m_lTotpage-1 )
+				{
+					m_lpage = m_lTotpage-1;
+					return;
+				}
+
+				MessageBoxEx(PROGRESS_LOADING, "페이지 로딩 중...");
+					
+				Sql_SetGrid();
+				
+				VmSleep(50);
+				
+				CloseMessageBoxEx();
+				
+				//인덱스는 1부터 레코드 임.
+				//인덱스를 선택한다.
+				GridCtrl_SetIndex(1);
+				GridCtrl_SetScroll(m_hGrid, -1, nData);	
+					
+				m_nScrollY = GridCtrl_GetScrollY(m_hGrid);
+				
+				ON_DRAW();
+				break;
+		}
+	}
+	*/
+			
+	//----------------------------------------------------------------------------------------------------
+	void SetBtnImg(void)
+	{
+		void* h;
+
+		if( m_bFirst == INIT_MAIN )
+		{
+			IconCtrl_SetImage(Get_hDlgCtrlByID(ICON_TITLE), 0, g_pImgMainTtl );		//타이틀
+			EditCtrl_SetAlign( Get_hDlgCtrlByID(TXT_TITLE), EDITALIGN_CENTER|EDITALIGN_MIDDLE);
+	
+			if( theDevInfo.m_nType > FAMILY_PDA )
+			{
+				//상단공통메뉴
+				h = GetSysButHandle(GID_HOME);
+				ButCtrl_SetImage( h,  g_pImgHomeI);
+				ButCtrl_SetActiveImage( h,  g_pImgHomeA);
+				
+				h = GetSysButHandle(GID_KEYBOARD);
+				ButCtrl_SetImage( h,  g_pImgKeybrdI);
+				ButCtrl_SetActiveImage( h,  g_pImgKeybrdA);
+				
+				h = GetSysButHandle(GID_SCREEN);
+				ButCtrl_SetImage( h,  g_pImgScreenI);
+				ButCtrl_SetActiveImage( h,  g_pImgScreenA);
+				
+				h = GetSysButHandle(GID_CMMNWK);
+				ButCtrl_SetImage( h,  g_pImgCmmnwrkI);
+				ButCtrl_SetActiveImage( h,  g_pImgCmmnwrkA);
+				
+				h = GetSysButHandle(GID_VMEXIT);
+				ButCtrl_SetImage( h,  g_pImgExitI);
+				ButCtrl_SetActiveImage( h,  g_pImgExitA);
+			}
+		}
+		else
+		{ 
+			IconCtrl_SetImage(Get_hDlgCtrlByID(ICON_TITLE), 0, g_pImgPopTtlL );		//타이틀
+			EditCtrl_SetAlign( Get_hDlgCtrlByID(TXT_TITLE), EDITALIGN_CENTER|EDITALIGN_MIDDLE);
+		}
+	}
+
+	//----------------------------------------------------------------------------------------------------
+	void SetStyle(void)
+	{
+		if( m_bFirst == INIT_MAIN )
+		{
+			EditCtrl_SetAlign( Get_hDlgCtrlByID(TTL_CLASS_NM), EDITALIGN_CENTER|EDITALIGN_MIDDLE);
+			EditCtrl_SetAlign( Get_hDlgCtrlByID(TTL_RECEIVE_DTM), EDITALIGN_CENTER|EDITALIGN_MIDDLE);
+			EditCtrl_SetAlign( Get_hDlgCtrlByID(TTL_REQ_NM), EDITALIGN_CENTER|EDITALIGN_MIDDLE);
+			EditCtrl_SetAlign( Get_hDlgCtrlByID(TTL_REQ_TEL), EDITALIGN_CENTER|EDITALIGN_MIDDLE);
+			EditCtrl_SetAlign( Get_hDlgCtrlByID(TTL_REQ_CP), EDITALIGN_CENTER|EDITALIGN_MIDDLE);
+			//EditCtrl_SetAlign( Get_hDlgCtrlByID(TTL_ADDR), EDITALIGN_CENTER|EDITALIGN_MIDDLE);
+			//EditCtrl_SetAlign( Get_hDlgCtrlByID(TTL_MEMO), EDITALIGN_CENTER|EDITALIGN_MIDDLE);
+			EditCtrl_SetAlign( Get_hDlgCtrlByID(TTL_CUST), EDITALIGN_CENTER|EDITALIGN_MIDDLE);
+			EditCtrl_SetAlign( Get_hDlgCtrlByID(TTL_CUST_NM), EDITALIGN_CENTER|EDITALIGN_MIDDLE);
+			EditCtrl_SetAlign( Get_hDlgCtrlByID(TTL_FIRM_TEL), EDITALIGN_CENTER|EDITALIGN_MIDDLE);
+			EditCtrl_SetAlign( Get_hDlgCtrlByID(TTL_SOC_NUM), EDITALIGN_CENTER|EDITALIGN_MIDDLE);
+			EditCtrl_SetAlign( Get_hDlgCtrlByID(TTL_MTR_ID_NUM), EDITALIGN_CENTER|EDITALIGN_MIDDLE);
+			
+			EditCtrl_SetAlign( Get_hDlgCtrlByID(TXT_CLASS_NM), EDITALIGN_MIDDLE);
+			EditCtrl_SetAlign( Get_hDlgCtrlByID(TXT_RECEIVE_DTM), EDITALIGN_MIDDLE);
+			EditCtrl_SetAlign( Get_hDlgCtrlByID(TXT_REQ_NM), EDITALIGN_MIDDLE);
+			EditCtrl_SetAlign( Get_hDlgCtrlByID(TXT_REQ_TEL), EDITALIGN_MIDDLE);
+			EditCtrl_SetAlign( Get_hDlgCtrlByID(TXT_REQ_CP), EDITALIGN_MIDDLE);
+			EditCtrl_SetAlign( Get_hDlgCtrlByID(TXT_ADDR), EDITALIGN_MIDDLE);
+			EditCtrl_SetAlign( Get_hDlgCtrlByID(TXT_ADDR2), EDITALIGN_MIDDLE);
+			EditCtrl_SetAlign( Get_hDlgCtrlByID(TXT_ADDR3), EDITALIGN_MIDDLE);
+			EditCtrl_SetAlign( Get_hDlgCtrlByID(TXT_MEMO), EDITALIGN_MIDDLE);
+			EditCtrl_SetAlign( Get_hDlgCtrlByID(TXT_CUST_NM), EDITALIGN_MIDDLE);
+			EditCtrl_SetAlign( Get_hDlgCtrlByID(TXT_FIRM_TEL), EDITALIGN_MIDDLE);
+			EditCtrl_SetAlign( Get_hDlgCtrlByID(TXT_SOC_NUM), EDITALIGN_MIDDLE);
+			EditCtrl_SetAlign( Get_hDlgCtrlByID(CMB_MTR), EDITALIGN_MIDDLE);
+				
+			EditCtrl_SetMultiLine(Get_hDlgCtrlByID(TXT_MEMO), TRUE, 2, EDITSEP_NONE );
+			
+			
+		}
+		else if( m_bFirst == INIT_UNDEFINE )
+		{
+			EditCtrl_SetAlign( Get_hDlgCtrlByID(TTL_UNDFINE), EDITALIGN_CENTER|EDITALIGN_MIDDLE);
+			EditCtrl_SetAlign( Get_hDlgCtrlByID(CMB_UNDFINE), EDITALIGN_MIDDLE);
+		}
+		else if( m_bFirst == INIT_JOBCHG )
+		{
+			//그리드 컨트롤 타이틀 색 초기화 (로컬에서 변경할 경우).
+			//사용법 : GridCtrl_SetTitleColor(h, grid_title_array, color)
+			//GridCtrl_SetTitleColor(m_hGrid, m_stGridCtrl_Title, GRIDTTLBK);
+			
+			EditCtrl_SetAlign( Get_hDlgCtrlByID(TXT_PAGE), EDITALIGN_CENTER|EDITALIGN_MIDDLE);
+		}
+		else if( m_bFirst == INIT_SMS )
+		{
+			EditCtrl_SetAlign( Get_hDlgCtrlByID(TTL_DATA01), EDITALIGN_CENTER|EDITALIGN_MIDDLE);
+			EditCtrl_SetAlign( Get_hDlgCtrlByID(TTL_DATA02), EDITALIGN_CENTER|EDITALIGN_MIDDLE);
+			//EditCtrl_SetAlign( Get_hDlgCtrlByID(TTL_DATA03), EDITALIGN_CENTER|EDITALIGN_MIDDLE);
+			//EditCtrl_SetAlign( Get_hDlgCtrlByID(TTL_DATA04), EDITALIGN_CENTER|EDITALIGN_MIDDLE);
+			
+			EditCtrl_SetAlign( Get_hDlgCtrlByID(TXT_DATA01), EDITALIGN_MIDDLE);
+			EditCtrl_SetAlign( Get_hDlgCtrlByID(TXT_DATA02), EDITALIGN_MIDDLE);
+			EditCtrl_SetAlign( Get_hDlgCtrlByID(TXT_DATA03), EDITALIGN_MIDDLE);
+			EditCtrl_SetAlign( Get_hDlgCtrlByID(TXT_DATA04), EDITALIGN_MIDDLE);
+			EditCtrl_SetAlign( Get_hDlgCtrlByID(TXT_DATA05), EDITALIGN_MIDDLE);
+			//EditCtrl_SetAlign( Get_hDlgCtrlByID(TXT_DATA06), EDITALIGN_MIDDLE);
+			//EditCtrl_SetAlign( Get_hDlgCtrlByID(TXT_DATA07), EDITALIGN_MIDDLE);
+			//EditCtrl_SetAlign( Get_hDlgCtrlByID(TXT_DATA08), EDITALIGN_MIDDLE);
+			//EditCtrl_SetAlign( Get_hDlgCtrlByID(TXT_EDIT01), EDITALIGN_MIDDLE);
+		}
+		else if( m_bFirst == INIT_POSCHG )
+		{
+			EditCtrl_SetAlign( Get_hDlgCtrlByID(TTL_DATA01), EDITALIGN_CENTER|EDITALIGN_MIDDLE);
+			EditCtrl_SetAlign( Get_hDlgCtrlByID(TTL_DATA02), EDITALIGN_CENTER|EDITALIGN_MIDDLE);
+			EditCtrl_SetAlign( Get_hDlgCtrlByID(TTL_DATA03), EDITALIGN_CENTER|EDITALIGN_MIDDLE);
+			EditCtrl_SetAlign( Get_hDlgCtrlByID(TTL_DATA04), EDITALIGN_CENTER|EDITALIGN_MIDDLE);
+			EditCtrl_SetAlign( Get_hDlgCtrlByID(TTL_DATA05), EDITALIGN_CENTER|EDITALIGN_MIDDLE);
+		
+			EditCtrl_SetAlign( Get_hDlgCtrlByID(TXT_EDIT01), EDITALIGN_MIDDLE);
+			EditCtrl_SetAlign( Get_hDlgCtrlByID(TXT_EDIT02), EDITALIGN_MIDDLE);
+			EditCtrl_SetAlign( Get_hDlgCtrlByID(TXT_EDIT03), EDITALIGN_MIDDLE);
+			EditCtrl_SetAlign( Get_hDlgCtrlByID(TXT_EDIT04), EDITALIGN_MIDDLE);
+			EditCtrl_SetAlign( Get_hDlgCtrlByID(TXT_EDIT05), EDITALIGN_MIDDLE);
+			EditCtrl_SetAlign( Get_hDlgCtrlByID(TXT_EDIT06), EDITALIGN_MIDDLE);
+			
+			EditCtrl_SetAlign( Get_hDlgCtrlByID(TXT_DATA01), EDITALIGN_MIDDLE);
+			EditCtrl_SetAlign( Get_hDlgCtrlByID(TXT_DATA02), EDITALIGN_MIDDLE);
+			EditCtrl_SetAlign( Get_hDlgCtrlByID(TXT_DATA09), EDITALIGN_CENTER|EDITALIGN_MIDDLE);
+			
+		}
+		else if( m_bFirst == INIT_PAYINFO )
+		{
+			EditCtrl_SetAlign( Get_hDlgCtrlByID(TTL_DATA01), EDITALIGN_CENTER|EDITALIGN_MIDDLE);
+			EditCtrl_SetAlign( Get_hDlgCtrlByID(TTL_DATA02), EDITALIGN_CENTER|EDITALIGN_MIDDLE);
+			EditCtrl_SetAlign( Get_hDlgCtrlByID(TTL_DATA03), EDITALIGN_CENTER|EDITALIGN_MIDDLE);
+			EditCtrl_SetAlign( Get_hDlgCtrlByID(TTL_DATA04), EDITALIGN_CENTER|EDITALIGN_MIDDLE);
+			EditCtrl_SetAlign( Get_hDlgCtrlByID(TTL_DATA05), EDITALIGN_CENTER|EDITALIGN_MIDDLE);
+			EditCtrl_SetAlign( Get_hDlgCtrlByID(TTL_DATA06), EDITALIGN_CENTER|EDITALIGN_MIDDLE);
+			
+			EditCtrl_SetAlign( Get_hDlgCtrlByID(TXT_DATA01), EDITALIGN_MIDDLE);
+			EditCtrl_SetAlign( Get_hDlgCtrlByID(TXT_DATA02), EDITALIGN_MIDDLE);
+			EditCtrl_SetAlign( Get_hDlgCtrlByID(TXT_DATA03), EDITALIGN_MIDDLE);
+			EditCtrl_SetAlign( Get_hDlgCtrlByID(TXT_DATA04), EDITALIGN_MIDDLE);
+			EditCtrl_SetAlign( Get_hDlgCtrlByID(TXT_DATA05), EDITALIGN_MIDDLE);
+			EditCtrl_SetAlign( Get_hDlgCtrlByID(TXT_DATA06), EDITALIGN_MIDDLE);
+		}
+		else if( m_bFirst == INIT_BILL )
+		{
+			EditCtrl_SetAlign( Get_hDlgCtrlByID(TXT_PAGE), EDITALIGN_CENTER|EDITALIGN_MIDDLE);
+		}
+		else if( m_bFirst == INIT_MEMO )
+		{
+			EditCtrl_SetAlign( Get_hDlgCtrlByID(TXT_MEMO_DATA1), EDITALIGN_LEFT);
+			EditCtrl_SetMultiLine(Get_hDlgCtrlByID(TXT_MEMO_DATA1), TRUE, 2, EDITSEP_NONE );
+		}
+	}
+
+	//----------------------------------------------------------------------------------------------------
+	void SetData(void)
+	{
+		long i;
+		char szSql[300];
+		handle hdb = NULL;
+		handle hstmt = NULL;
+		SQLITE sql = NewSqLite();
+
+		Mem_Set((byte*)&stMw, 0x00, sizeof(stMw));
+
+		hdb = sql->Open(sql);
+		if( hdb == NULL )
+		{
+			goto Finally;
+		}
+
+		hstmt = sql->CreateStatement(sql,"SELECT PROMISE_ASSIGN_SEQ, REG_FLAG, BRANCH_CD, CENTER_CD, ASSIGN_EMPID \
+											   , CUST_NUM, USE_CONT_NUM, INST_PLACE_NUM, TRIM(ZIP_SEQ), TRIM(ETC_ADDR) \
+											   , CIVIL_SERV_CLASS_CD, PROMISE_YMD, PROMISE_TIME, END_EXPECT_TIME, JOB_STR_DTM \
+											   , JOB_END_DTM, PROMISE_ASSIGN_DESC, CIVIL_SERV_RECEIVE_NUM, TREAT_SEQ, PROC_STS_CD \
+											   , PDA_NUM, ONCE_PAY, SEND_YN, CIVIL_SERV_CLASS_NM, PDA_DUTY \
+											   , REQ_TEL_DDD, REQ_TEL_EXN, REQ_TEL_NUM, REQ_CP_DDD, REQ_CP_EXN \
+											   , REQ_CP_NUM, TRANS_IN_CUST_NM, TRANS_IN_SOC_NUM, REQ_NM, REQ_SOC_NUM \
+											   , RECEIVE_DTM, CUST_TYPE_CD, CUST_NM, FIRM_NM, SOC_NUM \
+											   , BIZ_REGI_NUM, CP_DDD, CP_EXN, CP_NUM, OWNHOUSE_TEL_DDD \
+											   , OWNHOUSE_TEL_EXN, OWNHOUSE_TEL_NUM, FIRM_TEL_DDD, FIRM_TEL_EXN, FIRM_TEL_NUM \
+											   , SCG_RELAT_CD, EMAIL, FAMILY_CNT, CUST_TRND_CD, CHK \
+											   , BUILT_IN_YN, SQUARE_METER, CURR_ADDR_UNION, TRIM(BLD_FLOOR), TRIM(HOUSE_CNT) \
+											   , PDA_DUTY_FLAG, PAY_CALU, PDA_TRANS_FLAG, REQ_INFO_NUM, TRANS_IN_CUST_NUM \
+											   , CONT_STS_CD, PDA_READ_DTM, MEMO, AUTO_YN, CUST_YN \
+											   , BUR_YN, PROD_YN, ONCE_YN, PRICE_YN, TRIM(ZIP_NO1) \
+											   , TRIM(ZIP_NO2), TRIM(CITY), TRIM(COUNTY), TRIM(TOWN), TRIM(VILLAGE_RI) \
+											   , TRIM(VILLAGE), TRIM(BUILDING), TRIM(ADDR1_M), TRIM(ADDR1_S), ACCOUNT \
+											   , ONCE_ACCOUNT, CHK_TIME_FROM, CHK_TIME_END, MTR_CHG_YN, INFO_USE_AGREE_YN \
+											   , PAS_USE_CONT_NUM_YN, ADJ_ALT_AMT, PAS_DEFRAY_ACCOUNT_NUM, PAS_CUST_NUM, PAS_REQ_INFO_NUM \
+											   , APPRO_NUM, APPRO_TEL, ADJ_CAUSE, DEADLINE_FLAG, GMTR_BASE_DAY \
+											   , CARD_GASPAY, CARD_ONEPAY, CASH_GASPAY, INFO_USE_YN, USE_CONT_DOC_YN \
+											   , PAY_METHOD, DEFRAY_ACCOUNT_NUM, DEPOSITOR_NM, BANK_NM, DEBT_AMT \
+											   , LAW_ETC_AMT, LAW_TOWN, NEW_ROAD_NM, NEW_ADDR_M, NEW_ADDR_S \
+											   , NEW_ADDR_UNION, BILL_GUBUN, TRANS_CONN_YN, CONN_YN, BAR_YN \
+											   , BAR_GBN, BAR_WHY, CHK_YN, CONN_GBN, NEW_ADDR_BLD_SEQ \
+											   , SPECIAL_TAX_EXEMP_YN, ZERO_TAX_RT_APPLY_YN, GET_SPC_TAX_CHK, MTR_PHOTO_YN, PLACE_PHOTO_YN \
+											   , SOCIAL_WELF_DISC_YN, APPRO_STATUS_FLAG, APPRO_GUBUN, INFO_TRANS_YN, SEND_INFO_TRANS_YN \
+											FROM C6101_PROMISE_ASSIGN WHERE PROMISE_ASSIGN_SEQ = ?");
+		
+		if( hstmt == NULL )
+		{
+			PRINT("::SQL_CreateStatement fail [%s]", sql->GetLastError(sql), 0, 0);
+			goto Finally;
+		}
+
+		i = 0;
+		
+		sql->Bind(sql, i++, 'U', (long*)g_szCHK_EXEC_NUM , 10, DECRYPT);
+
+		if(sql->Execute(sql) == FALSE)
+		{
+			PRINT("::SQL_Execute fail [%s]", sql->GetLastError(sql), 0, 0);
+			goto Finally;
+		}
+
+		if(sql->Next(sql) == TRUE)
+		{	
+			i = 0;
+			sql->GetValue( sql, i++, 'U', (long*)stMw.szPromise_assign_seq    ,10 +1, DECRYPT );
+			sql->GetValue( sql, i++, 'U', (long*)stMw.szReg_flag              ,2  +1, DECRYPT );
+			sql->GetValue( sql, i++, 'U', (long*)stMw.szBranch_cd             ,6  +1, DECRYPT );
+			sql->GetValue( sql, i++, 'U', (long*)stMw.szCenter_cd             ,2  +1, DECRYPT );
+			sql->GetValue( sql, i++, 'U', (long*)stMw.szAssign_empid          ,9  +1, DECRYPT );
+			
+			sql->GetValue( sql, i++, 'U', (long*)stMw.szCust_num              ,10 +1, DECRYPT );
+			sql->GetValue( sql, i++, 'U', (long*)stMw.szUse_cont_num          ,10 +1, DECRYPT );
+			sql->GetValue( sql, i++, 'U', (long*)stMw.szInst_place_num        ,9  +1, DECRYPT );
+			sql->GetValue( sql, i++, 'U', (long*)stMw.szZip_seq               ,10 +1, DECRYPT );
+			sql->GetValue( sql, i++, 'U', (long*)stMw.szEtc_addr              ,100+1, DECRYPT );
+			
+			sql->GetValue( sql, i++, 'U', (long*)stMw.szCivil_serv_class_cd   ,6  +1, DECRYPT );
+			sql->GetValue( sql, i++, 'U', (long*)stMw.szPromise_ymd           ,8  +1, DECRYPT );
+			sql->GetValue( sql, i++, 'U', (long*)stMw.szPromise_time          ,4  +1, DECRYPT );
+			sql->GetValue( sql, i++, 'U', (long*)stMw.szEnd_expect_time       ,4  +1, DECRYPT );
+			sql->GetValue( sql, i++, 'U', (long*)stMw.szJob_str_dtm           ,14 +1, DECRYPT );
+			
+			sql->GetValue( sql, i++, 'U', (long*)stMw.szJob_end_dtm           ,14 +1, DECRYPT );
+			sql->GetValue( sql, i++, 'U', (long*)stMw.szPromise_assign_desc   ,500+1, DECRYPT );
+			sql->GetValue( sql, i++, 'U', (long*)stMw.szCivil_serv_receive_num,14 +1, DECRYPT );
+			sql->GetValue( sql, i++, 'U', (long*)stMw.szTreat_seq             ,10 +1, DECRYPT );
+			sql->GetValue( sql, i++, 'U', (long*)stMw.szProc_sts_cd           ,2  +1, DECRYPT );
+			
+			sql->GetValue( sql, i++, 'U', (long*)stMw.szPda_num               ,5  +1, DECRYPT );
+			sql->GetValue( sql, i++, 'U', (long*)stMw.szOnce_pay              ,10 +1, DECRYPT );
+			sql->GetValue( sql, i++, 'U', (long*)stMw.szSend_yn               ,1  +1, DECRYPT );
+			sql->GetValue( sql, i++, 'U', (long*)stMw.szCivil_serv_class_nm   ,50 +1, DECRYPT );
+			sql->GetValue( sql, i++, 'U', (long*)stMw.szPda_duty              ,20 +1, DECRYPT );
+			
+			sql->GetValue( sql, i++, 'U', (long*)stMw.szReq_tel_ddd           ,4  +1, DECRYPT );
+			sql->GetValue( sql, i++, 'U', (long*)stMw.szReq_tel_exn           ,4  +1, DECRYPT );
+			sql->GetValue( sql, i++, 'U', (long*)stMw.szReq_tel_num           ,4  +1, DECRYPT );
+			sql->GetValue( sql, i++, 'U', (long*)stMw.szReq_cp_ddd            ,4  +1, DECRYPT );
+			sql->GetValue( sql, i++, 'U', (long*)stMw.szReq_cp_exn            ,4  +1, DECRYPT );
+			
+			sql->GetValue( sql, i++, 'U', (long*)stMw.szReq_cp_num            ,4  +1, DECRYPT );
+			sql->GetValue( sql, i++, 'U', (long*)stMw.szTrans_in_cust_nm      ,50 +1, DECRYPT );
+			sql->GetValue( sql, i++, 'U', (long*)stMw.szTrans_in_soc_num      ,13 +1, DECRYPT );
+			sql->GetValue( sql, i++, 'U', (long*)stMw.szReq_nm                ,50 +1, DECRYPT );
+			sql->GetValue( sql, i++, 'U', (long*)stMw.szReq_soc_num           ,13 +1, DECRYPT );
+			
+			sql->GetValue( sql, i++, 'U', (long*)stMw.szReceive_dtm           ,20 +1, DECRYPT );
+			sql->GetValue( sql, i++, 'U', (long*)stMw.szCust_type_cd          ,2  +1, DECRYPT );
+			sql->GetValue( sql, i++, 'U', (long*)stMw.szCust_nm               ,30 +1, DECRYPT );
+			sql->GetValue( sql, i++, 'U', (long*)stMw.szFirm_nm               ,50 +1, DECRYPT );
+			sql->GetValue( sql, i++, 'U', (long*)stMw.szSoc_num               ,13 +1, DECRYPT );
+			
+			sql->GetValue( sql, i++, 'U', (long*)stMw.szBiz_regi_num          ,10 +1, DECRYPT );
+			sql->GetValue( sql, i++, 'U', (long*)stMw.szCp_ddd                ,4  +1, DECRYPT );
+			sql->GetValue( sql, i++, 'U', (long*)stMw.szCp_exn                ,4  +1, DECRYPT );
+			sql->GetValue( sql, i++, 'U', (long*)stMw.szCp_num                ,4  +1, DECRYPT );
+			sql->GetValue( sql, i++, 'U', (long*)stMw.szOwnhouse_tel_ddd      ,4  +1, DECRYPT );
+			
+			sql->GetValue( sql, i++, 'U', (long*)stMw.szOwnhouse_tel_exn      ,4  +1, DECRYPT );
+			sql->GetValue( sql, i++, 'U', (long*)stMw.szOwnhouse_tel_num      ,4  +1, DECRYPT );
+			sql->GetValue( sql, i++, 'U', (long*)stMw.szFirm_tel_ddd          ,4  +1, DECRYPT );
+			sql->GetValue( sql, i++, 'U', (long*)stMw.szFirm_tel_exn          ,4  +1, DECRYPT );
+			sql->GetValue( sql, i++, 'U', (long*)stMw.szFirm_tel_num          ,4  +1, DECRYPT );
+			
+			sql->GetValue( sql, i++, 'U', (long*)stMw.szScg_relat_cd          ,2  +1, DECRYPT );
+			sql->GetValue( sql, i++, 'U', (long*)stMw.szEmail                 ,50 +1, DECRYPT );
+			sql->GetValue( sql, i++, 'U', (long*)stMw.szFamily_cnt            ,10 +1, DECRYPT );
+			sql->GetValue( sql, i++, 'U', (long*)stMw.szCust_trnd_cd          ,2  +1, DECRYPT );
+			sql->GetValue( sql, i++, 'U', (long*)stMw.szChk                   ,1  +1, DECRYPT );
+			
+			sql->GetValue( sql, i++, 'U', (long*)stMw.szBuilt_in_yn           ,2  +1, DECRYPT );
+			sql->GetValue( sql, i++, 'U', (long*)stMw.szSquare_meter          ,5  +1, DECRYPT );
+			sql->GetValue( sql, i++, 'U', (long*)stMw.szCurr_addr_union       ,100+1, DECRYPT );
+			sql->GetValue( sql, i++, 'U', (long*)stMw.szBld_floor             ,20 +1, DECRYPT );
+			sql->GetValue( sql, i++, 'U', (long*)stMw.szHouse_cnt             ,10 +1, DECRYPT );
+			
+			sql->GetValue( sql, i++, 'U', (long*)stMw.szPda_duty_flag         ,10 +1, DECRYPT );
+			sql->GetValue( sql, i++, 'U', (long*)stMw.szPay_calu              ,10 +1, DECRYPT );
+			sql->GetValue( sql, i++, 'U', (long*)stMw.szPda_trans_flag        ,5  +1, DECRYPT );
+			sql->GetValue( sql, i++, 'U', (long*)stMw.szReq_info_num          ,10 +1, DECRYPT );
+			sql->GetValue( sql, i++, 'U', (long*)stMw.szTrans_in_cust_num     ,10 +1, DECRYPT );
+			
+			sql->GetValue( sql, i++, 'U', (long*)stMw.szCont_sts_cd           ,2  +1, DECRYPT );
+			sql->GetValue( sql, i++, 'U', (long*)stMw.szPda_read_dtm          ,15 +1, DECRYPT );
+			sql->GetValue( sql, i++, 'U', (long*)stMw.szMemo                  ,500+1, DECRYPT );
+			sql->GetValue( sql, i++, 'U', (long*)stMw.szAuto_yn               ,1  +1, DECRYPT );
+			sql->GetValue( sql, i++, 'U', (long*)stMw.szCust_yn               ,1  +1, DECRYPT );
+			
+			sql->GetValue( sql, i++, 'U', (long*)stMw.szBur_yn                ,1  +1, DECRYPT );
+			sql->GetValue( sql, i++, 'U', (long*)stMw.szProd_yn               ,1  +1, DECRYPT );
+			sql->GetValue( sql, i++, 'U', (long*)stMw.szOnce_yn               ,1  +1, DECRYPT );
+			sql->GetValue( sql, i++, 'U', (long*)stMw.szPrice_yn              ,1  +1, DECRYPT );
+			sql->GetValue( sql, i++, 'U', (long*)stMw.szZip_no1               ,10 +1, DECRYPT );
+			
+			sql->GetValue( sql, i++, 'U', (long*)stMw.szZip_no2               ,10 +1, DECRYPT );
+			sql->GetValue( sql, i++, 'U', (long*)stMw.szCity                  ,20 +1, DECRYPT );
+			sql->GetValue( sql, i++, 'U', (long*)stMw.szCounty                ,20 +1, DECRYPT );
+			sql->GetValue( sql, i++, 'U', (long*)stMw.szTown                  ,20 +1, DECRYPT );
+			sql->GetValue( sql, i++, 'U', (long*)stMw.szVillage_ri            ,20 +1, DECRYPT );
+			
+			sql->GetValue( sql, i++, 'U', (long*)stMw.szVillage               ,30 +1, DECRYPT );
+			sql->GetValue( sql, i++, 'U', (long*)stMw.szBuilding              ,20 +1, DECRYPT );
+			sql->GetValue( sql, i++, 'U', (long*)stMw.szAddr1_m               ,10 +1, DECRYPT );
+			sql->GetValue( sql, i++, 'U', (long*)stMw.szAddr1_s               ,10 +1, DECRYPT );
+			sql->GetValue( sql, i++, 'U', (long*)stMw.szAccount               ,10 +1, DECRYPT );
+			
+			sql->GetValue( sql, i++, 'U', (long*)stMw.szOnce_account          ,10 +1, DECRYPT );
+			sql->GetValue( sql, i++, 'U', (long*)stMw.szChk_time_from         ,16 +1, DECRYPT );
+			sql->GetValue( sql, i++, 'U', (long*)stMw.szChk_time_end          ,16 +1, DECRYPT );
+			sql->GetValue( sql, i++, 'U', (long*)stMw.szMtr_chg_yn            ,1  +1, DECRYPT );
+			sql->GetValue( sql, i++, 'U', (long*)stMw.szInfo_use_agree_yn     ,2  +1, DECRYPT );
+			
+			sql->GetValue( sql, i++, 'U', (long*)stMw.szPas_use_cont_num_yn   ,1  +1, DECRYPT );
+			sql->GetValue( sql, i++, 'U', (long*)stMw.szAdj_alt_amt           ,10 +1, DECRYPT );
+			sql->GetValue( sql, i++, 'U', (long*)stMw.szPas_defray_account_num,20 +1, DECRYPT );
+			sql->GetValue( sql, i++, 'U', (long*)stMw.szPas_cust_num          ,10 +1, DECRYPT );
+			sql->GetValue( sql, i++, 'U', (long*)stMw.szPas_req_info_num      ,10 +1, DECRYPT );
+			
+			sql->GetValue( sql, i++, 'U', (long*)stMw.szAppro_num             ,10 +1, DECRYPT );
+			sql->GetValue( sql, i++, 'U', (long*)stMw.szAppro_tel             ,20 +1, DECRYPT );
+			sql->GetValue( sql, i++, 'U', (long*)stMw.szAdj_cause             ,2  +1, DECRYPT );
+			sql->GetValue( sql, i++, 'U', (long*)stMw.szDeadline_flag         ,2  +1, DECRYPT );
+			sql->GetValue( sql, i++, 'U', (long*)stMw.szGmtr_base_day         ,2  +1, DECRYPT );
+			
+			sql->GetValue( sql, i++, 'U', (long*)stMw.szCard_gaspay           ,10 +1, DECRYPT );
+			sql->GetValue( sql, i++, 'U', (long*)stMw.szCard_onepay           ,1  +1, DECRYPT );
+			sql->GetValue( sql, i++, 'U', (long*)stMw.szCash_gaspay           ,10 +1, DECRYPT );
+			sql->GetValue( sql, i++, 'U', (long*)stMw.szInfo_use_yn           ,1  +1, DECRYPT );
+			sql->GetValue( sql, i++, 'U', (long*)stMw.szUse_cont_doc_yn       ,1  +1, DECRYPT );
+			
+			sql->GetValue( sql, i++, 'U', (long*)stMw.szPay_method            ,10 +1, DECRYPT );
+			sql->GetValue( sql, i++, 'U', (long*)stMw.szDefray_account_num    ,20 +1, DECRYPT );
+			sql->GetValue( sql, i++, 'U', (long*)stMw.szDepositor_nm          ,16 +1, DECRYPT );
+			sql->GetValue( sql, i++, 'U', (long*)stMw.szBank_nm               ,10 +1, DECRYPT );
+			sql->GetValue( sql, i++, 'U', (long*)stMw.szDebt_amt              ,10 +1, DECRYPT );
+			
+			sql->GetValue( sql, i++, 'U', (long*)stMw.szLaw_etc_amt           ,10 +1, DECRYPT );
+			sql->GetValue( sql, i++, 'U', (long*)stMw.szLaw_town              ,10 +1, DECRYPT );
+			sql->GetValue( sql, i++, 'U', (long*)stMw.szNew_road_nm           ,30 +1, DECRYPT );
+			sql->GetValue( sql, i++, 'U', (long*)stMw.szNew_addr_m            ,10 +1, DECRYPT );
+			sql->GetValue( sql, i++, 'U', (long*)stMw.szNew_addr_s            ,10 +1, DECRYPT );
+			
+			sql->GetValue( sql, i++, 'U', (long*)stMw.szNew_addr_union        ,100+1, DECRYPT );
+			sql->GetValue( sql, i++, 'U', (long*)stMw.szBill_gubun            ,2  +1, DECRYPT );
+			sql->GetValue( sql, i++, 'U', (long*)stMw.szTrans_conn_yn         ,1  +1, DECRYPT );
+			sql->GetValue( sql, i++, 'U', (long*)stMw.szConn_yn               ,1  +1, DECRYPT );
+			sql->GetValue( sql, i++, 'U', (long*)stMw.szBar_yn                ,1  +1, DECRYPT );
+			
+			sql->GetValue( sql, i++, 'U', (long*)stMw.szBar_gbn               ,2  +1, DECRYPT );
+			sql->GetValue( sql, i++, 'U', (long*)stMw.szBar_why               ,2  +1, DECRYPT );
+			sql->GetValue( sql, i++, 'U', (long*)stMw.szChk_yn                ,1  +1, DECRYPT );
+			sql->GetValue( sql, i++, 'U', (long*)stMw.szConn_gbn              ,2  +1, DECRYPT );
+			sql->GetValue( sql, i++, 'U', (long*)stMw.szNew_addr_bld_seq      ,20 +1, DECRYPT );
+			
+			sql->GetValue( sql, i++, 'U', (long*)stMw.szSpecial_tax_exemp_yn  ,1  +1, DECRYPT );
+			sql->GetValue( sql, i++, 'U', (long*)stMw.szZero_tax_rt_apply_yn  ,1  +1, DECRYPT );
+			sql->GetValue( sql, i++, 'U', (long*)stMw.szGet_spc_tax_chk       ,1  +1, DECRYPT );
+			sql->GetValue( sql, i++, 'U', (long*)stMw.szMtr_Photo_yn          ,1  +1, DECRYPT );
+			sql->GetValue( sql, i++, 'U', (long*)stMw.szPlace_Photo_yn        ,1  +1, DECRYPT );
+			
+			sql->GetValue( sql, i++, 'U', (long*)stMw.szSocial_welf_disc_yn   ,1  +1, DECRYPT );
+			sql->GetValue( sql, i++, 'U', (long*)stMw.szAppro_status_flag     ,2  +1, DECRYPT );
+			sql->GetValue( sql, i++, 'U', (long*)stMw.szAppro_gubun           ,2  +1, DECRYPT );
+			sql->GetValue( sql, i++, 'U', (long*)stMw.szInfo_Trans_yn         ,2  +1, DECRYPT );
+			sql->GetValue( sql, i++, 'U', (long*)stMw.szSend_Info_Trans_yn    ,2  +1, DECRYPT );
+		}
+		else
+		{
+			PRINT("::sql->Next fail [%s]",sql->GetLastError(sql),0,0);
+			goto Finally;
+		}
+
+Finally:
+
+		DelSqLite(sql);
+		
+		g_nWorkFlag= 600 + Str_AtoI(stMw.szPda_duty_flag);
+		
+		Str_ItoA( Time_GetDate(), stMw.szJob_str_dtm, 10);
+		g_Str_TimeType(stMw.szJob_str_dtm+8, Time_GetTime());
+		
+		if( g_nWorkFlag == 610 && Str_Cmp( stMw.szInfo_Trans_yn, "Y") == 0 && Str_Cmp( stMw.szSend_Info_Trans_yn, "") == 0 )
+		{
+			Mem_Set((byte*)stMw.szSend_Info_Trans_yn, 0x00, sizeof(stMw.szSend_Info_Trans_yn));
+			Str_Cpy( stMw.szSend_Info_Trans_yn, "Y" );
+			
+			
+			Mem_Set( (byte*)szSql, 0x00, sizeof(szSql) );
+			SPRINT(szSql, "UPDATE C6101_PROMISE_ASSIGN SET SEND_INFO_TRANS_YN = 'Y' WHERE PROMISE_ASSIGN_SEQ = '%s'", g_szCHK_EXEC_NUM, 0, 0);
+			g_Sql_DirectExecute(szSql);
+		}
+		
+		return;
+	}
+	
+	//----------------------------------------------------------------------------------------------------
+	void ReDraw(void)
+	{
+	long i;
+	char sztmp[128];
+	char szSql[200];
+		
+		if( m_bFirst == INIT_MAIN )
+		{
+			EditCtrl_SetStr(Get_hDlgCtrlByID(TXT_CLASS_NM),    stMw.szCivil_serv_class_nm);
+			stMw.szReceive_dtm[10] = 0;
+			EditCtrl_SetStr(Get_hDlgCtrlByID(TXT_RECEIVE_DTM), stMw.szReceive_dtm );
+			EditCtrl_SetStr(Get_hDlgCtrlByID(TXT_REQ_NM),      stMw.szReq_nm ); 
+			
+			Mem_Set((byte*)sztmp, 0x00, sizeof(sztmp) );
+			Str_Cpy( sztmp, stMw.szReq_tel_ddd);
+			Str_Cat( sztmp,"-" );
+			Str_Cat( sztmp, stMw.szReq_tel_exn);
+			Str_Cat( sztmp,"-" );
+			Str_Cat( sztmp, stMw.szReq_tel_num);
+			EditCtrl_SetStr(Get_hDlgCtrlByID(TXT_REQ_TEL), sztmp);
+			
+			Mem_Set((byte*)sztmp, 0x00, sizeof(sztmp) );
+			Str_Cpy( sztmp, stMw.szReq_cp_ddd);
+			Str_Cat( sztmp,"-" );
+			Str_Cat( sztmp, stMw.szReq_cp_exn);
+			Str_Cat( sztmp,"-" );
+			Str_Cat( sztmp, stMw.szReq_cp_num);
+			EditCtrl_SetStr(Get_hDlgCtrlByID(TXT_REQ_CP), sztmp);
+			
+			if(g_nAddrFlag == 0 )
+			{
+				ButCtrl_SetText(Get_hDlgCtrlByID(BID_ADDR), "지 번\n주 소");
+				Mem_Set((byte*)sztmp, 0x00, sizeof(sztmp) );
+				Str_Cpy( sztmp, stMw.szCounty);
+				Str_Cat( sztmp," " );
+				Str_Cat( sztmp, stMw.szTown);
+				EditCtrl_SetStr(Get_hDlgCtrlByID(TXT_ADDR), sztmp);
+				Mem_Set((byte*)sztmp, 0x00, sizeof(sztmp) );
+				Str_Cpy( sztmp, stMw.szVillage_ri);
+				Str_Cat( sztmp," " );
+				Str_Cat( sztmp, stMw.szAddr1_m);
+				Str_Cat( sztmp,"-" );
+				Str_Cat( sztmp, stMw.szAddr1_s);
+				EditCtrl_SetStr(Get_hDlgCtrlByID(TXT_ADDR2), sztmp);
+			}
+			else
+			{
+				ButCtrl_SetText(Get_hDlgCtrlByID(BID_ADDR), "도로명\n주 소");
+				Mem_Set((byte*)sztmp, 0x00, sizeof(sztmp) );
+				Mem_Set((byte*)sztmp, 0x00, sizeof(sztmp) );
+				Str_Cpy( sztmp, stMw.szCounty);
+				Str_Cat( sztmp," " );
+				Str_Cat( sztmp, stMw.szLaw_town);
+				EditCtrl_SetStr(Get_hDlgCtrlByID(TXT_ADDR), sztmp);
+				Mem_Set((byte*)sztmp, 0x00, sizeof(sztmp) );
+				Str_Cpy( sztmp, stMw.szNew_road_nm);
+				Str_Cat( sztmp," " );
+				Str_Cat( sztmp, stMw.szNew_addr_m);
+				Str_Cat( sztmp,"-" );
+				Str_Cat( sztmp, stMw.szNew_addr_s);
+				EditCtrl_SetStr(Get_hDlgCtrlByID(TXT_ADDR2), sztmp);
+				
+			}
+			Mem_Set((byte*)sztmp, 0x00, sizeof(sztmp) );
+			if( ( Str_Len(stMw.szVillage)+Str_Len(stMw.szBuilding) )    > 0 )
+			{
+				Str_Cpy( sztmp, stMw.szVillage);
+				Str_Cat( sztmp," " );
+				Str_Cat( sztmp, stMw.szBuilding);
+				Str_Cat( sztmp,"-" );
+				Str_Cat( sztmp, stMw.szHouse_cnt);
+				Str_Cat( sztmp," " );
+				Str_Cat( sztmp, stMw.szEtc_addr);
+			}
+			else
+			{
+				Str_Cpy( sztmp, stMw.szHouse_cnt);
+				Str_Cat( sztmp," " );
+				Str_Cat( sztmp, stMw.szEtc_addr);
+			}
+			EditCtrl_SetStr(Get_hDlgCtrlByID(TXT_ADDR3), sztmp);
+			
+			EditCtrl_SetStr(Get_hDlgCtrlByID(TXT_MEMO),    stMw.szPromise_assign_desc);
+			EditCtrl_SetStr(Get_hDlgCtrlByID(TXT_CUST_NM), stMw.szCust_nm);
+			stMw.szSoc_num[6] = 0;
+			EditCtrl_SetStr(Get_hDlgCtrlByID(TXT_SOC_NUM), stMw.szSoc_num);
+			
+			Mem_Set((byte*)sztmp, 0x00, sizeof(sztmp) );
+			Str_Cpy( sztmp, stMw.szFirm_tel_ddd);
+			Str_Cat( sztmp,"-" );
+			Str_Cat( sztmp, stMw.szFirm_tel_exn);
+			Str_Cat( sztmp,"-" );
+			Str_Cat( sztmp, stMw.szFirm_tel_num);
+			EditCtrl_SetStr(Get_hDlgCtrlByID(TXT_FIRM_TEL), sztmp);
+			SetCombo();
+			EditCtrl_SetStr(Get_hDlgCtrlByID(CMB_MTR), ListCtrl_GetStr( Get_hDlgCtrlByID(CMB_MTR+2), 0) );
+			
+			// 완료된 경우
+			if( stMw.szSend_yn[0] == 'Y' || stMw.szSend_yn[0] == 'S' )
+			{			
+				if(g_nWorkFlag != 620)
+				{
+					if(g_nWorkFlag == 610)
+					{
+						DlgCtrl_SetVisible( this->m_hDlg, Get_iDlgCtrlByID(BID_USE), TRUE );
+						DlgCtrl_SetVisible( this->m_hDlg, Get_iDlgCtrlByID(BID_REUSE), FALSE );
+						
+						// 2018.05.24 CS팀 김미영 과장님 SMS 발송 버튼 막기 요청
+						//DlgCtrl_SetVisible( this->m_hDlg, Get_iDlgCtrlByID(BID_USESMS), FALSE );
+						// 2018.12.03 CS팀 김미영 과장님 SMS 발송 버튼 다시 살림
+						DlgCtrl_SetVisible( this->m_hDlg, Get_iDlgCtrlByID(BID_USESMS), TRUE );
+					}
+					else
+					{
+						DlgCtrl_SetVisible( this->m_hDlg, Get_iDlgCtrlByID(BID_USE), FALSE );
+						DlgCtrl_SetVisible( this->m_hDlg, Get_iDlgCtrlByID(BID_REUSE), TRUE );
+						
+						// 2018.05.24 CS팀 김미영 과장님 SMS 발송 버튼 막기 요청
+						//DlgCtrl_SetVisible( this->m_hDlg, Get_iDlgCtrlByID(BID_USESMS), FALSE );
+						// 2018.12.03 CS팀 김미영 과장님 SMS 발송 버튼 다시 살림
+						DlgCtrl_SetVisible( this->m_hDlg, Get_iDlgCtrlByID(BID_USESMS), TRUE );
+					}
+				}
+				else
+				{
+					DlgCtrl_SetVisible( this->m_hDlg, Get_iDlgCtrlByID(BID_USE), FALSE );
+					DlgCtrl_SetVisible( this->m_hDlg, Get_iDlgCtrlByID(BID_REUSE), FALSE );
+					DlgCtrl_SetVisible( this->m_hDlg, Get_iDlgCtrlByID(BID_USESMS), FALSE );
+				}
+				
+				DlgCtrl_SetVisible( this->m_hDlg, Get_iDlgCtrlByID(BID_JOBCHG), FALSE );
+				DlgCtrl_SetVisible( this->m_hDlg, Get_iDlgCtrlByID(BID_POSCHG), FALSE );
+				DlgCtrl_SetVisible( this->m_hDlg, Get_iDlgCtrlByID(BID_UNDEFINE), FALSE );
+				DlgCtrl_SetVisible( this->m_hDlg, Get_iDlgCtrlByID(BID_JOBSTART), FALSE );
+			}
+			// 완료가 아닌 경우
+			else
+			{
+				DlgCtrl_SetVisible( this->m_hDlg, Get_iDlgCtrlByID(BID_USE), FALSE);
+				DlgCtrl_SetVisible( this->m_hDlg, Get_iDlgCtrlByID(BID_REUSE), FALSE );
+				DlgCtrl_SetVisible( this->m_hDlg, Get_iDlgCtrlByID(BID_USESMS), FALSE );				
+				DlgCtrl_SetVisible( this->m_hDlg, Get_iDlgCtrlByID(BID_JOBCHG), TRUE);
+				DlgCtrl_SetVisible( this->m_hDlg, Get_iDlgCtrlByID(BID_POSCHG), TRUE );
+				DlgCtrl_SetVisible( this->m_hDlg, Get_iDlgCtrlByID(BID_UNDEFINE), TRUE);
+				DlgCtrl_SetVisible( this->m_hDlg, Get_iDlgCtrlByID(BID_JOBSTART), TRUE );
+			}
+			
+			// 민원정보 버튼 활성 여부
+			if( stMw.szSend_yn[0] == 'Y' )
+			{
+				
+				if( Str_Cmp( m_szUse_cont_num2, "" ) != 0 )
+				{
+					DlgCtrl_SetVisible( this->m_hDlg, Get_iDlgCtrlByID(TTL_CLASS_NM), FALSE );
+					DlgCtrl_SetVisible( this->m_hDlg, Get_iDlgCtrlByID(BID_USE_CONT_NUM), TRUE );
+				}
+				else
+				{
+					DlgCtrl_SetVisible( this->m_hDlg, Get_iDlgCtrlByID(TTL_CLASS_NM), TRUE );
+					DlgCtrl_SetVisible( this->m_hDlg, Get_iDlgCtrlByID(BID_USE_CONT_NUM), FALSE );
+				}
+			} 
+			else
+			{
+				DlgCtrl_SetVisible( this->m_hDlg, Get_iDlgCtrlByID(TTL_CLASS_NM), TRUE );
+				DlgCtrl_SetVisible( this->m_hDlg, Get_iDlgCtrlByID(BID_USE_CONT_NUM), FALSE );
+			}
+			
+			if(g_szSERV_ADD_YN[0] == 'Y')
+			{
+				DlgCtrl_SetVisible(hCurDlg, Get_iDlgCtrlByID(TTL_SERVADD), TRUE);	
+			}
+			else
+			{
+				DlgCtrl_SetVisible(hCurDlg, Get_iDlgCtrlByID(TTL_SERVADD), FALSE);
+			}
+				
+			if(g_lDataflag == 0 )
+			{
+				g_lDataflag = 1;
+				Mem_Set( (byte*)szSql, 0x00, sizeof(szSql) );
+				Mem_Set( (byte*)sztmp, 0x00, sizeof(sztmp) );
+				Str_ItoA( Time_GetDate(),sztmp ,10);
+				sztmp[6] = 0;
+				SPRINT( szSql ,"SELECT count(*) FROM C6101_PROMISE_mtr where PROMISE_ASSIGN_SEQ = '%s' and MTR_VALID_YM < '%s' ",g_szCHK_EXEC_NUM, sztmp,0   );
+				Mem_Set( (byte*)sztmp, 0x00, sizeof(sztmp) );
+				g_Sql_RetStr(szSql, 4, sztmp );
+				if( Str_AtoI(sztmp) > 0 )
+				{
+					MessageBoxEx (CONFIRM_OK, "이 세대는 계량기노후교체 대상입니다.");
+				}
+
+				//2017-12-06 Sanghyun Lee
+				//코드 순서 정리
+				Snd_GetHistoryYn(); // 상담이력 카운트
+			}
+			else
+			{
+				if( g_nWorkFlag == 610 )
+				{
+					if( Str_Cmp( m_szSupply_Yn, "Y") == 0 )
+					{
+						DlgCtrl_SetGray( this->m_hDlg, Get_iDlgCtrlByID(BID_JOBSTART), FALSE );
+						DlgCtrl_SetEnable(this->m_hDlg, Get_iDlgCtrlByID(BID_JOBSTART), TRUE );
+					}
+					else
+					{
+						DlgCtrl_SetGray( this->m_hDlg, Get_iDlgCtrlByID(BID_JOBSTART), TRUE );
+						DlgCtrl_SetEnable(this->m_hDlg, Get_iDlgCtrlByID(BID_JOBSTART), FALSE );
+						//MessageBoxEx (ERROR_OK, "해당 주소지는 폐전 자원입니다.\n실제 사용재개를 원할시\n먼저 재생성처리를 하시기 바랍니다");
+					}
+				}
+			}
+		}
+		else if( m_bFirst == INIT_UNDEFINE )
+		{
+			for ( i = 0 ;  NORSTCD[i].Str[0] != 0 ; i++)
+			{
+				ListCtrl_AddItem (Get_hDlgCtrlByID(CMB_UNDFINE+2), NORSTCD[i].Str, 0, ICON_NONE);
+			}
+		}
+		else if( m_bFirst == INIT_JOBCHG )
+		{
+			Sql_SetGrid();
+		}
+		else if( m_bFirst == INIT_SMS )
+		{
+			//
+			ButCtrl_SetText(Get_hDlgCtrlByID(BID_SMS01), CHKON);
+			ButCtrl_SetText(Get_hDlgCtrlByID(BID_SMS02), CHKOFF);
+			ButCtrl_SetText(Get_hDlgCtrlByID(BID_SMS03), CHKON);
+			ButCtrl_SetText(Get_hDlgCtrlByID(BID_SMS04), CHKOFF);
+			ButCtrl_SetText(Get_hDlgCtrlByID(BID_SMS05), CHKOFF);
+			//ButCtrl_SetText(Get_hDlgCtrlByID(BID_SMS06), CHKON);
+			//ButCtrl_SetText(Get_hDlgCtrlByID(BID_SMS07), CHKOFF);
+			//ButCtrl_SetText(Get_hDlgCtrlByID(BID_SMS08), CHKOFF);
+			
+			EditCtrl_SetForeColorEx(Get_hDlgCtrlByID(TXT_DATA01), RED);
+			EditCtrl_SetForeColorEx(Get_hDlgCtrlByID(TXT_DATA03), RED);
+			//EditCtrl_SetForeColorEx(Get_hDlgCtrlByID(TXT_DATA06), RED);
+			
+			DlgCtrl_SetEnable(this->m_hDlg, Get_iDlgCtrlByID(BID_SMS03), FALSE );
+			DlgCtrl_SetEnable(this->m_hDlg, Get_iDlgCtrlByID(BID_SMS04), FALSE );
+			DlgCtrl_SetEnable(this->m_hDlg, Get_iDlgCtrlByID(BID_SMS05), FALSE );
+			//DlgCtrl_SetEnable(this->m_hDlg, Get_iDlgCtrlByID(TXT_EDIT01), FALSE );
+
+			//EditCtrl_SetStr(Get_hDlgCtrlByID(TXT_EDIT01), stUserinfo.szpda_ip);
+			
+			nsms_flag1 = 0; 
+			nsms_flag2 = 0; 
+			nsms_flag3 = 0; 
+			
+		}
+		else if( m_bFirst == INIT_POSCHG )
+		{
+			npos_flag1 = 0;
+			npos_flag2 = 1;
+			ButCtrl_SetText(Get_hDlgCtrlByID(BID_POS01), CHKON);
+			ButCtrl_SetText(Get_hDlgCtrlByID(BID_POS02), CHKOFF);
+			ButCtrl_SetText(Get_hDlgCtrlByID(BID_POS03), CHKON);
+			EditCtrl_SetStr( Get_hDlgCtrlByID(TTL_DATA03), "동");
+			
+			EditCtrl_SetStr(Get_hDlgCtrlByID(TXT_EDIT02), stMw.szTown);
+			EditCtrl_SetStr(Get_hDlgCtrlByID(TXT_EDIT03), stMw.szAddr1_m);
+			EditCtrl_SetStr(Get_hDlgCtrlByID(TXT_EDIT04), stMw.szAddr1_s);
+			EditCtrl_SetStr(Get_hDlgCtrlByID(TXT_EDIT05), stMw.szBuilding);			
+		}
+		else if( m_bFirst == INIT_PAYINFO )
+		{
+			EditCtrl_SetStr(Get_hDlgCtrlByID(TXT_DATA01), stMw.szGmtr_base_day);
+			EditCtrl_SetStr(Get_hDlgCtrlByID(TXT_DATA02), stMw.szDeadline_flag);
+			EditCtrl_SetStr(Get_hDlgCtrlByID(TXT_DATA03), stMw.szPay_method);
+			
+			if( Str_Cmp( stMw.szPay_method, "지로") == 0 ||  Str_Cmp( stMw.szPay_method, "카드이체") == 0 || stMw.szPay_method[0] == 0 )
+			{
+				DlgCtrl_SetVisible(this->m_hDlg, Get_iDlgCtrlByID(TTL_DATA04), FALSE );
+				DlgCtrl_SetVisible(this->m_hDlg, Get_iDlgCtrlByID(TTL_DATA05), FALSE );
+				DlgCtrl_SetVisible(this->m_hDlg, Get_iDlgCtrlByID(TTL_DATA06), FALSE );
+				DlgCtrl_SetVisible(this->m_hDlg, Get_iDlgCtrlByID(TXT_DATA04), FALSE );
+				DlgCtrl_SetVisible(this->m_hDlg, Get_iDlgCtrlByID(TXT_DATA05), FALSE );
+				DlgCtrl_SetVisible(this->m_hDlg, Get_iDlgCtrlByID(TXT_DATA06), FALSE );
+			}
+			else
+			{
+				EditCtrl_SetStr(Get_hDlgCtrlByID(TXT_DATA04), stMw.szBank_nm);
+				EditCtrl_SetStr(Get_hDlgCtrlByID(TXT_DATA05), stMw.szDepositor_nm);
+				EditCtrl_SetStr(Get_hDlgCtrlByID(TXT_DATA06), stMw.szDefray_account_num);
+			}
+			
+		}
+		else if( m_bFirst == INIT_BILL )
+		{
+			Bill_Draw();
+		}
+		else if( m_bFirst == INIT_MEMO )
+		{
+			EditCtrl_SetStr(Get_hDlgCtrlByID(TXT_MEMO_DATA1), stMw.szPromise_assign_desc);
+		}
+
+//PRINT("promise_assign_seq=[%s],stMw.szUse_cont_num=[%s],stMw.szCivil_serv_receive_num=[%s]", g_szCHK_EXEC_NUM, stMw.szUse_cont_num, stMw.szCivil_serv_receive_num);
+//PRINT("stMw.szTrans_conn_yn=[%s],stMw.szConn_yn=[%s],stMw.szBar_yn=[%s]", stMw.szTrans_conn_yn ,stMw.szConn_yn, stMw.szBar_yn);
+//PRINT("stMw.szBar_gbn=[%s],stMw.szBar_why=[%s],stMw.szConn_gbn=[%s]", stMw.szBar_gbn, stMw.szBar_why, stMw.szConn_gbn);
+
+		ON_DRAW();
+		return;
+	}
+	
+	//----------------------------------------------------------------------------------------------------
+	bool Start_Init(void)
+	{
+	char szSql[300];
+	
+		g_nWorkFlag= 600 + Str_AtoI(stMw.szPda_duty_flag);
+		
+		//Sanghyun Lee 추후 3개 업무 적용.
+		//if(g_nWorkFlag == 610 || g_nWorkFlag == 620 || g_nWorkFlag == 630 )
+		if(g_nWorkFlag == 610 || g_nWorkFlag == 630 )
+		{
+			if(Str_Cmp(stMw.szCont_sts_cd, "20") == 0)
+			{
+				MessageBoxEx (ERROR_OK, "현재 계약상태가 중지 입니다. 사무실로 문의하여 계약상태를 변경후 진행하시기 바랍니다.");
+				return FALSE;
+			}
+		}
+		else if( g_nWorkFlag != 610 && g_nWorkFlag != 620 && g_nWorkFlag != 630  
+		      && g_nWorkFlag != 640 && g_nWorkFlag != 650 && g_nWorkFlag != 660 
+		      && g_nWorkFlag != 690 )
+		{
+			 MessageBoxEx (ERROR_OK, "처리할수 없는 작업입니다.");
+			return FALSE;
+		}
+		
+		g_lDataflag = 0;
+		//중간정산
+		Mem_Set( (byte*)&stBill, 0x00, sizeof(stBill) );
+		//고객정보
+		g_nCustFlag = 0;
+		//연소기
+		g_lNewBurFlag = 0;
+		//작업시작시간
+		Str_ItoA( Time_GetDate(), stMw.szChk_time_from, 10);
+		g_Str_TimeType(stMw.szChk_time_from+8, Time_GetTime());
+		//연소기 바코드리드
+		// 사용안함 2017.07.26 Mem_Set( (byte*)g_szCurrBar, 0x00, sizeof(g_szCurrBar) );
+		//중간정산
+		g_lPAYFlag = 0;
+		//교체지침 등록
+		g_lRfrmFlag = 0;
+		//중지, 해지
+		g_nStopReleFlag = 0;
+		//계량기교체
+		Mem_Set( (byte*)&stChgMtr, 0x00, sizeof(stChgMtr) );
+		//카드결제
+		Mem_Set( (byte*)&stCardinfo, 0x00, sizeof(stCardinfo) );
+		//환불계좌 송신성공여부
+		g_nBackFlag = 0;
+		//사업자등록
+		g_nNameFlag = 0;
+		//납부확약서
+		g_lNpChkFlag = 0;
+		//현금영수증
+		Mem_Set( (byte*)&stCashinfo, 0x00, sizeof(stCashinfo) );
+		//사진
+		g_nPhotoFlag= 0;
+		g_nPhotoYNFlag = 0;
+		
+		//송수신폴더 클리어
+		g_DirFS_Clear( SYSTEM_COMM, "*");		
+		
+		//일회성 품목 생성
+		Set_OnceItem();
+		
+		//상품변경화면 flag
+		g_lWmtrMoveFlag = 0;
+		
+		//누출점검
+		Mem_Set( (byte*)&stChk, 0x00, sizeof(stChk) );
+		
+		Mem_Set( (byte*)stMw.szAccount, 0x00, sizeof(stMw.szAccount) );
+		Mem_Set( (byte*)stMw.szOnce_account, 0x00, sizeof(stMw.szOnce_account) );
+		Mem_Set( (byte*)stMw.szCard_gaspay, 0x00, sizeof(stMw.szCard_gaspay) );
+		Mem_Set( (byte*)stMw.szCard_onepay, 0x00, sizeof(stMw.szCard_onepay) );
+		Mem_Set( (byte*)stMw.szCash_gaspay, 0x00, sizeof(stMw.szCash_gaspay) );
+		Str_Cpy( stMw.szAccount , "0");
+		Str_Cpy( stMw.szOnce_account , "0");
+		Str_Cpy( stMw.szCard_gaspay , "0");
+		Str_Cpy( stMw.szCard_onepay , "0");
+		Str_Cpy( stMw.szCash_gaspay , "0");
+		
+		//수납플래그 기본셋팅 전출, 중지 수납기본
+		if( g_nWorkFlag == 620 || g_nWorkFlag == 630 )
+		{
+			Mem_Set( (byte*)szSql, 0x00, sizeof(szSql) );
+			SPRINT( szSql ,"UPDATE C6101_NONPAY SET CHK='1' WHERE Promise_assign_seq = '%s'",stMw.szPromise_assign_seq,0,0   );
+			if (g_Sql_DirectExecute(szSql) == -1)
+			{
+				//PRINT("UPDATE ERROR sql:[%s]", szSql, 0, 0);
+				return FALSE;
+			}
+
+			Mem_Set( (byte*)szSql, 0x00, sizeof(szSql) );
+			SPRINT( szSql ,"UPDATE C6101_PROMISE_MTR SET CHK_YN='1', INDI_VC='',INDI_VA='', INDI_VM='', ACCOUNT=0, ADJ_CHK='' WHERE Promise_assign_seq = '%s'",stMw.szPromise_assign_seq,0,0   );
+			if (g_Sql_DirectExecute(szSql) == -1)
+			{
+				//PRINT("UPDATE ERROR sql:[%s]", szSql, 0, 0);
+				return FALSE;
+			}
+
+		}
+		else
+		{
+			//PRINT("UPDATE C6101_NONPAY start", 0, 0, 0);
+			Mem_Set( (byte*)szSql, 0x00, sizeof(szSql) );
+			SPRINT( szSql ,"UPDATE C6101_NONPAY SET CHK='0' WHERE Promise_assign_seq = '%s'",stMw.szPromise_assign_seq,0,0   );
+			if (g_Sql_DirectExecute(szSql) == -1)
+			{
+				//PRINT("UPDATE C6101_NONPAY ERROR sql:[%s]", szSql, 0, 0);
+				return FALSE;
+			}
+
+			//PRINT("UPDATE C6101_PROMISE_MTR start", 0, 0, 0);
+			Mem_Set( (byte*)szSql, 0x00, sizeof(szSql) );
+			SPRINT( szSql ,"UPDATE C6101_PROMISE_MTR SET CHK_YN='0', INDI_VC='',INDI_VA='', INDI_VM='', ACCOUNT=0  WHERE Promise_assign_seq = '%s'",stMw.szPromise_assign_seq,0,0   );
+			if (g_Sql_DirectExecute(szSql) == -1)
+			{
+				//PRINT("UPDATE C6101_PROMISE_MTR ERROR sql:[%s]", szSql, 0, 0);
+				return FALSE;
+			}
+		}
+		
+		return TRUE;
+	}
+	
+	//----------------------------------------------------------------------------------------------------
+	void Set_OnceItem(void)
+	{
+		long i, idx;
+		long cnt;
+		
+		char szSql[200];
+		char szcenter_cd[2+1];
+		char szonce_item_cd[6+1];
+		char szstr_apply_ymd[8+1];
+		char szapply_unit_prc[12+1];
+		char szDate[8+1];	
+		
+		handle hdb = NULL;
+		SQLITE sql = NewSqLite();
+		
+		/* 20181018 초기화 로직 삭제함_현금영수증 발급 관련하여, 일회성 데이터 남기기위해서
+		Mem_Set( (byte*)szSql, 0x00, sizeof(szSql) );
+		SPRINT( szSql ,"DELETE FROM C6101_ONCE_INFO  where Promise_assign_seq = '%s'",stMw.szPromise_assign_seq,0,0   );
+		g_Sql_DirectExecute(szSql);
+		*/
+		
+		cnt = 0;
+		Mem_Set( (byte*)szSql, 0x00, sizeof(szSql) );
+		SPRINT( szSql ," SELECT COUNT(1) FROM C6101_ONCE_INFO WHERE PROMISE_ASSIGN_SEQ = '%s' AND SEND_YN = 'S' ", stMw.szPromise_assign_seq, 0, 0 );
+		g_Sql_RetInt(szSql, &cnt );
+		
+		if( cnt == 0 )
+		{
+			Mem_Set( (byte*)szSql, 0x00, sizeof(szSql) );
+			SPRINT( szSql ,"DELETE FROM C6101_ONCE_INFO  where Promise_assign_seq = '%s'",stMw.szPromise_assign_seq,0,0   );
+			g_Sql_DirectExecute(szSql);
+			
+			hdb = sql->Open(sql);
+			if( hdb == NULL )
+			{
+				goto Finally;
+			}
+	
+			sql->Begin(sql);
+			
+			sql->CreateStatementI(sql, "INSERT INTO C6101_ONCE_INFO \
+										( PROMISE_ASSIGN_SEQ, CIVIL_SERV_RECEIVE_NUM, TREAT_SEQ, USE_CONT_NUM, CENTER_CD \
+										, STR_APPLY_YMD, ONCE_ITEM_CD, ONCE_UNIT_PRC, ONCE_QTY, ONCE_AMT \
+										, TREAT_YMD, EXCEPT_YN, PAY_PROMISE_YN, BUILT_IN_YN, SEND_YN \
+										, UPD_EMPID, PDA_IP ) \
+										SELECT ? AS PROMISE_ASSIGN_SEQ, ? AS CIVIL_SERV_RECEIVE_NUM, ? AS TREAT_SEQ, ? AS USE_CONT_NUM, CENTER_CD  \
+										     , STR_APPLY_YMD, ONCE_ITEM_CD, APPLY_UNIT_PRC, 0 AS ONCE_QTY, 0 AS ONCE_AMT \
+										     , ? AS TREAT_YMD, 'N' AS EXCEPT_YN, 'N' AS PAY_PROMISE_YN, 'N' AS BUILT_IN_YN, 'N' AS SEND_YN \
+										     , ? AS UPD_EMPID, ? AS PDA_IP \
+										  FROM C6101_ONCE_ITEM ORDER BY SORT_SEQ \
+										");
+	
+			if( sql->m_hIStmt == NULL )
+			{
+				PRINT("Set_OnceItem ::SQL_CreateStatementI fail [%s]", sql->GetLastError(sql), 0, 0);
+				goto Finally;
+			}
+			
+			Mem_Set((byte*)szDate, 0x00, sizeof(szDate) );
+			Str_ItoA( Time_GetDate(), szDate, 10);
+			
+			idx = 0;
+			sql->IBind(sql, idx++, 'U', (long*)stMw.szPromise_assign_seq    ,10+1, DECRYPT );
+			sql->IBind(sql, idx++, 'U', (long*)stMw.szCivil_serv_receive_num,14+1, DECRYPT );
+			sql->IBind(sql, idx++, 'U', (long*)stMw.szTreat_seq             ,10+1, DECRYPT );
+			sql->IBind(sql, idx++, 'U', (long*)stMw.szUse_cont_num          ,10+1, DECRYPT );
+			sql->IBind(sql, idx++, 'U', (long*)szDate                       ,8 +1, DECRYPT );
+			sql->IBind(sql, idx++, 'U', (long*)stUserinfo.szemployee_id     ,20+1, DECRYPT );
+			sql->IBind(sql, idx++, 'U', (long*)stUserinfo.szpda_ip          ,12+1, DECRYPT );
+			
+			if( sql->ExecuteI(sql) == FALSE )
+			{
+				PRINT("Set_OnceItem ::SQL_ExecuteI fail [%s]", sql->GetLastError(sql), 0, 0);
+				goto Finally;
+			}
+		}
+
+Finally:
+		DelSqLite(sql);
+	}
+	
+	//----------------------------------------------------------------------------------------------------
+	void SetCombo(void)
+	{	
+		char szSql[300];
+		char sztmp[100];
+		long i,j;
+
+		m_sql = NewSqLite();
+		if (m_sql == NULL)
+		{
+			goto Finally;
+		}
+
+		m_hdb = m_sql->Open(m_sql);
+		if( m_hdb == NULL )
+		{
+			goto Finally;
+		}
+
+		//제조사명
+		Mem_Set( (byte*)szSql, 0x00, sizeof(szSql) );
+		if( m_bFirst == INIT_MAIN )
+		{
+			SPRINT(szSql, "select MTR_ID_NUM  from C6101_PROMISE_MTR where PROMISE_ASSIGN_SEQ = '%s'  ",g_szCHK_EXEC_NUM, 0, 0);
+			ListCtrl_ResetAllItems(Get_hDlgCtrlByID(CMB_MTR+2));
+			Sql_SetCombo(szSql, CMB_MTR+2);
+		}
+		
+Finally:
+
+		
+		DelSqLite(m_sql);
+		return;
+	}
+
+	//----------------------------------------------------------------------------------------------------
+	long Sql_SetGrid( void )
+	{
+	long i, idx;
+	long k = ROW3;
+	long ret = -1;
+	long lstartidx;
+	char szBuf[101];
+	char szSql[300];
+	long cnt  = 0;
+	handle hdb = NULL;
+	handle hstmt = NULL;
+	SQLITE sql = NULL;		
+		
+		Mem_Set( (byte*)szSql, 0x00, sizeof(szSql) );
+		//if( g_nWorkFlag == 610 )
+		if(Str_Cmp(stMw.szCont_sts_cd, "30") == 0 )
+			SPRINT(szSql, "select count(*) from C6101_CIVIL_CLASS where PDA_DUTY_FLAG <> '10' AND PDA_DUTY_FLAG <> '20' AND CIVIL_SERV_CLASS_CD<> '%s'  ", stMw.szCivil_serv_class_cd, 0, 0);
+		else
+			SPRINT(szSql, "select count(*) from C6101_CIVIL_CLASS where PDA_DUTY_FLAG <> '10' AND CIVIL_SERV_CLASS_CD <> '%s' ",stMw.szCivil_serv_class_cd, 0, 0);
+		g_Sql_RetInt( szSql, &m_lTotpage );
+		if( m_lTotpage % (ROW3) > 0 )
+		{
+			m_lTotpage = (m_lTotpage / (ROW3) ) + 1;
+		}
+		else
+		{
+			m_lTotpage = m_lTotpage / (ROW3);
+		}
+		SPRINT(m_szCnt_page, "%d/%d", m_lpage+1, m_lTotpage,0);
+		
+		sql = NewSqLite();
+		
+		hdb = sql->Open(sql);
+		if( hdb == NULL )
+		{
+			ret = FALSE;
+			goto Finally;
+		}
+		
+		Mem_Set( (byte*)szSql, 0x00, sizeof(szSql) );
+		//if( g_nWorkFlag == 610 )
+		if(Str_Cmp(stMw.szCont_sts_cd, "30") == 0 )
+			SPRINT(szSql, "select PDA_DUTY_FLAG_NM, CIVIL_SERV_CLASS_NM from C6101_CIVIL_CLASS where PDA_DUTY_FLAG <> '10' AND PDA_DUTY_FLAG <> '20' AND CIVIL_SERV_CLASS_CD<> '%s' ORDER BY PDA_DUTY_FLAG LIMIT ?, ? ", stMw.szCivil_serv_class_cd, 0, 0);
+		else
+			SPRINT(szSql, "select PDA_DUTY_FLAG_NM, CIVIL_SERV_CLASS_NM from C6101_CIVIL_CLASS where PDA_DUTY_FLAG <> '10' AND CIVIL_SERV_CLASS_CD <> '%s' ORDER BY PDA_DUTY_FLAG LIMIT ?, ? ",stMw.szCivil_serv_class_cd, 0, 0);
+//PRINT("szSql : %s",szSql,0,0);
+		hstmt = sql->CreateStatement(sql, szSql);
+		if( hstmt == NULL )
+		{
+			PRINT("::SQL_CreateStatement fail [%s]", sql->GetLastError(sql), 0, 0);
+			goto Finally;
+		}
+
+		sql->Begin(sql);
+		idx = 0;
+		lstartidx = m_lpage*(ROW3);
+		sql->Bind(sql, idx++, 'X', &lstartidx, 4, DECRYPT);
+		i = m_lpage*(ROW3)+(ROW3);
+		sql->Bind(sql, idx++, 'X', &i, 4, DECRYPT);
+		
+
+		ret = sql->Execute(sql);
+
+		cnt = 0;
+		for (i=0 ; i < (ROW3) ; i++)
+		{
+			if( k == i )
+			{
+				k++;
+				GridCtrl_SetCellStr ( m_hGrid, 0, i+1,  "" );
+				GridCtrl_SetCellStr ( m_hGrid, 1, i+1,  "" );
+				GridCtrl_SetCellStr ( m_hGrid, 2, i+1, "" );
+				k = i + 1;
+			}
+			else
+			{
+				if(sql->Next(sql) == FALSE)
+				{
+					k = i + 1;
+					GridCtrl_SetCellStr ( m_hGrid, 0, i+1,  "" );
+					GridCtrl_SetCellStr ( m_hGrid, 1, i+1,  "" );
+					GridCtrl_SetCellStr ( m_hGrid, 2, i+1, "" );
+					continue;
+				}
+				Mem_Set((byte*)szBuf ,0x00, sizeof(szBuf) );
+				sql->GetValue( sql, 0, 'U', (long*)szBuf, sizeof(szBuf), DECRYPT );
+				GridCtrl_SetCellStr(m_hGrid, 0, i+1, szBuf);
+				
+				Mem_Set((byte*)szBuf ,0x00, sizeof(szBuf) );
+				sql->GetValue( sql, 1, 'U', (long*)szBuf, sizeof(szBuf), DECRYPT );
+				GridCtrl_SetCellStr(m_hGrid, 1, i+1, szBuf);
+			}
+		}
+		
+Finally:
+		
+		DelSqLite(sql);
+		
+		return ret;
+	}
+	
+	//----------------------------------------------------------------------------------------------------
+	long Sql_SetCombo(char* szSql, long CTRLID )
+	{
+		long ret = -1;
+		char szBuf[101];
+		long cnt  = 0;
+		SQLITE sql = m_sql;
+
+		m_hstmt = sql->CreateStatement(sql, szSql);
+		if( m_hstmt == NULL )
+		{
+			PRINT("::WINFO Sql_SetCombo SQL_CreateStatement fail [%s]", sql->GetLastError(sql), 0, 0);
+			goto Finally;
+		}
+
+		sql->Begin(sql);
+
+		//ret = sql->Execute(sql);
+		if( sql->Execute(sql) == FALSE )
+		{
+			PRINT("::WINFO Sql_SetCombo sql->Execute fail [%s]", sql->GetLastError(sql), 0, 0);
+			goto Finally;
+		}
+		
+		cnt = 0;
+		while(sql->Next(sql) == TRUE)
+		{
+			Mem_Set((byte*)szBuf, 0x00, sizeof(szBuf) );
+			sql->GetValue( sql, 0, 'U', (long*)szBuf, sizeof(szBuf), DECRYPT );
+			ListCtrl_AddItem (Get_hDlgCtrlByID(CTRLID), szBuf, 0, ICON_NONE);
+			cnt++;
+			if(cnt == 100)
+				break;
+		}
+		
+		ret = 0;
+		
+Finally:
+
+		return ret;
+	}
+	
+	//----------------------------------------------------------------------------------------------------
+	void Snd_SMS(void)
+	{
+	char sztmp[128];
+	char szUrl[200];
+	char szbuf[128];
+	char szMsg[351];
+	char szUMsg[701];
+	char tel_ddd[5];
+	char tel_exn[5];
+	char tel_num[5];
+	char* sndbuf;
+	long ret = 0;
+	
+		Mem_Set((byte*)sztmp, 0x00, sizeof(sztmp) );
+		Mem_Set((byte*)szMsg, 0x00, sizeof(szMsg) );
+		Mem_Set((byte*)szUMsg, 0x00, sizeof(szUMsg) );
+		Mem_Set((byte*)szUrl, 0x00, sizeof(szUrl));	
+		Mem_Set((byte*)szbuf, 0x00, sizeof(szbuf));	
+		Mem_Set((byte*)tel_ddd, 0x00, sizeof(tel_ddd));	
+		Mem_Set((byte*)tel_exn, 0x00, sizeof(tel_exn));	
+		Mem_Set((byte*)tel_num, 0x00, sizeof(tel_num));	
+		
+		Str_Cpy( sztmp, stMw.szReq_cp_ddd);
+		Str_Cat( sztmp, stMw.szReq_cp_exn);
+		Str_Cat( sztmp, stMw.szReq_cp_num);
+		
+		if( Str_Len(sztmp) < 9 || !g_CheckPhoneNumberFormat(stMw.szReq_cp_exn, stMw.szReq_cp_num))
+		{
+			MessageBoxEx (ERROR_OK, "고객님의 휴대폰번호가\n잘못되어 발송할 수 없습니다.");
+			return;
+		}
+		
+		if( MessageBoxEx (CONFIRM_YESNO, "현재 선택된 고객님께\n메시지를 발송하시겠습니까?") != MB_OK)
+			return;
+		
+		fsgetitem(stUserinfo.szpda_ip, tel_ddd, 1, Str_Len(stUserinfo.szpda_ip) );
+		fsgetitem(stUserinfo.szpda_ip, tel_exn, 2, Str_Len(stUserinfo.szpda_ip) );
+		fsgetitem(stUserinfo.szpda_ip, tel_num, 3, Str_Len(stUserinfo.szpda_ip) );
+		
+		Str_Cpy( sztmp, tel_ddd);
+		Str_Cat( sztmp, tel_exn);
+		Str_Cat( sztmp, tel_num);
+		
+		//Str_Cpy(sztmp ,EditCtrl_GetStr(Get_hDlgCtrlByID(TXT_EDIT01)) );
+		Str_Cpy(sztmp ,stUserinfo.szpda_ip );
+		
+		if( nsms_flag1 == 0) //방문
+		{
+			SPRINT(szMsg, "[서울도시가스]\n%s 고객센터 입니다. 잠시 후 찾아뵐 예정이니 부재시 연락 부탁드립니다.\n서비스 매니저:%s(%s)",stUserinfo.szcenter_nm, stUserinfo.sznm_kor, sztmp);
+		}
+		else // 지연
+		{
+			if( nsms_flag2 == 0 )
+				nsms_flag2 = 15;
+			else if( nsms_flag2 == 1 )
+				nsms_flag2 = 30;
+			else
+				nsms_flag2 =60;
+			SPRINT(szMsg, "[서울도시가스]\n예상보다 작업시간이 늦어지고 있어 부득이하게 고객님 댁에 방문 지연되고 있습니다. 고객님께 불편을 드려 죄송합니다만, %d분 후에 찾아 뵐 예정이니 부재시 연락부탁드립니다. 조금 더 기다려 주시면 친절한 서비스로 보답 하겠습니다.\n서비스 매니저:%s(%s)",nsms_flag2, stUserinfo.sznm_kor, sztmp);
+		} 
+		
+		
+		Mem_Set( (byte*)szUrl, 0x00, sizeof(szUrl) );
+		
+		if( g_pjcomm != NULL)
+		{
+			JSON_Finalize( g_pjcomm );
+			g_pjcomm = NULL;
+		}		
+		g_pjcomm = g_CreateJsonHead(g_pjcomm, szUrl, 62402, FALSE);
+
+		JSON_SetValue( g_pjcomm, 'C', "send_tel_ddd",   tel_ddd );
+		JSON_SetValue( g_pjcomm, 'C', "send_tel_exn",   tel_exn );
+		JSON_SetValue( g_pjcomm, 'C', "send_tel_num",   tel_num );
+		JSON_SetValue( g_pjcomm, 'C', "receiver_tel_ddd",   stMw.szReq_cp_ddd );
+		JSON_SetValue( g_pjcomm, 'C', "receiver_tel_exn",   stMw.szReq_cp_exn );
+		JSON_SetValue( g_pjcomm, 'C', "receiver_tel_num",   stMw.szReq_cp_num );
+
+		SQL_ConvUcStr( szUMsg, stMw.szCust_nm );
+		JSON_SetValue( g_pjcomm, 'C', "receiver_nm",   szUMsg );
+		
+		Mem_Set((byte*)szUMsg, 0x00, sizeof(szUMsg) );
+		SQL_ConvUcStr( szUMsg, szMsg );
+		JSON_SetValue( g_pjcomm, 'C', "sms_desc", szUMsg );
+		
+		sndbuf = JSON_toString(g_pjcomm);
+		
+		g_SeverConnection();
+				
+		Mem_Set((byte*)szbuf, 0x00, sizeof(szbuf));	
+		GET_FILENM(szbuf, SQLITE_DB);
+		
+		callBackfunc = Rcv_Sms; //통신완료 후에 호출 함수
+		ret = HTTP_DownloadData(szUrl, "FR62402_IN",  "FR62402" , sndbuf, szbuf );
+		
+	}
+	
+	//----------------------------------------------------------------------------------------------------
+	long Rcv_Sms(void)
+	{
+		g_Sock_Close();
+		
+		if(g_Chk_Json(62402) >= 0)
+		{
+			MessageBoxEx (CONFIRM_OK, "SMS 전송이 완료 되었습니다.");
+			ON_EXIT();
+			OnInit(INIT_MAIN);
+			return 1;
+		}
+		else
+		{
+			MessageBoxEx (ERROR_OK, "SMS 전송실패.");
+			ON_DRAW();
+			return -1;
+		}
+	}
+	
+	//----------------------------------------------------------------------------------------------------
+	void fsgetitem(char* szSource, char* szTarget, int id, int len )
+	{
+	int i;
+	int idx;
+	int ids;
+	
+		idx =0;
+		ids =1;
+		for(i=0; i<len; i++)
+		{
+			if(szSource[i] == '-'  || szSource[i] == ']' )
+			{
+				if(ids == id )
+				{
+					szTarget[idx] = 0x00;
+					break;
+				}
+				idx = 0;
+				ids++;
+				continue;
+			}
+			if(ids == id )
+			{
+				szTarget[idx] = szSource[i];
+				idx++;
+			}
+		}
+	}
+	
+	//----------------------------------------------------------------------------------------------------
+	void fsgetitem2(char* szSource, char* szTarget, int id, int len )
+	{
+	int i;
+	int idx;
+	int ids;
+	
+		idx =0;
+		ids =1;
+		for(i=0; i<len; i++)
+		{
+			if( szSource[i] == ']' )
+			{
+				if(ids == id )
+				{
+					szTarget[idx] = 0x00;
+					break;
+				}
+				idx = 0;
+				ids++;
+				continue;
+			}
+			if(ids == id )
+			{
+				szTarget[idx] = szSource[i];
+				idx++;
+			}
+		}
+	}
+
+	//----------------------------------------------------------------------------------------------------
+	void Snd_UnDefie(void)
+	{
+	char sztmp[128];
+	char szUrl[200];
+	char szbuf[128];
+	char szMsg[351];
+	char szUMsg[701];
+	char* sndbuf;
+	long ret = 0;
+
+		Mem_Set( (byte*)szUrl, 0x00, sizeof(szUrl) );
+		Mem_Set( (byte*)szMsg, 0x00, sizeof(szMsg) );
+		Mem_Set( (byte*)szUMsg, 0x00, sizeof(szUMsg) );
+		
+		if( EditCtrl_GetStrLen(Get_hDlgCtrlByID(CMB_UNDFINE)) == 0 )
+		{
+			MessageBoxEx (CONFIRM_OK, "미확인 사유를 선택하세요.");
+			return;
+		}
+		
+		Str_Cpy(szMsg ,EditCtrl_GetStr(Get_hDlgCtrlByID(CMB_UNDFINE)) );
+		
+		Str_ItoA( Time_GetDate(), stMw.szJob_end_dtm, 10);
+		g_Str_TimeType(stMw.szJob_end_dtm+8, Time_GetTime());
+
+		if( g_pjcomm != NULL)
+		{
+			JSON_Finalize( g_pjcomm );
+			g_pjcomm = NULL;
+		}		
+		g_pjcomm = g_CreateJsonHead(g_pjcomm, szUrl, 62202, FALSE);
+
+		JSON_SetValue( g_pjcomm, 'C', "promise_assign_seq",       stMw.szPromise_assign_seq );
+		JSON_SetValue( g_pjcomm, 'C', "treat_seq",                stMw.szTreat_seq );
+		JSON_SetValue( g_pjcomm, 'C', "civil_serv_receive_num",   stMw.szCivil_serv_receive_num );
+		JSON_SetValue( g_pjcomm, 'C', "job_str_dtm",              stMw.szJob_str_dtm );
+		JSON_SetValue( g_pjcomm, 'C', "job_end_dtm",              stMw.szJob_end_dtm );
+		JSON_SetValue( g_pjcomm, 'C', "proc_sts_cd",              "90" );
+		
+		Mem_Set((byte*)szUMsg, 0x00, sizeof(szUMsg) );
+		SQL_ConvUcStr( szUMsg, szMsg );
+		JSON_SetValue( g_pjcomm, 'C', "memo", szUMsg );
+		
+		sndbuf = JSON_toString(g_pjcomm);
+		
+		g_SeverConnection();
+				
+		Mem_Set((byte*)szbuf, 0x00, sizeof(szbuf));	
+		GET_FILENM(szbuf, SQLITE_DB);
+		
+		callBackfunc = Rcv_UnDefie; //통신완료 후에 호출 함수
+		ret = HTTP_DownloadData(szUrl, "FR62202_IN",  "FR62202" , sndbuf, szbuf );
+	}
+	
+	//----------------------------------------------------------------------------------------------------
+	long Rcv_UnDefie(void)
+	{
+	handle* sql;
+	char * sqlstr = "";
+	long len;
+	
+		g_Sock_Close();
+		
+		if(g_Chk_Json(62202) >= 0)
+		{
+			sql = STRING_Create(sqlstr);
+			STRING_Empty(sql);
+			STRING_Append(sql," UPDATE C6101_PROMISE_ASSIGN SET ");
+			STRING_Append(sql," JOB_STR_DTM =  '");
+			STRING_Append(sql,stMw.szJob_str_dtm);
+			STRING_Append(sql,"' ,JOB_END_DTM ='");
+			STRING_Append(sql,stMw.szJob_end_dtm);
+			STRING_Append(sql,"'  ,PROC_STS_CD = '90' ");
+			STRING_Append(sql," ,UPD_EMPID = '");
+			STRING_Append(sql,  stUserinfo.szemployee_id);
+			STRING_Append(sql,"' ,PDA_IP = '");
+			STRING_Append(sql,  stUserinfo.szpda_ip);
+			STRING_Append(sql,"' ,SEND_YN = 'Y'  WHERE PROMISE_ASSIGN_SEQ = '");
+			STRING_Append(sql,  g_szCHK_EXEC_NUM );
+			STRING_Append(sql,"' ");
+			sqlstr = STRING_toString(sql);
+			g_Sql_DirectExecute(sqlstr);
+			//len = STRING_GetLength(sql);
+			STRING_Finalize(sql);
+			
+			MessageBoxEx (CONFIRM_OK, "처리가 완료 되었습니다.");
+			ON_EXIT();
+			OnInit(INIT_MAIN);
+			return 1;
+		}
+		else
+		{
+			MessageBoxEx (ERROR_OK, "서버 적용실패.");
+			ON_DRAW();
+			return -1;
+		}
+	}
+	
+	//----------------------------------------------------------------------------------------------------
+	void Snd_Jobchg(void)
+	{	
+	char sztmp[128];
+	char szUrl[200];
+	char szbuf[128];
+	char szMsg[351];
+	char szUMsg[701];
+	char* sndbuf;
+	long ret = 0, i;
+	handle hdb = NULL;
+	handle hstmt = NULL;
+	SQLITE sql = NewSqLite();
+
+		Mem_Set( (byte*)szUrl, 0x00, sizeof(szUrl) );
+		Mem_Set( (byte*)szMsg, 0x00, sizeof(szMsg) );
+		Mem_Set( (byte*)szUMsg, 0x00, sizeof(szUMsg) );
+		Mem_Set( (byte*)m_szCivil_serv_class_nm, 0x00, sizeof(m_szCivil_serv_class_nm) );
+		Mem_Set( (byte*)m_szCivil_serv_class_cd, 0x00, sizeof(m_szCivil_serv_class_cd) );
+		Mem_Set( (byte*)m_szPda_duty_flag_nm,    0x00, sizeof(m_szPda_duty_flag_nm) );
+		Mem_Set( (byte*)m_szPda_duty_flag,       0x00, sizeof(m_szPda_duty_flag) );
+		
+
+		if (m_nSelectedIndex <= 0)
+		{
+			MessageBoxEx (CONFIRM_OK, "변경할 업무를 선택하세요.");
+			return;
+		}
+
+		Str_Cpy(m_szCivil_serv_class_nm, GridCtrl_GetCellStr(m_hGrid, 1, m_nSelectedIndex) );
+		
+		hdb = sql->Open(sql);
+		if( hdb == NULL )
+		{
+			goto Finally;
+		}
+
+		hstmt = sql->CreateStatement(sql," select CIVIL_SERV_CLASS_CD, PDA_DUTY_FLAG_NM, PDA_DUTY_FLAG  from C6101_CIVIL_CLASS where CIVIL_SERV_CLASS_NM = ? ");
+		
+		if( hstmt == NULL )
+		{
+			PRINT("::SQL_CreateStatement fail [%s]", sql->GetLastError(sql), 0, 0);
+			goto Finally;
+		}
+
+		i = 0;
+		
+		sql->Bind(sql, i++, 'U', (long*)m_szCivil_serv_class_nm , 50, DECRYPT);
+
+		if(sql->Execute(sql) == FALSE)
+		{
+			PRINT("::SQL_Execute fail [%s]", sql->GetLastError(sql), 0, 0);
+			goto Finally;
+		}
+
+		if(sql->Next(sql) == TRUE )
+		{	
+			i = 0;
+			sql->GetValue( sql, i++, 'U', (long*)m_szCivil_serv_class_cd ,6  +1, DECRYPT );
+			sql->GetValue( sql, i++, 'U', (long*)m_szPda_duty_flag_nm    ,20  +1, DECRYPT );
+			sql->GetValue( sql, i++, 'U', (long*)m_szPda_duty_flag       ,10  +1, DECRYPT );
+		}
+		else
+		{
+			PRINT("::sql->Next fail [%s]",sql->GetLastError(sql),0,0);
+			goto Finally;
+		}
+
+Finally:
+
+		DelSqLite(sql);
+		
+		if( g_pjcomm != NULL)
+		{
+			JSON_Finalize( g_pjcomm );
+			g_pjcomm = NULL;
+		}		
+		g_pjcomm = g_CreateJsonHead(g_pjcomm, szUrl, 62302, FALSE);
+
+		JSON_SetValue( g_pjcomm, 'C', "promise_assign_seq",  stMw.szPromise_assign_seq );
+		JSON_SetValue( g_pjcomm, 'C', "chg_flag",            "19");
+		JSON_SetValue( g_pjcomm, 'C', "assign_sts_cd",       "20" );
+		JSON_SetValue( g_pjcomm, 'C', "befo_value",           stMw.szCivil_serv_class_cd );
+		JSON_SetValue( g_pjcomm, 'C', "chg_value",            m_szCivil_serv_class_cd );
+		JSON_SetValue( g_pjcomm, 'C', "civil_serv_class_cd"   , m_szCivil_serv_class_cd );
+		JSON_SetValue( g_pjcomm, 'C', "civil_serv_receive_num", stMw.szCivil_serv_receive_num );
+		JSON_SetValue( g_pjcomm, 'C', "treat_seq"             ,stMw.szTreat_seq );
+		
+		Mem_Set((byte*)sztmp, 0x00, sizeof(sztmp) );
+		SQL_ConvUcStr( sztmp, m_szCivil_serv_class_nm );
+		JSON_SetValue( g_pjcomm, 'C', "civil_serv_class_nm", sztmp );
+		Mem_Set((byte*)sztmp, 0x00, sizeof(sztmp) );
+		SQL_ConvUcStr( sztmp, m_szPda_duty_flag_nm );
+		JSON_SetValue( g_pjcomm, 'C', "pda_duty",            sztmp );
+		JSON_SetValue( g_pjcomm, 'C', "pda_duty_flag",       m_szPda_duty_flag );
+		
+		sndbuf = JSON_toString(g_pjcomm);
+		
+		//g_Save_JsonFile(sndbuf);
+		
+		g_SeverConnection();
+				
+		Mem_Set((byte*)szbuf, 0x00, sizeof(szbuf));	
+		GET_FILENM(szbuf, SQLITE_DB);
+		
+		callBackfunc = Rcv_Jobchg; //통신완료 후에 호출 함수
+		ret = HTTP_DownloadData(szUrl, "FR62302_IN",  "FR62302" , sndbuf, szbuf );
+		
+	}
+	
+	//----------------------------------------------------------------------------------------------------
+	long Rcv_Jobchg(void)
+	{
+	handle sql;
+	char* sqlstr = "";
+	long len;
+	
+		g_Sock_Close();
+		
+		if(g_Chk_Json(62302) >= 0)
+		{
+			sql = STRING_Create(sqlstr);
+			STRING_Empty(sql);
+			STRING_Append(sql," UPDATE C6101_PROMISE_ASSIGN SET ");
+			STRING_Append(sql," CIVIL_SERV_CLASS_CD =  '");
+			STRING_Append(sql, m_szCivil_serv_class_cd);
+			STRING_Append(sql,"' ,CIVIL_SERV_CLASS_NM ='");
+			STRING_Append(sql, m_szCivil_serv_class_nm);
+			STRING_Append(sql,"' ,PDA_DUTY_FLAG = '");
+			STRING_Append(sql,  m_szPda_duty_flag );
+			STRING_Append(sql,"' ,PDA_DUTY = '");
+			STRING_Append(sql,  m_szPda_duty_flag_nm );
+			STRING_Append(sql,"' ,ACCOUNT = '',ADJ_ALT_AMT = '',ONCE_ACCOUNT = ''  WHERE PROMISE_ASSIGN_SEQ = '");
+			STRING_Append(sql,  g_szCHK_EXEC_NUM );
+			STRING_Append(sql,"' ");
+			sqlstr = STRING_toString(sql);
+			g_Sql_DirectExecute(sqlstr);
+			len = STRING_GetLength(sql);
+			STRING_Finalize(sql);
+			
+			Str_Cpy( stMw.szCivil_serv_class_nm, m_szCivil_serv_class_nm );
+			Str_Cpy( stMw.szCivil_serv_class_cd, m_szCivil_serv_class_cd );
+			Str_Cpy( stMw.szPda_duty,            m_szPda_duty_flag_nm );
+			Str_Cpy( stMw.szPda_duty_flag,       m_szPda_duty_flag );
+
+			MessageBoxEx (CONFIRM_OK, "업무 변경 완료.");
+			ON_EXIT();
+			OnInit(INIT_MAIN);
+			return 1;
+		}
+		else
+		{
+			MessageBoxEx (ERROR_OK, "업무 변경 실패.");
+			ON_DRAW();
+			return -1;
+		}
+	}
+	
+	//----------------------------------------------------------------------------------------------------
+	void Snd_Srchmtr(void)
+	{
+	char sztmp[128];
+	char szUrl[200];
+	char szbuf[128];
+	char szMsg[50];
+	char* sndbuf;
+	long ret = 0;
+
+		Mem_Set( (byte*)szUrl, 0x00, sizeof(szUrl) );
+		Mem_Set( (byte*)szMsg, 0x00, sizeof(szMsg) );
+		
+		if( EditCtrl_GetStrLen(Get_hDlgCtrlByID(TXT_EDIT01)) == 0 )
+		{
+			MessageBoxEx (CONFIRM_OK, "기물번호를 입력하세요.");
+			return;
+		}
+		
+		g_Sql_DirectExecute(" delete from rcv_tmp ");
+		
+		Str_Cpy(szMsg ,EditCtrl_GetStr(Get_hDlgCtrlByID(TXT_EDIT01)) );
+
+		if( g_pjcomm != NULL)
+		{
+			JSON_Finalize( g_pjcomm );
+			g_pjcomm = NULL;
+		}		
+		g_pjcomm = g_CreateJsonHead(g_pjcomm, szUrl, 62502, FALSE);
+
+		if( Str_Cmp(stMw.szPda_duty_flag, "20") == 0)
+			JSON_SetValue( g_pjcomm, 'C', "gubun",       "1" );	
+		else
+			JSON_SetValue( g_pjcomm, 'C', "gubun",       "2" );
+		JSON_SetValue( g_pjcomm, 'C', "mtr_id_num",  szMsg );
+		JSON_SetValue( g_pjcomm, 'C', "addr1_m",     "" );
+		JSON_SetValue( g_pjcomm, 'C', "addr1_s",     "" );
+		JSON_SetValue( g_pjcomm, 'C', "new_addr_m",  "" );
+		JSON_SetValue( g_pjcomm, 'C', "new_addr_s",  "" );
+		JSON_SetValue( g_pjcomm, 'C', "bld_nm",      "" );
+		JSON_SetValue( g_pjcomm, 'C', "house_cnt",   "" );
+
+		sndbuf = JSON_toString(g_pjcomm);
+		
+		g_SeverConnection();
+				
+		Mem_Set((byte*)szbuf, 0x00, sizeof(szbuf));	
+		GET_FILENM(szbuf, SQLITE_DB);
+		
+		callBackfunc = Rcv_Srchmtr; //통신완료 후에 호출 함수
+		ret = HTTP_DownloadData(szUrl, "FR62502_IN",  "FR62502" , sndbuf, szbuf );
+	}
+	
+	//----------------------------------------------------------------------------------------------------
+	long Rcv_Srchmtr(void)
+	{
+	long ret = 0;
+		g_Sock_Close();
+		
+		ret = g_Chk_Json(62502);
+				
+		if( ret > 0)
+		{
+			m_lpage = 0;
+			m_lActIndex = 0;
+			Sub_Draw();
+			ON_DRAW();
+			return 1;
+		}
+		else if(ret == 0)
+		{
+			MessageBoxEx (CONFIRM_OK, "해당 자료가 없습니다.");
+			ON_DRAW();
+			return 1;
+		}
+		else
+		{
+			ON_DRAW();
+			return -1;
+		}
+	}
+	
+	//----------------------------------------------------------------------------------------------------
+	void Snd_Srchaddr(void)
+	{
+	char sztmp[128];
+	char szUrl[200];
+	char szbuf[128];
+	char szaddrM[50];
+	char szaddrS[50];
+	char szaddrBld[50];
+	char szaddrhouse[50];
+	char* sndbuf;
+	long ret = 0;
+
+		Mem_Set( (byte*)szUrl, 0x00, sizeof(szUrl) );
+		Mem_Set( (byte*)szaddrM, 0x00, sizeof(szaddrM) );
+		Mem_Set( (byte*)szaddrS, 0x00, sizeof(szaddrS) );
+		Mem_Set( (byte*)szaddrBld, 0x00, sizeof(szaddrBld) );
+		Mem_Set( (byte*)szaddrhouse, 0x00, sizeof(szaddrhouse) );
+		
+		if( EditCtrl_GetStrLen(Get_hDlgCtrlByID(TXT_EDIT05)) == 0  &&  npos_flag2 == 1)
+		{
+			MessageBoxEx (CONFIRM_OK, "건물명을 입력하세요.");
+			return;
+		}
+		
+		if( EditCtrl_GetStrLen(Get_hDlgCtrlByID(TXT_EDIT03)) == 0 )
+		{
+			MessageBoxEx (CONFIRM_OK, "번지를 입력하세요.");
+			return;
+		}
+		
+		g_Sql_DirectExecute(" delete from rcv_tmp ");
+		
+		Mem_Set( (byte*)szaddrM, 0x00, sizeof(szaddrM) );
+		Mem_Set( (byte*)szaddrS, 0x00, sizeof(szaddrS) );
+		Mem_Set( (byte*)szaddrBld, 0x00, sizeof(szaddrBld) );
+		Mem_Set( (byte*)szaddrhouse, 0x00, sizeof(szaddrhouse) );
+		
+		Str_Cpy(szaddrM ,EditCtrl_GetStr(Get_hDlgCtrlByID(TXT_EDIT03)) );
+		Str_Cpy(szaddrS ,EditCtrl_GetStr(Get_hDlgCtrlByID(TXT_EDIT04)) );
+		
+		Mem_Set( (byte*)sztmp, 0x00, sizeof(sztmp) );
+		Str_Cpy(sztmp ,EditCtrl_GetStr(Get_hDlgCtrlByID(TXT_EDIT05)) );
+		SQL_ConvUcStr( szaddrBld, sztmp );
+		Mem_Set( (byte*)sztmp, 0x00, sizeof(sztmp) );
+		Str_Cpy(sztmp ,EditCtrl_GetStr(Get_hDlgCtrlByID(TXT_EDIT06)) );
+		SQL_ConvUcStr( szaddrhouse, sztmp );
+
+		if( g_pjcomm != NULL)
+		{
+			JSON_Finalize( g_pjcomm );
+			g_pjcomm = NULL;
+		}		
+		g_pjcomm = g_CreateJsonHead(g_pjcomm, szUrl, 62502, FALSE);
+
+		if( Str_Cmp(stMw.szPda_duty_flag, "20") == 0)
+		{
+			if(npos_flag2 == 0)
+				JSON_SetValue( g_pjcomm, 'C', "gubun",       "3" );
+			else
+				JSON_SetValue( g_pjcomm, 'C', "gubun",       "4" );
+		}
+		else
+		{
+			if(npos_flag2 == 0)
+				JSON_SetValue( g_pjcomm, 'C', "gubun",       "5" );
+			else
+				JSON_SetValue( g_pjcomm, 'C', "gubun",       "6" );
+		}
+		JSON_SetValue( g_pjcomm, 'C', "mtr_id_num",  "" );
+		JSON_SetValue( g_pjcomm, 'C', "zip_no1",     stMw.szZip_no1 );
+		JSON_SetValue( g_pjcomm, 'C', "zip_no2",     stMw.szZip_no2 );
+		if(npos_flag1 == 0)
+		{
+			JSON_SetValue( g_pjcomm, 'C', "addr1_m",     szaddrM );
+			JSON_SetValue( g_pjcomm, 'C', "addr1_s",     szaddrS );
+			JSON_SetValue( g_pjcomm, 'C', "new_addr_m",  "%");
+			JSON_SetValue( g_pjcomm, 'C', "new_addr_s",  "%" );
+		}
+		else
+		{
+			JSON_SetValue( g_pjcomm, 'C', "addr1_m",     "%" );
+			JSON_SetValue( g_pjcomm, 'C', "addr1_s",     "%" );
+			JSON_SetValue( g_pjcomm, 'C', "new_addr_m",  szaddrM);
+			JSON_SetValue( g_pjcomm, 'C', "new_addr_s",  szaddrS );
+		}
+		if(npos_flag2 == 0)
+		{
+			JSON_SetValue( g_pjcomm, 'C', "bld_nm",      "" );
+			JSON_SetValue( g_pjcomm, 'C', "house_cnt",   "" );
+		}
+		else
+		{
+			JSON_SetValue( g_pjcomm, 'C', "bld_nm",      szaddrBld );
+			JSON_SetValue( g_pjcomm, 'C', "house_cnt",   szaddrhouse );
+		}
+		sndbuf = JSON_toString(g_pjcomm);
+		
+		//g_Save_JsonFile(sndbuf);
+		
+		g_SeverConnection();
+				
+		Mem_Set((byte*)szbuf, 0x00, sizeof(szbuf));	
+		GET_FILENM(szbuf, SQLITE_DB);
+		
+		callBackfunc = Rcv_Srchmtr; //통신완료 후에 호출 함수
+		ret = HTTP_DownloadData(szUrl, "FR62502_IN",  "FR62502" , sndbuf, szbuf );
+	}
+	
+	//----------------------------------------------------------------------------------------------------
+	void Sub_Draw(void)
+	{
+	long i, idx;
+	long k = ROW+1;
+	long len;
+	long lstartidx;
+	char sztmp[1000];
+	char szbuf[100];
+	bool ret = TRUE;	
+	handle hdb = NULL;
+	handle hstmt = NULL;
+	SQLITE sql = NewSqLite();
+		
+		g_Sql_RetInt("select count(*) from rcv_tmp", &m_lTotpage );
+		
+		if( m_lTotpage % ROW > 0 )
+		{
+			m_lTotpage = (m_lTotpage / ROW) + 1;
+		}
+		else
+		{
+			m_lTotpage = m_lTotpage / ROW;
+		}
+		
+		SPRINT(m_szCnt_page, "%d/%d", m_lpage+1, m_lTotpage,0);
+
+		hdb = sql->Open(sql);
+		if( hdb == NULL )
+		{
+			ret = FALSE;
+			goto Finally;
+		}
+		Mem_Set( (byte*)sztmp, 0x00, sizeof(sztmp) );
+		
+		hstmt = sql->CreateStatement(sql, "Select param2,trim(param18),trim(param7), trim(param9),param10,param1,param3,param4,param10,param11 from rcv_tmp order by param5 limit ?, ?" );
+		
+		if( hstmt == NULL )
+		{
+			PRINT("::SQL_CreateStatement fail [%s]", sql->GetLastError(sql), 0, 0);
+			ret = FALSE;
+			goto Finally;
+		}
+
+		idx = 0;
+		lstartidx = m_lpage*ROW;
+		sql->Bind(sql, idx++, 'X', &lstartidx, 4, DECRYPT);
+		i = m_lpage*ROW+ROW;
+		sql->Bind(sql, idx++, 'X', &i, 4, DECRYPT);
+		if(sql->Execute(sql) == FALSE)
+		{
+			PRINT("::SQL_Execute fail [%s]", sql->GetLastError(sql), 0, 0);
+			ret = FALSE;
+			goto Finally;
+		}
+		// 등록된 코드 리스트를 페이지에 맞게 보여준다.
+		for (i=0 ; i<ROW ; i++)
+		{
+			//자료가 없을때 화면을 클리어 시킨다.
+			if( k == i )
+			{
+				k++;
+				DlgTbl_SetStr ( ID_TBLLIST, i, 0, "" );
+				DlgTbl_SetStr ( ID_TBLLIST, i, 1, "" );
+				DlgTbl_SetStr ( ID_TBLLIST, i, 2, "" );
+				DlgTbl_SetStr ( ID_TBLLIST, i, 3, "" );
+				DlgTbl_SetStr ( ID_TBLLIST, i, 4, "" );
+				DlgTbl_SetStr ( ID_TBLLIST, i, 5, "" );
+				DlgTbl_SetStr ( ID_TBLLIST, i, 6, "" );
+				k = i + 1;
+			}
+			else
+			{
+				if(sql->Next(sql) == FALSE)
+				{
+					k = i + 1;
+					DlgTbl_SetStr ( ID_TBLLIST, i, 0, "" );
+					DlgTbl_SetStr ( ID_TBLLIST, i, 1, "" );
+					DlgTbl_SetStr ( ID_TBLLIST, i, 2, "" );
+					DlgTbl_SetStr ( ID_TBLLIST, i, 3, "" );
+					DlgTbl_SetStr ( ID_TBLLIST, i, 4, "" );
+					DlgTbl_SetStr ( ID_TBLLIST, i, 5, "" );
+					DlgTbl_SetStr ( ID_TBLLIST, i, 6, "" );
+					continue;
+				}
+				
+//Iif(Length(Trim(BUILDING)+Trim(BLD_NM))>0,Trim(BUILDING)+"\n"+BLD_NM+"-"+HOUSE_CNT,HOUSE_CNT+' '+ETC_ADDR)				
+				len = 0;
+				Mem_Set( (byte*)sztmp, 0x00, sizeof(sztmp) );
+				sql->GetValue(sql, 0, 'U', (long*)sztmp, 11, DECRYPT);
+				DlgTbl_SetStr ( ID_TBLLIST, i, 0, sztmp );
+				
+				Mem_Set( (byte*)szbuf, 0x00, sizeof(szbuf) );
+				sql->GetValue(sql, 1, 'U', (long*)szbuf, 100, DECRYPT);
+				len += Str_Len(szbuf);
+				Mem_Set( (byte*)szbuf, 0x00, sizeof(szbuf) );
+				sql->GetValue(sql, 2, 'U', (long*)szbuf, 100, DECRYPT);
+				len += Str_Len(szbuf);
+												
+				if( len > 0 )
+				{
+					Mem_Set( (byte*)sztmp, 0x00, sizeof(sztmp) );
+					Mem_Set( (byte*)szbuf, 0x00, sizeof(szbuf) );
+					sql->GetValue(sql, 1, 'U', (long*)szbuf, 100, DECRYPT);
+					Str_Cat( sztmp, szbuf);
+					Str_Cat( sztmp, " ");
+					Mem_Set( (byte*)szbuf, 0x00, sizeof(szbuf) );
+					sql->GetValue(sql, 2, 'U', (long*)szbuf, 100, DECRYPT);
+					Str_Cat( sztmp, szbuf);
+					Str_Cat( sztmp, "-");
+					Mem_Set( (byte*)szbuf, 0x00, sizeof(szbuf) );
+					sql->GetValue(sql, 3, 'U', (long*)szbuf, 100, DECRYPT);
+					Str_Cat( sztmp, szbuf);
+				}
+				else
+				{
+					Mem_Set( (byte*)sztmp, 0x00, sizeof(sztmp) );
+					Mem_Set( (byte*)szbuf, 0x00, sizeof(szbuf) );
+					sql->GetValue(sql, 3, 'U', (long*)szbuf, 100, DECRYPT);
+					Str_Cat( sztmp, szbuf);
+					Str_Cat( sztmp, " ");
+					Mem_Set( (byte*)szbuf, 0x00, sizeof(szbuf) );
+					sql->GetValue(sql, 4, 'U', (long*)szbuf, 100, DECRYPT);
+					Str_Cat( sztmp, szbuf);
+				}
+				DlgTbl_SetStr ( ID_TBLLIST, i, 1, sztmp );
+				
+				//CUST_NUM
+				Mem_Set( (byte*)szbuf, 0x00, sizeof(szbuf) );
+				sql->GetValue(sql, 5, 'U', (long*)szbuf, 15, DECRYPT);
+				DlgTbl_SetStr ( ID_TBLLIST, i, 2, szbuf );
+				//USE_CONT_NUM
+				Mem_Set( (byte*)szbuf, 0x00, sizeof(szbuf) );
+				sql->GetValue(sql, 6, 'U', (long*)szbuf, 15, DECRYPT);
+				DlgTbl_SetStr ( ID_TBLLIST, i, 3, szbuf );
+				//INST_PLACE_NUM
+				Mem_Set( (byte*)szbuf, 0x00, sizeof(szbuf) );
+				sql->GetValue(sql, 7, 'U', (long*)szbuf, 15, DECRYPT);
+				DlgTbl_SetStr ( ID_TBLLIST, i, 4, szbuf );
+				//ZIP_SEQ
+				Mem_Set( (byte*)szbuf, 0x00, sizeof(szbuf) );
+				sql->GetValue(sql, 8, 'U', (long*)szbuf, 15, DECRYPT);
+				DlgTbl_SetStr ( ID_TBLLIST, i, 5, szbuf );
+				//ETC_ADDR
+				Mem_Set( (byte*)szbuf, 0x00, sizeof(szbuf) );
+				sql->GetValue(sql, 9, 'U', (long*)szbuf, 128, DECRYPT);
+				DlgTbl_SetStr ( ID_TBLLIST, i, 6, szbuf );
+			}
+		}
+
+Finally:
+
+		//sql->Commit(sql);
+		DelSqLite(sql);
+		
+		
+		if(m_lTotpage > 0)
+		{
+			DlgTbl_SetActive(ID_TBLLIST , m_lActIndex+1 );
+			DlgTbl_SetRowColor(ID_TBLLIST, m_lActIndex+1, TABLEACTIVE_COLOR);
+			
+			Mem_Set( (byte*)m_szCust_num, 0x00, sizeof(m_szCust_num) );
+			Mem_Set( (byte*)m_szUse_cont_num, 0x00, sizeof(m_szUse_cont_num) );
+			Mem_Set( (byte*)m_szInst_place_num, 0x00, sizeof(m_szInst_place_num) );
+			Mem_Set( (byte*)m_szZip_seq, 0x00, sizeof(m_szZip_seq) );
+			Mem_Set( (byte*)m_szEtc_addr, 0x00, sizeof(m_szEtc_addr) );
+			Str_Cpy(m_szCust_num, DlgTbl_GetStr( ID_TBLLIST, m_lActIndex, 2));
+			Str_Cpy(m_szUse_cont_num, DlgTbl_GetStr( ID_TBLLIST, m_lActIndex, 3));
+			Str_Cpy(m_szInst_place_num, DlgTbl_GetStr( ID_TBLLIST, m_lActIndex, 4));
+			Str_Cpy(m_szZip_seq, DlgTbl_GetStr( ID_TBLLIST, m_lActIndex, 5));
+			Str_Cpy(m_szEtc_addr, DlgTbl_GetStr( ID_TBLLIST, m_lActIndex, 6));
+		}
+		else
+		{
+			m_lActIndex = -1;
+		}
+		
+		ON_DRAW();
+		
+		return;
+	}
+	
+	//----------------------------------------------------------------------------------------------------
+	long Rcv_Srchaddr(void)
+	{
+	long ret;
+	
+		g_Sock_Close();
+		
+		ret = g_Chk_Json(62502);
+				
+		if( ret > 0)
+		{
+			m_lpage = 0;
+			m_lActIndex = 0;
+			Sub_Draw();
+			ON_DRAW();
+			return 1;
+		}
+		else if(ret == 0)
+		{
+			MessageBoxEx (CONFIRM_OK, "해당 자료가 없습니다.");
+			ON_DRAW();
+			return 1;
+		}
+		else
+		{
+			ON_DRAW();
+			return -1;
+		}
+	}
+	
+	//----------------------------------------------------------------------------------------------------
+	//업무보류
+	//현재 정상적인 설치장소 변경되지 않음. 고객정보등이 전입,전출등등의 업무에 맞게 변경되지 않음.
+	//추후 업무재정의하여 개발되어야 함.
+	//----------------------------------------------------------------------------------------------------
+	void Snd_PosChg(void)
+	{
+	char sztmp[128];
+	char szUrl[200];
+	char szbuf[128];
+	char szMsg[351];
+	char szUMsg[701];
+	char* sndbuf;
+	long ret = 0, i;
+		
+		if( m_lTotpage == 0 )
+		{
+			MessageBoxEx (CONFIRM_OK, "확정 할 데이타가 없습니다!");
+			return;
+		}
+		
+		if( g_pjcomm != NULL)
+		{
+			JSON_Finalize( g_pjcomm );
+			g_pjcomm = NULL;
+		}		
+		g_pjcomm = g_CreateJsonHead(g_pjcomm, szUrl, 62504, FALSE);
+
+		JSON_SetValue( g_pjcomm, 'C', "befo_value",          stMw.szInst_place_num );
+		JSON_SetValue( g_pjcomm, 'C', "promise_assign_seq",  stMw.szPromise_assign_seq );
+		JSON_SetValue( g_pjcomm, 'C', "chg_flag",            "16");
+		JSON_SetValue( g_pjcomm, 'C', "chg_value",           m_szInst_place_num );
+		JSON_SetValue( g_pjcomm, 'C', "assign_sts_cd",       "20" );
+		
+		JSON_SetValue( g_pjcomm, 'C', "cust_num", m_szCust_num );
+		JSON_SetValue( g_pjcomm, 'C', "use_cont_num", m_szUse_cont_num );
+		JSON_SetValue( g_pjcomm, 'C', "inst_place_num", m_szInst_place_num );
+		
+		
+		//Mem_Set((byte*)szMsg, 0x00, sizeof(szMsg));	
+		//SQL_ConvUcStr( szMsg, m_szEtc_addr );
+		//JSON_SetValue( g_pjcomm, 'C', "etc_addr", szMsg );
+		
+		//JSON_SetValue( g_pjcomm, 'C', "zip_seq", m_szZip_seq );
+		JSON_SetValue( g_pjcomm, 'C', "civil_serv_receive_num", stMw.szCivil_serv_receive_num );
+		JSON_SetValue( g_pjcomm, 'C', "treat_seq", stMw.szTreat_seq );
+		
+		sndbuf = JSON_toString(g_pjcomm);
+		
+		//g_Save_JsonFile(sndbuf);
+		
+		g_SeverConnection();
+				
+		Mem_Set((byte*)szbuf, 0x00, sizeof(szbuf));	
+		GET_FILENM(szbuf, SQLITE_DB);
+		
+		callBackfunc = Rcv_PosChg; //통신완료 후에 호출 함수
+		ret = HTTP_DownloadData(szUrl, "FR62504_IN",  "FR62504" , sndbuf, szbuf );
+	}
+	
+	//----------------------------------------------------------------------------------------------------
+	long Rcv_PosChg(void)
+	{
+		long ret; 
+		char szSql[200];			
+		handle hdb = NULL;
+		SQLITE sql = NewSqLite();
+		
+		g_Sock_Close();
+		
+		if(Chk_Json_62504() > 0)
+		{			
+			hdb = sql->Open(sql);
+			if( hdb == NULL )
+			{
+				MessageBoxEx(ERROR_OK, "데이터베이스 연결 오류.. \n프로그램을 종료 후 다시 시작해 보시기 바랍니다.");
+				goto Finally;
+			}
+		
+			sql->Begin(sql);
+			
+			//주소수신테이블 삭제
+			g_Sql_DirectExecute2( sql, " delete from rcv_tmp ");
+			
+			Mem_Set( (byte*)szSql, 0x00, sizeof(szSql) );
+			SPRINT(szSql, " DELETE FROM C6101_CARDASSIGN_INFO WHERE promise_assign_seq ='%s'",stMw.szPromise_assign_seq, 0, 0);
+			g_Sql_DirectExecute2( sql, szSql );
+			
+			Mem_Set( (byte*)szSql, 0x00, sizeof(szSql) );
+			SPRINT(szSql, " DELETE FROM C6101_ONCE_INFO WHERE promise_assign_seq ='%s'",stMw.szPromise_assign_seq, 0, 0);
+			g_Sql_DirectExecute2( sql, szSql );
+			
+			Mem_Set( (byte*)szSql, 0x00, sizeof(szSql) );
+			SPRINT(szSql, " DELETE FROM C6101_CHG_MTR_INFO WHERE promise_assign_seq ='%s'",stMw.szPromise_assign_seq, 0, 0);
+			g_Sql_DirectExecute2( sql, szSql );
+			
+			Mem_Set( (byte*)szSql, 0x00, sizeof(szSql) );
+			SPRINT(szSql, " DELETE FROM C6101_PROMISE_CARD WHERE promise_assign_seq ='%s'",stMw.szPromise_assign_seq, 0, 0);
+			g_Sql_DirectExecute2( sql, szSql );
+
+			Mem_Set( (byte*)szSql, 0x00, sizeof(szSql) );
+			SPRINT(szSql, " DELETE FROM C6101_AUTO_TRANS WHERE promise_assign_seq ='%s'",stMw.szPromise_assign_seq, 0, 0);
+			g_Sql_DirectExecute2( sql, szSql );
+			
+			Mem_Set( (byte*)szSql, 0x00, sizeof(szSql) );
+			SPRINT(szSql, " DELETE FROM C6101_PRE_CUST_INFO WHERE promise_assign_seq ='%s'",stMw.szPromise_assign_seq, 0, 0);
+			g_Sql_DirectExecute2( sql, szSql );
+					
+			Mem_Set( (byte*)szSql, 0x00, sizeof(szSql) );
+			SPRINT(szSql, " DELETE FROM C6101_PROMISE_ASSIGN WHERE promise_assign_seq ='%s'",stMw.szPromise_assign_seq, 0, 0);
+			g_Sql_DirectExecute2( sql, szSql );
+								
+			Mem_Set( (byte*)szSql, 0x00, sizeof(szSql) );
+			SPRINT(szSql, " DELETE FROM C6101_PROMISE_BUR WHERE promise_assign_seq ='%s'",stMw.szPromise_assign_seq, 0, 0);
+			g_Sql_DirectExecute2( sql, szSql );
+								
+			Mem_Set( (byte*)szSql, 0x00, sizeof(szSql) );
+			SPRINT(szSql, " DELETE FROM C6101_PROMISE_MTR WHERE promise_assign_seq ='%s'",stMw.szPromise_assign_seq, 0, 0);
+			g_Sql_DirectExecute2( sql, szSql );
+			
+			Mem_Set( (byte*)szSql, 0x00, sizeof(szSql) );
+			SPRINT(szSql, " DELETE FROM C6101_NONPAY WHERE promise_assign_seq ='%s'",stMw.szPromise_assign_seq, 0, 0);
+			g_Sql_DirectExecute2( sql, szSql );
+				
+	Finally:
+
+			DelSqLite(sql);
+		
+			Save_Min_PosChg();
+			
+			MessageBoxEx (CONFIRM_OK, "확정되었습니다!");
+			ON_EXIT();
+			OnInit(INIT_MAIN);
+			return 1;
+		}
+		else
+		{
+			MessageBoxEx (ERROR_OK, "저장 실패.");
+			ON_DRAW();
+			return -1;
+		}
+	}
+	
+	//----------------------------------------------------------------------------------------------------
+	void Call_Tel(long nButtonID)
+	{
+		char szNum[15];
+		Mem_Set( (byte*)szNum, 0x00, sizeof(szNum) );
+
+		if( BID_TEL == nButtonID )
+		{
+			Str_Cpy(szNum, EditCtrl_GetStr(Get_hDlgCtrlByID(TXT_REQ_TEL) ));
+			Str_Chg(szNum, STRCHG_DEL_NONDIGIT );
+			if( Str_Len(szNum) < 6 )
+			{	
+				MessageBoxEx (ERROR_OK, "전화 번호가 잘못되었습니다.");
+				return;
+			}
+		}
+		else
+		{
+			Str_Cpy(szNum, EditCtrl_GetStr(Get_hDlgCtrlByID(TXT_REQ_CP) ));
+			Str_Chg(szNum, STRCHG_DEL_NONDIGIT );
+			if( Str_Len(szNum) < 10 )
+			{	
+				MessageBoxEx (ERROR_OK, "전화 번호가 잘못되었습니다.");
+				return;
+			}
+
+		}
+		Tapi_MakeCall( (byte*)szNum );
+	}
+	
+	//----------------------------------------------------------------------------------------------------
+	void Snd_GetHistoryYn(void)
+	{
+		char sztmp[128];
+		char szUrl[200];
+		char szbuf[128];
+		char szMsg[50];
+		char* sndbuf;
+		long ret = 0;
+	
+		Mem_Set( (byte*)szUrl, 0x00, sizeof(szUrl) );
+		Mem_Set( (byte*)szMsg, 0x00, sizeof(szMsg) );
+		
+		if( g_pjcomm != NULL)
+		{
+			JSON_Finalize( g_pjcomm );
+			g_pjcomm = NULL;
+		}
+		
+		g_pjcomm = g_CreateJsonHead(g_pjcomm, szUrl, 62702, TRUE);
+		JSON_SetValue( g_pjcomm, 'C', "inst_place_num",  stMw.szInst_place_num );
+		sndbuf = JSON_toString(g_pjcomm);
+		
+		g_SeverConnection();
+				
+		Mem_Set((byte*)szbuf, 0x00, sizeof(szbuf));	
+		Str_Cpy(szbuf, "FR62702.JSON");
+		
+		//PRINT("Snd_GetHistoryYn szInst_place_num:%s", stMw.szInst_place_num, 0, 0);
+		
+		callBackfunc = Rcv_GetHistoryYn; //통신완료 후에 호출 함수
+		HTTP_Url2File("POST", szUrl, sndbuf, szbuf);
+	}
+	
+	//----------------------------------------------------------------------------------------------------
+	long Rcv_GetHistoryYn(void)
+	{
+	long ret = 0;
+		g_Sock_Close();
+		
+		ret = Chk_Json_62702();
+
+		if( ret >= 0)
+		{
+			//2017-12-06 Sanghyun Lee
+			//코드 순서 정리
+			
+			// 상담이력 존재하는 경우
+			if(g_history_yn[0] == 'Y')
+			{
+				ButCtrl_SetForeColorEx( Get_hDlgCtrlByID(BID_HISTORY), RED );	
+			}
+
+			if( g_nWorkFlag == 610 || g_nWorkFlag == 620 )
+			{
+				Snd_BillCnt();
+			}
+			else
+			{
+				DlgCtrl_SetVisible( this->m_hDlg, Get_iDlgCtrlByID(BID_BILL), FALSE );
+				ON_DRAW();
+			}
+
+			return 1;
+		}
+		else
+		{
+			ON_DRAW();
+			return -1;
+		}
+	}
+	
+	//----------------------------------------------------------------------------------
+	// 기  능 : 전송 결과 파일을 검토한다.
+	// 설  명 : 
+	// 리턴값 : 1:정상적인 통신완료, 0: 에러응답or응답형식오류, -1: 알수없는 에러
+	//----------------------------------------------------------------------------------
+	long Chk_Json_62702(void)
+	{
+		char szJsonpath[500];
+		char szMsg[500];
+		long fd, i;
+		long chkmsg = 0;
+		long chkcode = 0;
+		long fsize = 0;
+		char *pStr = NULL;
+		char *szcode = NULL;
+		char *szmessage = NULL;
+		char *szcnt = NULL;
+		char *szuse_cont_num = NULL;
+		long *nCol = NULL;
+		long nCnt = 0;
+		char szType[2] = {0,0};
+		long ret = 11;
+		handle hitem = NULL;
+		handle hcnt = NULL;
+
+		Mem_Set((byte*) szJsonpath, 0x00, sizeof( szJsonpath) );
+		SPRINT(szJsonpath, "%sFR%d_Res.JSON",  SYSTEM_COMM, 62702, 0 );
+		
+		if(FFS_Exist(szJsonpath) != TRUE )
+		{
+			Mem_Set((byte*) szJsonpath, 0x00, sizeof( szJsonpath) );
+			SPRINT(szJsonpath, "%sFR%d.JSON",  SYSTEM_COMM, 62702, 0 );
+		}
+
+		fsize = FFS_GetSize(szJsonpath);
+
+		if(fsize <= 15)
+		{
+			ret = -1;
+			goto Finally;
+		}
+		
+		pStr = Mem_Alloc(fsize);
+		
+		fd = FFS_Open(szJsonpath, FS_READ_MODE, FS_NORMAL_FLAG);
+		
+		if(fd == -1)
+		{
+			ret = -1;
+			goto Finally;
+		}
+
+		FFS_Read(fd, (byte*)pStr, fsize);
+		for(i = 0 ; i < fsize-9 ; i++ )
+		{
+			if( Mem_Cmp((byte*)pStr+i,(byte*) "\"code\"", 6) == 0  )
+			{
+				chkcode++;
+			}
+			if( Mem_Cmp((byte*)pStr+i,(byte*) "\"message\"", 9) == 0  )
+			{
+				chkmsg++;
+			}
+			if(chkmsg > 0 &&  chkcode > 0)
+				break;
+		}
+
+		FFS_Close(fd);
+		
+		Mem_Free((byte*)pStr);
+		
+		if(chkmsg == 0 || chkcode == 0)
+		{
+			ret = -1;
+			goto Finally;
+		}
+		
+		if(g_pjcomm != NULL)
+		{
+			JSON_Finalize(g_pjcomm);
+			g_pjcomm = NULL;
+		}
+		
+		g_pjcomm = JSON_Create( JSON_Object );
+		
+		if(g_pjcomm == NULL)
+		{
+			ret = -1;
+			goto Finally;
+		}
+	
+		if( JSON_LoadFile(g_pjcomm, szJsonpath) > 0)
+		{
+			szcode    = JSON_GetValue (g_pjcomm, "code",    szType);
+			szmessage = JSON_GetValue (g_pjcomm, "message", szType);
+			szcnt     = JSON_GetValue (g_pjcomm, "cnt", szType);
+			szuse_cont_num = JSON_GetValue (g_pjcomm, "use_cont_num", szType);
+			//PRINT("Chk_Json_62702 szcnt:%s", szcnt, 0, 0);
+			
+			if( Str_Cmp(szcode, "0000") != 0)
+			{
+			  	char* pMsg = NULL;
+			  
+				Mem_Set((byte*) szJsonpath, 0x00, sizeof( szJsonpath) );
+				if(Str_Len(szmessage) < 500 )
+					SQL_ConvMbStr( szMsg, szmessage);
+				
+				//SPRINT(szJsonpath, "[%s] %s", szcode, szMsg, 0 );
+				pMsg = g_Chk_Code(szJsonpath, szcode, szMsg);
+			
+				MessageBoxEx (WARNING_OK, pMsg);
+				EvtDraw();
+				ret = -1;
+			}
+			else
+			{
+				Mem_Set((byte*)g_history_yn, 0x00, sizeof(g_history_yn));	
+				Str_Cpy(g_history_yn, szcnt);
+				
+				Mem_Set((byte*)m_szUse_cont_num2, 0x00, sizeof(m_szUse_cont_num2));	
+				Str_Cpy(m_szUse_cont_num2, szuse_cont_num);
+				
+				ReDraw();			
+			}
+		}
+		else
+		{
+			ret = 0;
+		}
+		
+Finally:		
+		
+		if(g_pjcomm != NULL)
+		{
+			JSON_Finalize(g_pjcomm);
+			g_pjcomm = NULL;
+		}
+		
+		g_Close_SubDlg();
+		ON_DRAW();
+		
+		return ret;
+	}
+	
+	
+	//----------------------------------------------------------------------------------------------------
+	void Snd_BillCnt(void)
+	{
+	char sztmp[128];
+	char szUrl[200];
+	char szbuf[128];
+	char szMsg[50];
+	char* sndbuf;
+	long ret = 0;
+	
+		Mem_Set( (byte*)szUrl, 0x00, sizeof(szUrl) );
+		Mem_Set( (byte*)szMsg, 0x00, sizeof(szMsg) );
+		
+		if( g_pjcomm != NULL)
+		{
+			JSON_Finalize( g_pjcomm );
+			g_pjcomm = NULL;
+		}
+		
+		g_pjcomm = g_CreateJsonHead(g_pjcomm, szUrl, 62508, TRUE);
+		JSON_SetValue( g_pjcomm, 'C', "inst_place_num",  stMw.szInst_place_num );
+		sndbuf = JSON_toString(g_pjcomm);
+		
+		g_SeverConnection();
+				
+		Mem_Set((byte*)szbuf, 0x00, sizeof(szbuf));	
+		Str_Cpy(szbuf, "FR62508.JSON");
+		
+		callBackfunc = Rcv_Billcnt; //통신완료 후에 호출 함수
+		HTTP_Url2File("POST", szUrl, sndbuf, szbuf);
+	}
+	
+	//----------------------------------------------------------------------------------------------------
+	long Rcv_Billcnt(void)
+	{
+	long ret = 0;
+		g_Sock_Close();
+		
+		ret = Chk_Json_62508();
+
+		if( ret >= 0)
+		{
+			//2017-12-06 Sanghyun Lee
+			//코드 순서 정리
+			DlgCtrl_SetVisible( this->m_hDlg, Get_iDlgCtrlByID(BID_BILL), TRUE );
+			
+			if(m_bill_cnt > 0) 
+			{
+				ButCtrl_SetForeColorEx( Get_hDlgCtrlByID(BID_BILL), RED );	
+			}
+			
+			// 2017.12.05 신기호 전입 자동이체 사전정보 알림
+			if( g_nWorkFlag == 610 )
+			{
+				Snd_ServAddCnt();
+				//ON_DRAW();
+			}
+			else
+			{
+				ON_DRAW();
+			}
+
+			return 1;
+		}
+		else
+		{
+			ON_DRAW();
+			return -1;
+		}
+	}
+	
+	//----------------------------------------------------------------------------------
+	// 기  능 : 전송 결과 파일을 검토한다.
+	// 설  명 : 
+	// 리턴값 : 1:정상적인 통신완료, 0: 에러응답or응답형식오류, -1: 알수없는 에러
+	//----------------------------------------------------------------------------------
+	long Chk_Json_62508(void)
+	{
+	char szJsonpath[500];
+	char szMsg[500];
+	long fd, i;
+	long chkmsg = 0;
+	long chkcode = 0;
+	long fsize = 0;
+	char *pStr = NULL;
+	char *szcode = NULL;
+	char *szmessage = NULL;
+	char *szcnt = NULL;
+	long *nCol = NULL;
+	long nCnt = 0;
+	char szType[2] = {0,0};
+	long ret = 11;
+	handle hitem = NULL;
+	handle hcnt = NULL;
+		
+		//MessageBox(MESSAGE, "자료 확인중 입니다.", 0, 0, 0, 0);
+		
+		Mem_Set((byte*) szJsonpath, 0x00, sizeof( szJsonpath) );
+		SPRINT(szJsonpath, "%sFR%d_Res.JSON",  SYSTEM_COMM, 62508, 0 );
+		
+		if(FFS_Exist(szJsonpath) != TRUE )
+		{
+			Mem_Set((byte*) szJsonpath, 0x00, sizeof( szJsonpath) );
+			SPRINT(szJsonpath, "%sFR%d.JSON",  SYSTEM_COMM, 62508, 0 );
+		}
+
+		fsize = FFS_GetSize(szJsonpath);
+
+		if(fsize <= 15)
+		{
+
+			ret = -1;
+			goto Finally;
+		}
+		pStr = Mem_Alloc(fsize);
+		fd = FFS_Open(szJsonpath, FS_READ_MODE, FS_NORMAL_FLAG);
+		if(fd == -1)
+		{
+			ret = -1;
+			goto Finally;
+		}
+
+		FFS_Read(fd, (byte*)pStr, fsize);
+		for(i = 0 ; i < fsize-9 ; i++ )
+		{
+			if( Mem_Cmp((byte*)pStr+i,(byte*) "\"code\"", 6) == 0  )
+			{
+				chkcode++;
+			}
+			if( Mem_Cmp((byte*)pStr+i,(byte*) "\"message\"", 9) == 0  )
+			{
+				chkmsg++;
+			}
+			if(chkmsg > 0 &&  chkcode > 0)
+				break;
+		}
+
+		FFS_Close(fd);
+		
+		Mem_Free((byte*)pStr);
+		if(chkmsg == 0 || chkcode == 0)
+		{
+			ret = -1;
+			goto Finally;
+		}
+		
+		if(g_pjcomm != NULL)
+		{
+			JSON_Finalize(g_pjcomm);
+			g_pjcomm = NULL;
+		}
+		
+		g_pjcomm = JSON_Create( JSON_Object );
+		if(g_pjcomm == NULL)
+		{
+			ret = -1;
+			goto Finally;
+		}
+	
+		if( JSON_LoadFile(g_pjcomm, szJsonpath) > 0)
+		{
+			szcode    = JSON_GetValue (g_pjcomm, "code",    szType);
+			szmessage = JSON_GetValue (g_pjcomm, "message", szType);
+			szcnt     = JSON_GetValue (g_pjcomm, "cnt", szType);
+
+			if( Str_Cmp(szcode, "0000") != 0)
+			{
+			  char* pMsg = NULL;
+			  
+				Mem_Set((byte*) szJsonpath, 0x00, sizeof( szJsonpath) );
+				if(Str_Len(szmessage) < 500 )
+					SQL_ConvMbStr( szMsg, szmessage);
+				
+				//SPRINT(szJsonpath, "[%s] %s", szcode, szMsg, 0 );
+				pMsg = g_Chk_Code(szJsonpath, szcode, szMsg);
+			
+				MessageBoxEx (WARNING_OK, pMsg);
+				EvtDraw();
+				ret = -1;
+			}
+			else
+			{
+				m_bill_cnt = Str_AtoI( szcnt);
+				ReDraw();			
+			}
+
+		}
+		else
+		{
+			ret = 0;
+		}
+Finally:		
+		
+		if(g_pjcomm != NULL)
+		{
+			JSON_Finalize(g_pjcomm);
+			g_pjcomm = NULL;
+		}
+		
+		g_Close_SubDlg();
+		ON_DRAW();
+		return ret;
+	}
+	
+	// 2017.12.21 신기호 추가
+	// 2019.02.25 신기호 추가 : 사용계약번호 가져오도록 함
+	//----------------------------------------------------------------------------------------------------
+	void Snd_ServAddCnt(void)
+	{
+		char sztmp[128];
+		char szUrl[200];
+		char szbuf[128];
+		char szMsg[50];
+		char* sndbuf;
+		long ret = 0;
+	
+		Mem_Set( (byte*)szUrl, 0x00, sizeof(szUrl) );
+		Mem_Set( (byte*)szMsg, 0x00, sizeof(szMsg) );
+
+		if( g_pjcomm != NULL)
+		{
+			JSON_Finalize( g_pjcomm );
+			g_pjcomm = NULL;
+		}
+		
+		g_pjcomm = g_CreateJsonHead(g_pjcomm, szUrl, 62802, TRUE);
+		
+		JSON_SetValue( g_pjcomm, 'C', "civil_serv_receive_num",  stMw.szCivil_serv_receive_num );
+		
+		sndbuf = JSON_toString(g_pjcomm);
+		
+		g_SeverConnection();
+				
+		Mem_Set((byte*)szbuf, 0x00, sizeof(szbuf));	
+		Str_Cpy(szbuf, "FR62802.JSON");
+		
+		callBackfunc = Rcv_ServAddCnt; //통신완료 후에 호출 함수
+		HTTP_Url2File("POST", szUrl, sndbuf, szbuf);
+	}
+	
+	//----------------------------------------------------------------------------------------------------
+	long Rcv_ServAddCnt(void)
+	{
+		long ret = 0;
+		g_Sock_Close();
+		
+		ret = Chk_Json_62802();
+				
+		if( ret >= 0)
+		{	
+			if(g_szSERV_ADD_YN[0] == 'Y')
+			{
+				DlgCtrl_SetVisible(hCurDlg, Get_iDlgCtrlByID(TTL_SERVADD), TRUE);	
+			}
+			else
+			{
+				DlgCtrl_SetVisible(hCurDlg, Get_iDlgCtrlByID(TTL_SERVADD), FALSE);		
+			}
+			
+			//ON_DRAW();
+			Snd_FR62803();
+			return 1;
+		}
+		else
+		{
+			ON_DRAW();
+			return -1;
+		}
+	}
+	
+	//----------------------------------------------------------------------------------
+	// 기  능 : 전송 결과 파일을 검토한다.
+	// 설  명 : 
+	// 리턴값 : 1:정상적인 통신완료, 0: 에러응답or응답형식오류, -1: 알수없는 에러
+	//----------------------------------------------------------------------------------
+	long Chk_Json_62802(void)
+	{
+		char szJsonpath[500];
+		char szMsg[500];
+		long fd, i;
+		long chkmsg = 0;
+		long chkcode = 0;
+		long fsize = 0;
+		char *pStr = NULL;
+		char *szcode = NULL;
+		char *szmessage = NULL;
+		char *szserv_yn = NULL;
+		long *nCol = NULL;
+		long nCnt = 0;
+		char szType[2] = {0,0};
+		long ret = 11;
+		handle hitem = NULL;
+		handle hcnt = NULL;
+		
+		
+		Mem_Set((byte*) szJsonpath, 0x00, sizeof( szJsonpath) );
+		SPRINT(szJsonpath, "%sFR%d_Res.JSON",  SYSTEM_COMM, 62802, 0 );
+		
+		if(FFS_Exist(szJsonpath) != TRUE )
+		{
+			Mem_Set((byte*) szJsonpath, 0x00, sizeof( szJsonpath) );
+			SPRINT(szJsonpath, "%sFR%d.JSON",  SYSTEM_COMM, 62802, 0 );
+		}
+
+		fsize = FFS_GetSize(szJsonpath);
+
+		if(fsize <= 15)
+		{
+			ret = -1;
+			goto Finally;
+		}
+		
+		pStr = Mem_Alloc(fsize);
+		
+		fd = FFS_Open(szJsonpath, FS_READ_MODE, FS_NORMAL_FLAG);
+		
+		if(fd == -1)
+		{
+			ret = -1;
+			goto Finally;
+		}
+
+		FFS_Read(fd, (byte*)pStr, fsize);
+		
+		for(i = 0 ; i < fsize-9 ; i++ )
+		{
+			if( Mem_Cmp((byte*)pStr+i,(byte*) "\"code\"", 6) == 0  )
+			{
+				chkcode++;
+			}
+			if( Mem_Cmp((byte*)pStr+i,(byte*) "\"message\"", 9) == 0  )
+			{
+				chkmsg++;
+			}
+			if(chkmsg > 0 &&  chkcode > 0)
+				break;
+		}
+
+		FFS_Close(fd);
+		
+		Mem_Free((byte*)pStr);
+		
+		if(chkmsg == 0 || chkcode == 0)
+		{
+			ret = -1;
+			goto Finally;
+		}
+		
+		if(g_pjcomm != NULL)
+		{
+			JSON_Finalize(g_pjcomm);
+			g_pjcomm = NULL;
+		}
+		
+		g_pjcomm = JSON_Create( JSON_Object );
+	
+		if(g_pjcomm == NULL)
+		{
+			ret = -1;
+			goto Finally;
+		}
+	
+		if( JSON_LoadFile(g_pjcomm, szJsonpath) > 0)
+		{
+			szcode    = JSON_GetValue (g_pjcomm, "code",    szType);
+			szmessage = JSON_GetValue (g_pjcomm, "message", szType);
+			szserv_yn = JSON_GetValue (g_pjcomm, "serv_yn", szType);
+			
+			if( Str_Cmp(szcode, "0000") != 0)
+			{
+			  	char* pMsg = NULL;
+			  
+				Mem_Set((byte*) szJsonpath, 0x00, sizeof( szJsonpath) );
+				if(Str_Len(szmessage) < 500 )
+					SQL_ConvMbStr( szMsg, szmessage);
+				
+				//SPRINT(szJsonpath, "[%s] %s", szcode, szMsg, 0 );
+				pMsg = g_Chk_Code(szJsonpath, szcode, szMsg);
+			
+				MessageBoxEx (WARNING_OK, pMsg);
+				EvtDraw();
+				ret = -1;
+			}
+			else
+			{
+				Mem_Set((byte*)g_szSERV_ADD_YN, 0x00, sizeof(g_szSERV_ADD_YN));	
+				Str_Cpy(g_szSERV_ADD_YN, szserv_yn);
+				
+				ReDraw();
+			}
+		}
+		else
+		{
+			ret = 0;
+		}
+		
+Finally:
+		if(g_pjcomm != NULL)
+		{
+			JSON_Finalize(g_pjcomm);
+			g_pjcomm = NULL;
+		}
+		
+		g_Close_SubDlg();
+		
+		ON_DRAW();
+		
+		return ret;
+	}
+	
+	void Snd_FR62803(void)
+	{
+		char sztmp[128];
+		char szUrl[200];
+		char szbuf[128];
+		char szMsg[50];
+		char* sndbuf;
+		long ret = 0;
+	
+		Mem_Set( (byte*)szUrl, 0x00, sizeof(szUrl) );
+		Mem_Set( (byte*)szMsg, 0x00, sizeof(szMsg) );
+
+		if( g_pjcomm != NULL)
+		{
+			JSON_Finalize( g_pjcomm );
+			g_pjcomm = NULL;
+		}
+		
+		g_pjcomm = g_CreateJsonHead(g_pjcomm, szUrl, 62803, TRUE);
+		
+		JSON_SetValue( g_pjcomm, 'C', "inst_place_num",  stMw.szInst_place_num );
+		\
+		sndbuf = JSON_toString(g_pjcomm);
+		
+		g_SeverConnection();
+				
+		Mem_Set((byte*)szbuf, 0x00, sizeof(szbuf));	
+		Str_Cpy(szbuf, "FR62803.JSON");
+		
+		callBackfunc = Rcv_FR6280;
+		HTTP_Url2File("POST", szUrl, sndbuf, szbuf);
+	}
+	
+	//----------------------------------------------------------------------------------------------------
+	long Rcv_FR6280(void)
+	{
+		long ret = 0;
+		g_Sock_Close();
+		
+		ret = Chk_Json_62803();
+				
+		if( ret >= 0)
+		{	
+			if( Str_Cmp( m_szSupply_Yn, "Y") == 0 )
+			{
+				DlgCtrl_SetGray( this->m_hDlg, Get_iDlgCtrlByID(BID_JOBSTART), FALSE );
+				DlgCtrl_SetEnable(this->m_hDlg, Get_iDlgCtrlByID(BID_JOBSTART), TRUE );
+			}
+			else
+			{
+				DlgCtrl_SetGray( this->m_hDlg, Get_iDlgCtrlByID(BID_JOBSTART), TRUE );
+				DlgCtrl_SetEnable(this->m_hDlg, Get_iDlgCtrlByID(BID_JOBSTART), FALSE );
+				MessageBoxEx (ERROR_OK, "해당 주소지는 폐전 자원입니다.\n실제 사용재개를 원할시\n먼저 재생성처리를 하시기 바랍니다");
+			}
+
+			ReDraw();
+			
+			return 1;
+		}
+		else
+		{
+			ON_DRAW();
+			return -1;
+		}
+	}
+	
+	//----------------------------------------------------------------------------------
+	// 기  능 : 전송 결과 파일을 검토한다.
+	// 설  명 : 
+	// 리턴값 : 1:정상적인 통신완료, 0: 에러응답or응답형식오류, -1: 알수없는 에러
+	//----------------------------------------------------------------------------------
+	long Chk_Json_62803(void)
+	{
+		char szJsonpath[500];
+		char szMsg[500];
+		
+		long fd, i;
+		long chkmsg = 0;
+		long chkcode = 0;
+		long fsize = 0;
+		char *pStr = NULL;
+		
+		char *szcode = NULL;
+		char *szmessage = NULL;
+		char *szsupply_yn = NULL;
+		
+		long *nCol = NULL;
+		long nCnt = 0;
+		char szType[2] = {0,0};
+		long ret = 11;
+		
+		handle hitem = NULL;
+		handle hcnt = NULL;
+		
+		Mem_Set((byte*) szJsonpath, 0x00, sizeof( szJsonpath) );
+		SPRINT(szJsonpath, "%sFR%d_Res.JSON",  SYSTEM_COMM, 62803, 0 );
+		
+		if(FFS_Exist(szJsonpath) != TRUE )
+		{
+			Mem_Set((byte*) szJsonpath, 0x00, sizeof( szJsonpath) );
+			SPRINT(szJsonpath, "%sFR%d.JSON",  SYSTEM_COMM, 62803, 0 );
+		}
+
+		fsize = FFS_GetSize(szJsonpath);
+
+		if(fsize <= 15)
+		{
+			ret = -1;
+			goto Finally;
+		}
+		
+		pStr = Mem_Alloc(fsize);
+		
+		fd = FFS_Open(szJsonpath, FS_READ_MODE, FS_NORMAL_FLAG);
+		
+		if(fd == -1)
+		{
+			ret = -1;
+			goto Finally;
+		}
+
+		FFS_Read(fd, (byte*)pStr, fsize);
+		
+		for(i = 0 ; i < fsize-9 ; i++ )
+		{
+			if( Mem_Cmp((byte*)pStr+i,(byte*) "\"code\"", 6) == 0  )
+			{
+				chkcode++;
+			}
+			if( Mem_Cmp((byte*)pStr+i,(byte*) "\"message\"", 9) == 0  )
+			{
+				chkmsg++;
+			}
+			if(chkmsg > 0 &&  chkcode > 0)
+				break;
+		}
+
+		FFS_Close(fd);
+		
+		Mem_Free((byte*)pStr);
+		
+		if(chkmsg == 0 || chkcode == 0)
+		{
+			ret = -1;
+			goto Finally;
+		}
+		
+		if(g_pjcomm != NULL)
+		{
+			JSON_Finalize(g_pjcomm);
+			g_pjcomm = NULL;
+		}
+		
+		g_pjcomm = JSON_Create( JSON_Object );
+	
+		if(g_pjcomm == NULL)
+		{
+			ret = -1;
+			goto Finally;
+		}
+	
+		if( JSON_LoadFile(g_pjcomm, szJsonpath) > 0)
+		{
+			szcode    = JSON_GetValue (g_pjcomm, "code",    szType);
+			szmessage = JSON_GetValue (g_pjcomm, "message", szType);
+			szsupply_yn = JSON_GetValue (g_pjcomm, "supply_yn", szType);
+			
+			if( Str_Cmp(szcode, "0000") != 0)
+			{
+			  	char* pMsg = NULL;
+			  
+				Mem_Set((byte*) szJsonpath, 0x00, sizeof( szJsonpath) );
+				if(Str_Len(szmessage) < 500 )
+					SQL_ConvMbStr( szMsg, szmessage);
+
+				pMsg = g_Chk_Code(szJsonpath, szcode, szMsg);
+			
+				MessageBoxEx (WARNING_OK, pMsg);
+				EvtDraw();
+				ret = -1;
+			}
+			else
+			{
+				Mem_Set((byte*)m_szSupply_Yn, 0x00, sizeof(m_szSupply_Yn));	
+				Str_Cpy(m_szSupply_Yn, szsupply_yn);
+			}
+		}
+		else
+		{
+			ret = 0;
+		}
+		
+Finally:
+		if(g_pjcomm != NULL)
+		{
+			JSON_Finalize(g_pjcomm);
+			g_pjcomm = NULL;
+		}
+		
+		g_Close_SubDlg();
+		
+		ON_DRAW();
+		
+		return ret;
+	}
+	
+	
+	//----------------------------------------------------------------------------------------------------
+	void Snd_Bill(void)
+	{
+	char szUrl[200];
+	char szbuf[128];
+	char szMsg[50];
+	char* sndbuf;
+	long ret = 0;
+	
+		Mem_Set( (byte*)szUrl, 0x00, sizeof(szUrl) );
+		Mem_Set( (byte*)szMsg, 0x00, sizeof(szMsg) );
+		
+		g_Sql_DirectExecute(" delete from RCV_RELEASE ");
+		
+		if( g_pjcomm != NULL)
+		{
+			JSON_Finalize( g_pjcomm );
+			g_pjcomm = NULL;
+		}
+		
+		g_pjcomm = g_CreateJsonHead(g_pjcomm, szUrl, 62510, FALSE);
+		JSON_SetValue( g_pjcomm, 'C', "inst_place_num",  stMw.szInst_place_num );
+		sndbuf = JSON_toString(g_pjcomm);
+		
+		
+		g_SeverConnection();
+				
+		Mem_Set((byte*)szbuf, 0x00, sizeof(szbuf));	
+		GET_FILENM(szbuf, SQLITE_DB);
+		
+		callBackfunc = Rcv_Bill; //통신완료 후에 호출 함수
+		ret = HTTP_DownloadData(szUrl, "FR62510_IN",  "FR62510" , sndbuf, szbuf );
+	}
+	
+	//----------------------------------------------------------------------------------------------------
+	long Rcv_Bill(void)
+	{
+	long ret = 0;
+		
+		g_Sock_Close();
+		
+		ret = g_Chk_Json(62510);
+				
+		if( ret > 0)
+		{
+			ON_EXIT();
+			OnInit(INIT_BILL);
+			return 1;
+		}
+		else if(ret == 0)
+		{
+			MessageBoxEx (CONFIRM_OK, "조회된 자료가 없습니다.");
+			ON_DRAW();
+			return 1;
+		}
+		else
+		{
+			ON_DRAW();
+			return -1;
+		}
+	}
+	
+	//----------------------------------------------------------------------------------------------------
+	void Bill_Draw(void)
+	{
+	long i, idx;
+	long k = 10;
+	char sztmp[201];
+	char szbuf[32];
+	long ret = -1;	
+	long lstartidx;
+	handle hdb = NULL;
+	handle hstmt = NULL;
+	SQLITE sql = NULL;
+
+
+		g_Sql_RetInt( "SELECT COUNT(*) FROM RCV_RELEASE", &m_lTotpage2 );
+		
+		if( m_lTotpage2 % ROW2 > 0 )
+		{
+			m_lTotpage2 = (m_lTotpage2 / ROW2) + 1;
+		}
+		else
+		{
+			m_lTotpage2 = m_lTotpage2 / ROW2;
+		}
+		//페이지
+		SPRINT(m_szCnt_page, "%d/%d", m_lpage2+1, m_lTotpage2, 0);
+
+		sql = NewSqLite();
+		
+		hdb = sql->Open(sql);
+		if( hdb == NULL )
+		{
+			goto Finally;
+		}
+		
+		hstmt = sql->CreateStatement(sql, "SELECT  PARAM1, PARAM2,  PARAM3, PARAM4 FROM RCV_RELEASE ORDER BY PARAM1 DESC LIMIT ?, ? " );
+				
+		if( hstmt == NULL )
+		{
+			PRINT("::SQL_CreateStatement fail [%s]", sql->GetLastError(sql), 0, 0);
+			goto Finally;
+		}
+		
+		idx = 0;
+		lstartidx = m_lpage2*ROW2;
+		sql->Bind(sql, idx++, 'X', &lstartidx, 4, DECRYPT);
+		i = m_lpage2*ROW2+ROW2;
+		sql->Bind(sql, idx++, 'X', &i, 4, DECRYPT);
+
+		if(sql->Execute(sql) == FALSE)
+		{
+			PRINT("::SQL_Execute fail [%s]", sql->GetLastError(sql), 0, 0);
+			goto Finally;
+		}
+
+		// 등록된 코드 리스트를 페이지에 맞게 보여준다.
+		for (i=0 ; i<ROW2 ; i++)
+		{
+			//자료가 없을때 화면을 클리어 시킨다.
+			if( k == i )
+			{
+				k++;
+				DlgTbl_SetStr ( ID_BILLLIST, i, 0, "" );
+				DlgTbl_SetStr ( ID_BILLLIST, i, 1, "" );
+				DlgTbl_SetStr ( ID_BILLLIST, i, 2, "" );
+				DlgTbl_SetStr ( ID_BILLLIST, i, 3, "" );
+			}
+			else
+			{
+				if(sql->Next(sql) == FALSE)
+				{
+					k = i + 1;
+					DlgTbl_SetStr ( ID_BILLLIST, i, 0, "" );
+					DlgTbl_SetStr ( ID_BILLLIST, i, 1, "" );
+					DlgTbl_SetStr ( ID_BILLLIST, i, 2, "" );
+					DlgTbl_SetStr ( ID_BILLLIST, i, 3, "" );
+					continue;
+				}
+				idx = 0;
+				Mem_Set( (byte*)sztmp, 0x00, sizeof(sztmp) );
+				sql->GetValue(sql, idx++, 'U', (long*)sztmp, 30, DECRYPT);
+				g_Str_DateType(szbuf, sztmp);
+				DlgTbl_SetStr ( ID_BILLLIST, i, 0, szbuf );
+
+				Mem_Set( (byte*)sztmp, 0x00, sizeof(sztmp) );
+				sql->GetValue(sql, idx++, 'U', (long*)sztmp, 30, DECRYPT);
+				Str_Chg( sztmp, STRCHG_INS_COMMA );
+				DlgTbl_SetStr ( ID_BILLLIST, i, 1, sztmp );
+
+				Mem_Set( (byte*)sztmp, 0x00, sizeof(sztmp) );
+				sql->GetValue(sql, idx++, 'U', (long*)sztmp, 5, DECRYPT);
+				Str_Chg( sztmp, STRCHG_INS_COMMA );
+				DlgTbl_SetStr ( ID_BILLLIST, i, 2, sztmp );
+				
+				Mem_Set( (byte*)sztmp, 0x00, sizeof(sztmp) );
+				sql->GetValue(sql, idx++, 'U', (long*)sztmp, 5, DECRYPT);
+				Str_Chg( sztmp, STRCHG_INS_COMMA );
+				DlgTbl_SetStr ( ID_BILLLIST, i, 3, sztmp );
+			}
+		}
+				
+Finally:
+
+		DelSqLite(sql);
+		ON_DRAW();
+		return;
+	}
+	
+	
+	//----------------------------------------------------------------------------------
+	// 기  능 : 전송 결과 파일을 검토한다.
+	// 설  명 : 
+	// 리턴값 : 1:정상적인 통신완료, 0: 에러응답or응답형식오류, -1: 알수없는 에러
+	//----------------------------------------------------------------------------------
+	long Chk_Json_62504(void)
+	{
+	char szJsonpath[500];
+	char szMsg[1000];
+	long fd, i;
+	long chkmsg = 0;
+	long chkcode = 0;
+	long fsize = 0;
+	char *pStr;
+	char *szcode;
+	char *szmessage;
+	char *szitem;
+	char szType[2] = {0,0};
+	long ret = 11;
+	handle hitem = NULL;
+	handle hcnt = NULL;
+		
+		MessageBox(MESSAGE, "자료 확인중 입니다.", 0, 0, 0, 0);
+		
+		Mem_Set((byte*) szJsonpath, 0x00, sizeof( szJsonpath) );
+		SPRINT(szJsonpath, "%sFR%d_Res.JSON",  SYSTEM_COMM, 62504, 0 );
+		
+		if(FFS_Exist(szJsonpath) != TRUE )
+		{
+			Mem_Set((byte*) szJsonpath, 0x00, sizeof( szJsonpath) );
+			SPRINT(szJsonpath, "%sFR%d.JSON",  SYSTEM_COMM, 62504, 0 );
+		}
+
+		fsize = FFS_GetSize(szJsonpath);
+
+		if(fsize <= 15)
+		{
+
+			ret = -1;
+			goto Finally;
+		}
+		pStr = Mem_Alloc(fsize);
+		fd = FFS_Open(szJsonpath, FS_READ_MODE, FS_NORMAL_FLAG);
+		if(fd == -1)
+		{
+			ret = -1;
+			goto Finally;
+		}
+
+		FFS_Read(fd, (byte*)pStr, fsize);
+		for(i = 0 ; i < fsize-9 ; i++ )
+		{
+			if( Mem_Cmp((byte*)pStr+i,(byte*) "\"code\"", 6) == 0  )
+			{
+				chkcode++;
+			}
+			if( Mem_Cmp((byte*)pStr+i,(byte*) "\"message\"", 9) == 0  )
+			{
+				chkmsg++;
+			}
+			if(chkmsg > 0 &&  chkcode > 0)
+				break;
+		}
+
+		FFS_Close(fd);
+		
+		Mem_Free((byte*)pStr);
+		if(chkmsg == 0 || chkcode == 0)
+		{
+			ret = -1;
+			goto Finally;
+		}
+		
+		if(g_pjcomm != NULL)
+		{
+			JSON_Finalize(g_pjcomm);
+			g_pjcomm = NULL;
+		}
+		
+		g_pjcomm = JSON_Create( JSON_Object );
+		if(g_pjcomm == NULL)
+		{
+			ret = -1;
+			goto Finally;
+		}
+	
+		if( JSON_LoadFile(g_pjcomm, szJsonpath) > 0)
+		{
+			szcode    = JSON_GetValue (g_pjcomm, "code",    szType);
+			szmessage = JSON_GetValue (g_pjcomm, "message", szType);
+
+			if( Str_Cmp(szcode, "0000") != 0)
+			{
+			  char* pMsg = NULL;
+			  
+				Mem_Set((byte*) szJsonpath, 0x00, sizeof( szJsonpath) );
+				if(Str_Len(szmessage) < 1000 )
+					SQL_ConvMbStr( szMsg, szmessage);
+				
+				//SPRINT(szJsonpath, "[%s] %s", szcode, szMsg, 0 );
+				pMsg = g_Chk_Code(szJsonpath, szcode, szMsg);
+			
+				MessageBoxEx (WARNING_OK, pMsg);
+				EvtDraw();
+				ret = -1;
+			}
+			else
+			{
+				ret = 0;
+				szitem =JSON_GetValue(g_pjcomm, "assign", szType);
+				if(szitem != NULL)
+				{
+					if( Str_Len(szitem) > 0 )
+					{
+						hitem = JSON_Create( JSON_Array );
+						if( hitem != NULL)
+						{
+							JSON_toJson(hitem, szitem ) ;
+							ret = JSON_GetArrayCount( hitem );
+							JSON_Finalize(hitem);
+							hitem = NULL;
+						}
+					}
+				}
+			}
+		}
+		else
+		{
+			ret = 0;
+		}
+Finally:		
+		
+		if(g_pjcomm != NULL)
+		{
+			JSON_Finalize(g_pjcomm);
+			g_pjcomm = NULL;
+		}
+		
+		g_Close_SubDlg();
+		EvtDraw();
+		
+		return ret;
+	}
+	
+	//----------------------------------------------------------------------------------
+	// 기  능 : 전송 결과 파일을 검토한다.
+	// 설  명 : 
+	// 리턴값 : 1:정상적인 통신완료, 0: 에러응답or응답형식오류, -1: 알수없는 에러
+	//----------------------------------------------------------------------------------
+	long Save_Min_PosChg(void)
+	{
+	char szJsonpath[500];
+	char szMsg[500];
+	long fd, i;
+	long chkmsg = 0;
+	long chkcode = 0;
+	long fsize = 0;
+	char *pStr = NULL;
+	char *szcode = NULL;
+	char *szmessage = NULL;
+	char *szitem = NULL;
+	char szType[2] = {0,0};
+	long ret = 0;
+	long m_mincnt = -1;
+	handle hitem = NULL;
+	handle hcnt = NULL;
+	DBInfo assign;
+	DBInfo mtr;
+	DBInfo bur;
+	DBInfo custinfo;
+	DBInfo nonpay;
+	handle hdb = NULL;
+	SQLITE sql = NewSqLite();
+			
+		hdb = sql->Open(sql);
+		if( hdb == NULL )
+		{
+			DelSqLite(sql);
+			MessageBoxEx(ERROR_OK, "데이터베이스 연결 오류.. \n리셋후 초기버젼을 재설치 해 주세요.");
+			ret = FALSE;
+			goto Finally;
+		}
+		assign.szTblnm=  "C6101_PROMISE_ASSIGN";
+		assign.nKeyCnt=  AssignKeyCnt;
+		assign.nUTotCnt=  AssignUCnt;
+		assign.nITotCnt=  AssignICnt;
+		assign.keyinfo=  m_stMwAssignKey;
+		assign.Ufldinfo=  m_stMwAssignU;
+		assign.Ifldinfo=  m_stMwAssignI;
+
+		mtr.szTblnm=     "C6101_PROMISE_mtr";
+		mtr.nKeyCnt=  MtrKeyCnt;
+		mtr.nUTotCnt=  MtrUCnt;
+		mtr.nITotCnt=  MtrICnt;
+		mtr.keyinfo=  m_stMwMtrKey;
+		mtr.Ufldinfo=  m_stMwMtrU;
+		mtr.Ifldinfo=  m_stMwMtrI;
+
+		bur.szTblnm=     "C6101_PROMISE_bur";
+		bur.nKeyCnt=  BurKeyCnt;
+		bur.nUTotCnt=  BurUCnt;
+		bur.nITotCnt=  BurICnt;
+		bur.keyinfo=  m_stMwBurKey;
+		bur.Ufldinfo=  m_stMwBurU;
+		bur.Ifldinfo=  m_stMwBurI;
+
+		custinfo.szTblnm="C6101_Pre_cust_info";
+		custinfo.nKeyCnt=  CustKeyCnt;
+		custinfo.nUTotCnt=  CustUCnt;
+		custinfo.nITotCnt=  CustICnt;
+		custinfo.keyinfo=  m_stMwCustKey;
+		custinfo.Ufldinfo=  m_stMwCustU;
+		custinfo.Ifldinfo=  m_stMwCustI;
+
+		nonpay.szTblnm=  "C6101_nonpay";
+		nonpay.nKeyCnt=  NonpayKeyCnt;
+		nonpay.nUTotCnt=  NonpayUCnt;
+		nonpay.nITotCnt=  NonpayICnt;
+		nonpay.keyinfo=  m_stMwNospayKey;
+		nonpay.Ufldinfo=  m_stMwNospayU;
+		nonpay.Ifldinfo=  m_stMwNospayI;
+
+
+		MessageBox(MESSAGE, "자료 확인중 입니다.", 0, 0, 0, 0);
+		
+		Mem_Set((byte*) szJsonpath, 0x00, sizeof( szJsonpath) );
+		SPRINT(szJsonpath, "%sFR62504_Res.JSON",  SYSTEM_COMM, 0, 0 );
+		if(FFS_Exist(szJsonpath) != TRUE )
+		{
+			Mem_Set((byte*) szJsonpath, 0x00, sizeof( szJsonpath) );
+			SPRINT(szJsonpath, "%sFR62504.JSON",  SYSTEM_COMM, 0, 0 );
+		}
+		fsize = FFS_GetSize(szJsonpath);
+		if(fsize <= 15)
+		{
+			ret = -1;
+			goto Finally;
+		}
+
+		pStr = Mem_Alloc(fsize);
+		
+		fd = FFS_Open(szJsonpath, FS_READ_MODE, FS_NORMAL_FLAG);
+		if(fd == -1)
+		{
+			ret = -1;
+			Mem_Free((byte*)pStr);
+			goto Finally;
+		}
+		
+		FFS_Read(fd, (byte*)pStr, fsize);
+
+		for(i = 0 ; i < fsize-9 ; i++ )
+		{
+			if( Mem_Cmp((byte*)pStr+i,(byte*) "\"code\"", 6) == 0  )
+			{
+				chkcode++;
+			}
+			if( Mem_Cmp((byte*)pStr+i,(byte*) "\"message\"", 9) == 0  )
+			{
+				chkmsg++;
+			}
+			if(chkmsg > 0 &&  chkcode > 0)
+				break;
+		}
+		
+		FFS_Close(fd);
+
+		Mem_Free((byte*)pStr);
+		
+		if(chkmsg == 0 || chkcode == 0)
+		{
+			ret = -1;
+			goto Finally;
+		}
+	
+		if(g_pjcomm != NULL)
+		{
+			JSON_Finalize(g_pjcomm);
+			g_pjcomm = NULL;
+		}
+
+		g_pjcomm = JSON_Create( JSON_Object );
+		if(g_pjcomm == NULL)
+		{
+			ret = -1;
+			goto Finally;
+		}
+
+		if( JSON_LoadFile(g_pjcomm, szJsonpath) > 0)
+		{
+			szcode    = JSON_GetValue (g_pjcomm, "code",    szType);
+			szmessage = JSON_GetValue (g_pjcomm, "message", szType);
+
+			if( Str_Cmp(szcode, "0000") != 0)
+			{
+  			char* pMsg = NULL;
+  			
+				Mem_Set((byte*) szJsonpath, 0x00, sizeof( szJsonpath) );
+				if(Str_Len(szmessage) < 500 )
+					SQL_ConvMbStr( szMsg, szmessage);
+				
+				//SPRINT(szJsonpath, "[%s] %s", szcode, szMsg, 0 );
+				pMsg = g_Chk_Code(szJsonpath, szcode, szMsg);
+			
+				MessageBoxEx (WARNING_OK, pMsg);
+				EvtDraw();
+				ret = -1;
+			}
+			else
+			{
+				ret = 0;
+				szitem =JSON_GetValue(g_pjcomm, "nonpay", szType);
+				if( Str_Len(szitem) > 0 )
+				{
+					hitem = JSON_Create( JSON_Array );
+					if( hitem != NULL)
+					{
+						JSON_toJson(hitem, szitem ) ;
+						ret = JSON_GetArrayCount( hitem );
+					}
+				}
+							
+				if(ret > 0 )// DB 입력
+				{				
+					SetJsonToDB_PosChg( &nonpay, sql, hitem, ret );
+				}
+				ret = 0;
+				
+				szitem =JSON_GetValue(g_pjcomm, "custinfo", szType);
+				
+				if( Str_Len(szitem) > 0 )
+				{
+					hitem = JSON_Create( JSON_Array );
+					if( hitem != NULL)
+					{
+						JSON_toJson(hitem, szitem ) ;
+						ret = JSON_GetArrayCount( hitem );
+					}
+				}
+				
+				if(ret > 0 )// DB 입력//json필드, 디비필드, 변수, 키필드, 순서, 테이블명,
+				{
+					if( hitem != NULL)
+					{
+						SetJsonToDB_PosChg( &custinfo, sql, hitem, ret );
+					}
+				}
+				
+				ret = 0;
+
+				szitem =JSON_GetValue(g_pjcomm, "mtr", szType);
+				if( Str_Len(szitem) > 0 )
+				{
+					hitem = JSON_Create( JSON_Array );
+					if( hitem != NULL)
+					{
+						JSON_toJson(hitem, szitem ) ;
+						ret = JSON_GetArrayCount( hitem );
+					}
+				}
+				
+				if(ret > 0 )// DB 입력
+				{
+					SetJsonToDB_PosChg( &mtr, sql, hitem, ret );
+				}
+						
+				ret = 0;
+				szitem =JSON_GetValue(g_pjcomm, "bur", szType);
+				
+				if( Str_Len(szitem) > 0 )
+				{
+					hitem = JSON_Create( JSON_Array );
+					if( hitem != NULL)
+					{
+						JSON_toJson(hitem, szitem ) ;
+						ret = JSON_GetArrayCount( hitem );
+					}
+				}
+				
+				if(ret > 0 )// DB 입력
+				{
+					SetJsonToDB_PosChg( &bur, sql, hitem, ret );
+				}
+				ret = 0;
+			
+				szitem =JSON_GetValue(g_pjcomm, "assign", szType);
+				if( Str_Len(szitem) > 0 )
+				{
+					hitem = JSON_Create( JSON_Array );
+					if( hitem != NULL)
+					{
+						JSON_toJson(hitem, szitem ) ;
+						m_mincnt = JSON_GetArrayCount( hitem );
+					}
+				}
+				
+				if(m_mincnt > 0 )// DB 입력
+				{
+					SetJsonToDB_PosChg( &assign, sql, hitem, m_mincnt );
+				}
+				
+				if(hitem != NULL )
+				{
+					JSON_Finalize(hitem);
+					hitem = NULL;
+				}
+			}
+		}
+		else
+		{
+			ret = 0;
+		}
+Finally:		
+
+		//sql->Commit(sql);
+		//sql->Close(sql);
+		DelSqLite(sql);
+		
+		//PRINT("DelSqLite END",0,0,0);
+		
+		if(g_pjcomm != NULL)
+		{
+			JSON_Finalize(g_pjcomm);
+			g_pjcomm = NULL;
+		}
+
+		ON_DRAW();
+		return m_mincnt;
+	}
+	
+	//----------------------------------------------------------------------
+	//기  능: 파일정보와 테이블정보를 읽어서 파일에서 DB로 데이터를 넣는다.
+	//Param : TBL 정보
+	//Return: TRUE:성공, FALSE:실패
+	//----------------------------------------------------------------------
+	bool SetJsonToDB_PosChg( DBInfo* info, SQLITE sql, handle hitem, long nTCnt )
+	{
+	long	ret = -1, idx = 0;
+	bool	bret = FALSE;
+	long 	i;
+	char	sztmp[100];
+	char	szSql[4000];
+	char	szWhere[3000];
+	char 	szType[2] = {0,0};
+	void    *Col = NULL;
+	long	nCnt = 0;
+	
+		MessageBoxEx(MESSAGE, "데이터를 확인중 입니다.");
+		
+		Mem_Set( (byte*)szSql, 0x00, sizeof(szSql )  );
+		Mem_Set( (byte*)szWhere, 0x00, sizeof(szWhere) );
+		
+		for( idx = 0 ; idx < info->nKeyCnt ; idx++ )
+		{
+			if(idx != 0)
+				Str_Cat( szWhere, " AND ");
+			Str_Cat( szWhere, info->keyinfo[idx].colnm );
+			Str_Cat( szWhere, " = ? ");
+		}
+		
+		SPRINT(szSql, " SELECT COUNT(*) FROM %s WHERE %s", info->szTblnm,  szWhere, 0 );
+		
+		sql->CreateStatement(sql, szSql);
+		if( sql->m_hStmt == NULL )
+		{
+			PRINT("::SQL_CreateStatement fail [%s]", sql->GetLastError(sql), 0, 0);
+			goto Finally;
+		}
+	
+		Mem_Set((byte*)szSql, 0x00, sizeof(szSql )  );
+		Mem_Set((byte*)szWhere, 0x00, sizeof(szWhere) );
+		
+		Str_Cpy( szSql, " INSERT INTO " );
+		Str_Cat( szSql, info->szTblnm );
+		Str_Cat( szSql, "(" );
+		
+		for( idx = 0 ; idx < info->nITotCnt ; idx++ )
+		{
+			if(idx != 0)
+			{
+				Str_Cat( szSql, ",");
+				Str_Cat( szWhere, ",");
+			}
+			Str_Cat( szSql, info->Ifldinfo[idx].colnm );
+			Str_Cat( szWhere, "?" );
+		}
+		
+		Str_Cat( szSql, ") VALUES (" );
+		Str_Cat( szSql, szWhere );
+		Str_Cat( szSql, ")" );
+		
+		//PRINT(" INSERT [%d]", Str_Len(szSql), 0 , 0);
+		
+		sql->CreateStatementI(sql, szSql);
+		if( sql->m_hIStmt == NULL )
+		{
+			PRINT("::SQL_CreateStatement fail [%s]", sql->GetLastError(sql), 0, 0);
+			goto Finally;
+		}
+		/*
+		Mem_Set((byte*)szSql, 0x00, sizeof(szSql));
+		Mem_Set((byte*)szWhere, 0x00, sizeof(szWhere));
+		
+		Str_Cpy( szSql, " UPDATE " );
+		Str_Cat( szSql, info->szTblnm );
+		Str_Cat( szSql, " SET " );
+		
+		for( idx = 0 ; idx < ( (info->nUTotCnt)-(info->nKeyCnt) ) ; idx++ )
+		{
+			if(idx != 0)
+			{
+				Str_Cat( szSql, ",");
+			}
+			Str_Cat( szSql, info->Ufldinfo[idx].colnm );
+			Str_Cat( szSql, " =? " );
+			
+		}
+		Str_Cat( szSql, " WHERE ");
+		for( idx = 0 ; idx < info->nKeyCnt ; idx++ )
+		{
+			if(idx != 0)
+				Str_Cat( szSql, " AND ");
+			Str_Cat( szSql, info->keyinfo[idx].colnm );
+			Str_Cat( szSql, " = ? ");
+		}
+		//PRINT("UPDATE [%s]", szSql, 0, 0);
+		sql->CreateStatementU(sql, szSql);
+		if( sql->m_hUStmt == NULL )
+		{
+			PRINT("::SQL_CreateStatement fail [%s]", sql->GetLastError(sql), 0, 0);
+			ret = -1;
+			goto Finally;
+		}
+		*/
+		for( i = 0 ; i < nTCnt ; i++   )
+		{
+			//if( i % 100 == 0 || i == nTCnt-1 )
+			//{
+				//DRAW_PROGRESS (BAR_X, BAR_Y, BAR_WIDTH, BAR_HEIGHT, i+1, nTCnt);
+			//}			
+		
+			for(idx = 0; idx < info->nKeyCnt ; idx++)
+			{
+				Col = JSON_GetArrayItem ( hitem, i, info->keyinfo[idx].jsonnm, szType);				
+				if(szType[0] == 'C')
+				{
+					sql->Bind(sql, idx, 'C', (long*)Col, Str_Len(Col), info->keyinfo[idx].encrypt );
+				}
+				else if(szType[0] == 'X')
+				{
+					sql->Bind(sql, idx, 'X', Col, 4, info->keyinfo[idx].encrypt );
+				}
+			}
+			sql->Begin(sql);
+			bret = sql->Execute(sql);
+			if(bret == FALSE)
+			{
+				PRINT("::sql->Execut [%s]", sql->GetLastError(sql), 0, 0);
+				ret = -1;
+				goto Finally;
+			}
+			
+			while( sql->Next(sql) == TRUE )
+			{
+				nCnt = 0;
+				sql->GetValue( sql, 0, 'X', &nCnt, sizeof(nCnt), DECRYPT );
+				//PRINT("count(*) [%d]", nCnt, 0, 0);	
+			}
+			//자료의 존재여부 확인해서 인서트만 한다.
+			if( nCnt == 0 )
+			{	
+				for(idx = 0; idx < info->nITotCnt ; idx++)
+				{
+				
+					Col = JSON_GetArrayItem ( hitem, i, info->Ifldinfo[idx].jsonnm, szType);
+//PRINT("szType=%s, %s",szType,info->Ifldinfo[idx].jsonnm,0);
+					if(szType[0] == 'C')
+					{
+						sql->IBind(sql, idx, 'C', (long*)Col, Str_Len(Col), info->Ifldinfo[idx].encrypt );
+					}
+					else if(szType[0] == 'X')
+					{
+						sql->IBind(sql, idx, 'X', Col, 4, info->Ifldinfo[idx].encrypt );
+					}
+					else
+					{
+						//nCnt = 0;
+						switch( info->Ifldinfo[idx].type )
+						{
+						case SQLITE_INT:
+							//PRINT("SQLITE_INT NULL[%s],[%s] ",info->Ifldinfo[idx].jsonnm,info->Ifldinfo[idx].colnm,0);
+							nCnt = 0;
+							sql->IBind(sql, idx, 'X', &nCnt, 4, info->Ifldinfo[idx].encrypt );
+							//PRINT("SetJsonToDB::[%d][%s][%d]", idx, info->Ifldinfo[idx].jsonnm, nCnt);
+							break;
+						case SQLITE_STR:
+							//PRINT("SQLITE_STR NULL[%s],[%s]",info->Ifldinfo[idx].jsonnm,info->Ifldinfo[idx].colnm,0);
+							Mem_Set((byte*)sztmp, 0x00, sizeof(sztmp));					
+							sql->IBind(sql, idx, 'C', (long*)sztmp, Str_Len(sztmp), info->Ifldinfo[idx].encrypt );
+							//PRINT("SetJsonToDB::[%d][%s][%s]", idx, info->Ifldinfo[idx].jsonnm, szCol);
+							break;
+						}
+					}
+				}
+				sql->Begin(sql);
+				bret = sql->ExecuteI(sql);
+				
+				if(bret == FALSE)
+				{
+					PRINT("::sql->ExecuteI [%s]", sql->GetLastError(sql), 0, 0);
+					ret = -1;
+					goto Finally;
+				}
+			}
+			/*
+			else
+			{
+				for(idx = 0; idx < info->nUTotCnt ; idx++)
+				{
+					switch( info->Ufldinfo[idx].type )
+					{
+					case SQLITE_INT:#ifdef target_HD720
+#endif
+
+						nCnt = 0;
+						nCol = (long*)JSON_GetArrayItem ( hitem, i, info->Ufldinfo[idx].jsonnm, szType);
+						nCnt = *nCol;
+						sql->UBind(sql, idx, 'X', &nCnt, 4, info->Ufldinfo[idx].encrypt );
+						//PRINT("SetJsonToDB::[%d][%s][%d]", idx, info->Ufldinfo[idx].jsonnm, nCnt);	
+						break;
+					case SQLITE_STR:	
+						szCol = JSON_GetArrayItem ( hitem, i, info->Ufldinfo[idx].jsonnm, szType);
+						
+						sql->UBind(sql, idx, 'C', (long*)szCol, Str_Len(szCol), info->Ufldinfo[idx].encrypt );
+						//PRINT("SetJsonToDB::[%d][%s][%s]", idx, info->Ufldinfo[idx].jsonnm, szCol);
+						break;
+					}
+				}
+				sql->Begin(sql);
+				ret = sql->ExecuteU(sql);
+				if(!ret)
+				{
+					ret = FALSE;
+					goto Finally;
+				}
+				
+			}
+			*/
+			ret = TRUE;
+		}
+Finally:
+		sql->DeleteStatement(sql);
+
+		
+		return ret;
+	}
+	
+	//──────────────────────────────────────────────
+	//오즈 데이터 저장
+	void Rcv_OzData(char* szOzData)
+	{
+		char szTmp[500];
+		char szBuf[256];
+		char szRet[50];
+		char szFolderNm[128];
+		char szFileNm[256];
+		char szCopyNm[256];
+		char szCopyPath[256];
+		char szBanknm[50];
+		char szBankcd[10];
+		long fd, i = 0, j = 0, k = 0;
+		long lFileLen = 0;
+		long lAddrLen = 0;
+		long lRet = 0;
+		long lCnt = 0;
+		char *szitem;
+		char *szPath;
+		char *szData;
+		char *szAddrMode;
+		char *szAddrSeq;
+		long *nCol;
+		long nCnt = 0;
+		char szType[2] = {0,0};
+		long ret = 0;
+		handle hItem = NULL;
+		handle hPath = NULL;
+		handle hData = NULL;
+		handle hAddrMode = NULL;
+		handle hAddrSeq = NULL;
+
+		Mem_Set((byte*)&m_stOzData, 0x00, sizeof(m_stOzData));
+		
+		hItem = JSON_Create( JSON_Object );
+		
+		if( hItem != NULL)
+		{
+			JSON_toJson(hItem, szOzData ) ;
+			
+			//입력 정보
+			Mem_Set((byte*)szTmp, 0x00, sizeof(szTmp));
+			Str_Cpy(szTmp, JSON_GetValue (hItem, "ret_action",    szType));
+
+			if( Str_Cmp(szTmp, "btnSave") == 0 )
+			{
+				//입력 정보
+				szData = JSON_GetValue (hItem, "ret_data",    szType);
+				
+				hData = JSON_Create( JSON_Object );
+				
+				if( hData != NULL )
+				{
+					JSON_toJson( hData, szData ) ;
+					
+					Str_Cpy(m_stOzData.USE_CONT_NUM       , m_stUsedata.USE_CONT_NUM);
+					Str_Cpy(m_stOzData.BRANCH_CD          , stUserinfo.szbranch_cd);
+					Str_Cpy(m_stOzData.CENTER_CD          , stUserinfo.szcenter_cd);
+					Str_Cpy(m_stOzData.INST_PLACE_NUM     , JSON_GetValue (hData, "pmUsecontnum",    szType));
+					Str_Cpy(m_stOzData.CUST_NUM           , m_stUsedata.CUST_NUM);
+					Str_Cpy(m_stOzData.CUST_NM            , JSON_GetValue (hData, "pmName",    szType));
+					
+					//long m_lDocFlag = 0;	//명의유지 = 2, 명의변경 = 3 flag
+					if( m_lDocFlag == 1 )
+					{
+						if( m_stUsedata.CUST_NUM[0] == '0' )
+						{
+							Str_Cpy(m_stOzData.CHG_CUST_TYPE          , "20");
+							Str_Cpy(m_stOzData.TRANS_FLAG             , "3");	
+						}
+						else
+						{
+							Str_Cpy(m_stOzData.CHG_CUST_TYPE          , "30");
+							Str_Cpy(m_stOzData.TRANS_FLAG             , "1");
+						}
+					}
+					else if( m_lDocFlag == 2 )
+					{
+						Str_Cpy(m_stOzData.CHG_CUST_TYPE          , "10");
+						Str_Cpy(m_stOzData.TRANS_FLAG             , "2");
+					}
+					else if( m_lDocFlag == 3 )
+					{
+						Str_Cpy(m_stOzData.CHG_CUST_TYPE          , "20");
+						Str_Cpy(m_stOzData.TRANS_FLAG             , "3");
+					}
+					else if( m_lDocFlag == 4 )
+					{
+						Str_Cpy(m_stOzData.CHG_CUST_TYPE          , "30");
+						Str_Cpy(m_stOzData.TRANS_FLAG             , "1");
+					}
+					else
+					{	
+						Str_Cpy(m_stOzData.CHG_CUST_TYPE          , "");
+						Str_Cpy(m_stOzData.TRANS_FLAG             , "1");
+					}
+					
+					//2017.11.22 신기호 추가
+					if( m_lDocFlag == 1 )
+					{
+						Str_Cpy(m_stOzData.DATA_COL_TYPE          , "10");
+					}
+					else if( Str_Cmp(stMw.szSend_Info_Trans_yn, "Y") == 0 )
+					{
+						Str_Cpy(m_stOzData.DATA_COL_TYPE          , "10");
+					}
+					else
+					{
+						Str_Cpy(m_stOzData.DATA_COL_TYPE          , "50");
+					}
+					
+					//자동이체 신청&해지 여부 = new 신청 , = cancel 신청취소(해지), = NULL 통과(기존거 사용)
+					Str_Cpy(m_stOzData.OZ_TRAN_REQ_FLAG, JSON_GetValue (hData, "pmBanktype",    szType));
+					if( Str_Cmp(m_stOzData.OZ_TRAN_REQ_FLAG, "new") == 0 ||
+					    Str_Cmp(m_stOzData.OZ_TRAN_REQ_FLAG, "cancel") == 0 )
+					{
+						//납부방법 ( 10 : 은행자동이체, 20 : 카드자동이체, NULL : 지로 )
+						//if( Str_Cmp(m_stOzData.PAYMENT_METHOD, "10") == 0 )
+						Mem_Set((byte*)szTmp, 0x00, sizeof(szTmp));
+						Str_Cpy(szTmp     , JSON_GetValue (hData, "pmPayment",    szType));
+						if( Str_Cmp(szTmp, "은행자동이체") == 0 )
+						{
+							Str_Cpy(m_stOzData.TRAN_FLAG, "10");
+							Str_Cpy(m_stOzData.PAYMENT_METHOD, "10");
+							Str_Cpy(m_stOzData.PAY_METHOD_TYPE, "10");
+							
+							lCnt = 0;
+							g_Sql_RetInt("SELECT COUNT(*) FROM COMMONCODE WHERE CODE_ID = 'C61999'", &lCnt);
+							
+							Mem_Set((byte*)szBanknm, 0x00, sizeof(szBanknm));	
+							Str_Cpy(szBanknm     , JSON_GetValue (hData, "pmBankText",    szType));
+							for( i=0 ; i < lCnt ; i++ )
+							{
+								Mem_Set((byte*)szTmp, 0x00, sizeof(szTmp));	
+								Mem_Set((byte*)szBuf, 0x00, sizeof(szBuf));	
+								Mem_Set((byte*)szRet, 0x00, sizeof(szRet));	
+								SPRINT(szTmp,"SELECT ITEM_KNAME FROM COMMONCODE WHERE CODE_ID = 'C61999' LIMIT %d, 1",i,0,0);
+								g_Sql_RetStr(szTmp, 10, szBuf);
+								Mem_Cpy((byte *)szRet, (byte *)szBuf+5, Str_Len(szBuf)-5);
+								if( Str_Cmp(szBanknm, szRet) == 0 )
+								{
+									Mem_Set((byte*)szBankcd, 0x00, sizeof(szBankcd));	
+									Mem_Cpy((byte *)szBankcd, (byte *)szBuf, 3);
+									Str_Cpy(m_stOzData.BNK_CD, szBankcd);
+									Str_Cpy(m_stOzData.BNK_BRANCH_NM, szBanknm);
+									break;
+								}
+							}
+	
+							Str_Cpy(m_stOzData.DEPOSITOR_NM        , JSON_GetValue (hData, "pmAccname",    szType));
+							Str_Cpy(m_stOzData.DEPOSITOR_TEL_DDD   , JSON_GetValue (hData, "pmAccphone1",    szType));
+							Str_Cpy(m_stOzData.DEPOSITOR_TEL_EXN   , JSON_GetValue (hData, "pmAccphone2",    szType));
+							Str_Cpy(m_stOzData.DEPOSITOR_TEL_NUM   , JSON_GetValue (hData, "pmAccphone3",    szType));
+							Str_Cpy(m_stOzData.DEFRAY_ACCOUNT_NUM  , JSON_GetValue (hData, "pmAcc",    szType));
+							Str_Cpy(m_stOzData.DEPOSITOR_BIRTH_DATE, JSON_GetValue (hData, "pmAccbirthdate",    szType));
+							Str_Chg(m_stOzData.DEPOSITOR_BIRTH_DATE, STRCHG_DEL_NONDIGIT);
+							Str_Cpy(m_stOzData.CUST_RELAT_CD  , "");
+	
+							Mem_Set((byte*)szBuf, 0x00, sizeof(szBuf));	
+							Mem_Set((byte*)szRet, 0x00, sizeof(szRet));	
+							Mem_Set((byte*)szTmp, 0x00, sizeof(szTmp));	
+							Str_Cpy(szRet       , JSON_GetValue (hData, "pmAccrelation",    szType));
+							SPRINT(szTmp,"SELECT CODE_ITEM FROM COMMONCODE WHERE CODE_ID = 'C10004' AND ITEM_KNAME = '%s'", szRet,0,0);
+							g_Sql_RetStr(szTmp, 20, m_stOzData.DEPOSITOR_RELAT_CD);
+							
+							Str_Cpy(m_stOzData.REQ_NM              , JSON_GetValue (hData, "pmAgentname",    szType));
+							Str_Cpy(m_stOzData.REQ_TEL_DDD         , JSON_GetValue (hData, "pmAgentphone1",    szType));
+							Str_Cpy(m_stOzData.REQ_TEL_EXN         , JSON_GetValue (hData, "pmAgentphone2",    szType));
+							Str_Cpy(m_stOzData.REQ_TEL_NUM         , JSON_GetValue (hData, "pmAgentphone3",    szType));
+						}
+						else if( Str_Cmp(szTmp, "카드자동이체") == 0 )
+						{
+							Str_Cpy(m_stOzData.TRAN_FLAG, "20");
+							Str_Cpy(m_stOzData.PAYMENT_METHOD, "20");
+							Str_Cpy(m_stOzData.PAY_METHOD_TYPE, "10");
+							
+							lCnt = 0;
+							g_Sql_RetInt("SELECT COUNT(*) FROM COMMONCODE WHERE CODE_ID = 'C61998'", &lCnt);
+							
+							Mem_Set((byte*)szBanknm, 0x00, sizeof(szBanknm));	
+							Str_Cpy(szBanknm     , JSON_GetValue (hData, "pmBankText",    szType));
+							for( i=0 ; i < lCnt ; i++ )
+							{
+								Mem_Set((byte*)szTmp, 0x00, sizeof(szTmp));	
+								Mem_Set((byte*)szBuf, 0x00, sizeof(szBuf));	
+								Mem_Set((byte*)szRet, 0x00, sizeof(szRet));	
+								SPRINT(szTmp,"SELECT ITEM_KNAME FROM COMMONCODE WHERE CODE_ID = 'C61998' LIMIT %d, 1",i,0,0);
+								g_Sql_RetStr(szTmp, 10, szBuf);
+								Mem_Cpy((byte *)szRet, (byte *)szBuf+5, Str_Len(szBuf)-5);
+								if( Str_Cmp(szBanknm, szRet) == 0 )
+								{
+									Mem_Set((byte*)szBankcd, 0x00, sizeof(szBankcd));	
+									Mem_Cpy((byte *)szBankcd, (byte *)szBuf, 3);
+									Str_Cpy(m_stOzData.BNK_CD, szBankcd);
+									Str_Cpy(m_stOzData.BNK_BRANCH_NM, szBanknm);
+									break;
+								}
+							}
+	
+							Str_Cpy(m_stOzData.DEPOSITOR_NM        , JSON_GetValue (hData, "pmAccname",    szType));
+							Str_Cpy(m_stOzData.DEPOSITOR_TEL_DDD   , JSON_GetValue (hData, "pmAccphone1",    szType));
+							Str_Cpy(m_stOzData.DEPOSITOR_TEL_EXN   , JSON_GetValue (hData, "pmAccphone2",    szType));
+							Str_Cpy(m_stOzData.DEPOSITOR_TEL_NUM   , JSON_GetValue (hData, "pmAccphone3",    szType));
+							Str_Cpy(m_stOzData.DEFRAY_ACCOUNT_NUM  , JSON_GetValue (hData, "pmAcc",    szType));
+							Str_Cpy(m_stOzData.DEPOSITOR_BIRTH_DATE, JSON_GetValue (hData, "pmAccbirthdate",    szType));
+							Str_Chg(m_stOzData.DEPOSITOR_BIRTH_DATE, STRCHG_DEL_NONDIGIT);
+							Str_Cpy(m_stOzData.CUST_RELAT_CD  , "");
+	
+							Mem_Set((byte*)szBuf, 0x00, sizeof(szBuf));	
+							Mem_Set((byte*)szRet, 0x00, sizeof(szRet));	
+							Mem_Set((byte*)szTmp, 0x00, sizeof(szTmp));	
+							Str_Cpy(szRet       , JSON_GetValue (hData, "pmAccrelation",    szType));
+							SPRINT(szTmp,"SELECT CODE_ITEM FROM COMMONCODE WHERE CODE_ID = 'C10004' AND ITEM_KNAME = '%s'", szRet,0,0);
+							g_Sql_RetStr(szTmp, 20, m_stOzData.DEPOSITOR_RELAT_CD);
+							
+							Str_Cpy(m_stOzData.REQ_NM              , JSON_GetValue (hData, "pmAgentname",    szType));
+							Str_Cpy(m_stOzData.REQ_TEL_DDD         , JSON_GetValue (hData, "pmAgentphone1",    szType));
+							Str_Cpy(m_stOzData.REQ_TEL_EXN         , JSON_GetValue (hData, "pmAgentphone2",    szType));
+							Str_Cpy(m_stOzData.REQ_TEL_NUM         , JSON_GetValue (hData, "pmAgentphone3",    szType));
+						}
+						else
+						{
+							if( Str_Cmp(m_stOzData.OZ_TRAN_REQ_FLAG, "cancel") == 0 )
+							{
+								//자동이체 신청 취소
+								Str_Cpy(m_stOzData.PAYMENT_METHOD, "");
+								Str_Cpy(m_stOzData.PAY_METHOD_TYPE, "20");
+							}
+							else
+							{
+								//지로 -> 지로
+								Str_Cpy(m_stOzData.PAYMENT_METHOD, "");
+								Str_Cpy(m_stOzData.PAY_METHOD_TYPE, "");
+							}
+							Str_Cpy(m_stOzData.TRAN_FLAG           , "");
+							
+							Str_Cpy(m_stOzData.BNK_CD              , "");
+							Str_Cpy(m_stOzData.BNK_BRANCH_NM       , "");
+							Str_Cpy(m_stOzData.DEPOSITOR_NM        , "");
+							Str_Cpy(m_stOzData.DEPOSITOR_TEL_DDD   , "");
+							Str_Cpy(m_stOzData.DEPOSITOR_TEL_EXN   , "");
+							Str_Cpy(m_stOzData.DEPOSITOR_TEL_NUM   , "");
+							Str_Cpy(m_stOzData.DEFRAY_ACCOUNT_NUM  , "");
+							Str_Cpy(m_stOzData.DEPOSITOR_BIRTH_DATE, "");
+							Str_Cpy(m_stOzData.DEPOSITOR_RELAT_CD  , "");
+							Str_Cpy(m_stOzData.CUST_RELAT_CD       , "");
+							Str_Cpy(m_stOzData.REQ_NM              , "");
+							Str_Cpy(m_stOzData.REQ_TEL_DDD         , "");
+							Str_Cpy(m_stOzData.REQ_TEL_EXN         , "");
+							Str_Cpy(m_stOzData.REQ_TEL_NUM         , "");
+						}
+					}
+					else
+					{
+						Str_Cpy(m_stOzData.PAYMENT_METHOD      , "");
+						Str_Cpy(m_stOzData.PAY_METHOD_TYPE     , "");
+						Str_Cpy(m_stOzData.TRAN_FLAG           , "");
+						Str_Cpy(m_stOzData.BNK_CD              , "");
+						Str_Cpy(m_stOzData.BNK_BRANCH_NM       , "");
+						Str_Cpy(m_stOzData.DEPOSITOR_NM        , "");
+						Str_Cpy(m_stOzData.DEPOSITOR_TEL_DDD   , "");
+						Str_Cpy(m_stOzData.DEPOSITOR_TEL_EXN   , "");
+						Str_Cpy(m_stOzData.DEPOSITOR_TEL_NUM   , "");
+						Str_Cpy(m_stOzData.DEFRAY_ACCOUNT_NUM  , "");
+						Str_Cpy(m_stOzData.DEPOSITOR_BIRTH_DATE, "");
+						Str_Cpy(m_stOzData.DEPOSITOR_RELAT_CD  , "");
+						Str_Cpy(m_stOzData.CUST_RELAT_CD       , "");
+						Str_Cpy(m_stOzData.REQ_NM              , "");
+						Str_Cpy(m_stOzData.REQ_TEL_DDD         , "");
+						Str_Cpy(m_stOzData.REQ_TEL_EXN         , "");
+						Str_Cpy(m_stOzData.REQ_TEL_NUM         , "");
+					}
+
+					Mem_Set((byte*)szTmp, 0x00, sizeof(szTmp));
+					Str_Cpy(szTmp     , JSON_GetValue (hData, "pmBilling",    szType));
+					if( Str_Cmp(szTmp, "LMS") == 0 )
+					{
+						Str_Cpy(m_stOzData.BILING_METHOD, "30");
+
+						Str_Cpy(m_stOzData.LMS_TEL_DDD         , JSON_GetValue (hData, "pmLms1",    szType) );
+						Str_Cpy(m_stOzData.LMS_TEL_EXN         , JSON_GetValue (hData, "pmLms2",    szType) );
+						Str_Cpy(m_stOzData.LMS_TEL_NUM         , JSON_GetValue (hData, "pmLms3",    szType) );
+						
+						if( Str_Cmp(m_stUsedata.BILING_METHOD, "70") != 0 )
+						{
+							Str_Cpy(m_stOzData.BILL_METHOD_TYPE, "10");
+							Str_Cpy(m_stOzData.OZ_LMS_REQ_FLAG     , "new");
+							Str_Cpy(m_stOzData.OZ_EMAIL_REQ_FLAG     , "");
+						}
+						else
+						{
+							if( Str_Cmp(m_stOzData.LMS_TEL_DDD, m_stUsedata.LMS_TEL_DDD) != 0 ||
+							    Str_Cmp(m_stOzData.LMS_TEL_EXN, m_stUsedata.LMS_TEL_EXN) != 0 ||
+							    Str_Cmp(m_stOzData.LMS_TEL_NUM, m_stUsedata.LMS_TEL_NUM) != 0 )
+							{
+								Str_Cpy(m_stOzData.OZ_LMS_REQ_FLAG     , "modify");
+								Str_Cpy(m_stOzData.OZ_EMAIL_REQ_FLAG     , "");
+							}
+							else
+							{
+								if( Str_Cmp(m_stOzData.CHG_CUST_TYPE, "20") == 0 )
+								{
+									Str_Cpy(m_stOzData.BILL_METHOD_TYPE, "10");
+									Str_Cpy(m_stOzData.OZ_LMS_REQ_FLAG     , "");
+									Str_Cpy(m_stOzData.OZ_EMAIL_REQ_FLAG     , "");
+
+								}
+								else
+								{
+									if( g_nWorkFlag == 610 )
+									{
+										//전입민원의 경우 -> 무조건 신청(데이터가 들어가있어도 신청, 무조건!!)
+										Str_Cpy(m_stOzData.BILL_METHOD_TYPE, "10");
+										Str_Cpy(m_stOzData.OZ_LMS_REQ_FLAG     , "new");
+										Str_Cpy(m_stOzData.OZ_EMAIL_REQ_FLAG     , "");
+									}
+									else
+									{
+										Str_Cpy(m_stOzData.BILL_METHOD_TYPE, "");
+										Str_Cpy(m_stOzData.OZ_LMS_REQ_FLAG     , "");
+										Str_Cpy(m_stOzData.OZ_EMAIL_REQ_FLAG     , "");
+									}
+								}
+							}
+						}
+
+						Mem_Set((byte*)szTmp, 0x00, sizeof(szTmp));
+						Str_Cpy(m_stOzData.EMAIL_REQ_ADDR      , JSON_GetValue (hData, "pmEmail1",    szType) );
+						Str_Cpy(szTmp                          , JSON_GetValue (hData, "pmEmail2",    szType) );
+						if( Str_Len(m_stOzData.EMAIL_REQ_ADDR) > 0 || Str_Len(szTmp) > 0 )
+						{
+							Str_Cat(m_stOzData.EMAIL_REQ_ADDR, "@");
+							Str_Cat(m_stOzData.EMAIL_REQ_ADDR, szTmp);
+
+							//입력된 이메일 주소가 없는 경우 @제거
+							Str_Chg(m_stOzData.EMAIL_REQ_ADDR, STRCHG_DEL_ALL_SPACE);
+							if( Str_Cmp(m_stOzData.EMAIL_REQ_ADDR, "@") == 0 )
+							{
+								Str_Cpy(m_stOzData.EMAIL_REQ_ADDR, "");
+							}
+						}
+						else
+						{
+							Str_Cat(m_stOzData.EMAIL_REQ_ADDR, "");
+						}
+					}
+					else if( Str_Cmp(szTmp, "E-mail") == 0 )
+					{
+						Str_Cpy(m_stOzData.BILING_METHOD, "40");
+						//Str_Cpy(m_stOzData.BILL_METHOD_TYPE, "10");
+
+						Mem_Set((byte*)szTmp, 0x00, sizeof(szTmp));
+						Str_Cpy(m_stOzData.EMAIL_REQ_ADDR      , JSON_GetValue (hData, "pmEmail1",    szType) );
+						Str_Cpy(szTmp                          , JSON_GetValue (hData, "pmEmail2",    szType) );
+
+						if( Str_Cmp(m_stUsedata.BILING_METHOD, "40") != 0 )
+						{
+							Str_Cpy(m_stOzData.BILL_METHOD_TYPE, "10");
+							Str_Cpy(m_stOzData.OZ_LMS_REQ_FLAG     , "");
+							Str_Cpy(m_stOzData.OZ_EMAIL_REQ_FLAG     , "new");
+						}
+						else
+						{
+							if( Str_Cmp(m_stOzData.EMAIL_REQ_ADDR, m_stUsedata.EMAIL_REQ_ID) != 0 ||
+							    Str_Cmp(szTmp, m_stUsedata.EMAIL_REQ_ADDR) != 0 )
+							{
+								Str_Cpy(m_stOzData.OZ_LMS_REQ_FLAG     , "");
+								Str_Cpy(m_stOzData.OZ_EMAIL_REQ_FLAG     , "modify");
+							}
+							else
+							{
+								if( Str_Cmp(m_stOzData.CHG_CUST_TYPE, "20") == 0 )
+								{
+									Str_Cpy(m_stOzData.BILL_METHOD_TYPE, "10");
+									Str_Cpy(m_stOzData.OZ_LMS_REQ_FLAG     , "");
+									Str_Cpy(m_stOzData.OZ_EMAIL_REQ_FLAG     , "");
+
+								}
+								else
+								{
+									if( g_nWorkFlag == 610 )
+									{
+										//전입민원의 경우 -> 무조건 신청(데이터가 들어가있어도 신청, 무조건!!)
+										Str_Cpy(m_stOzData.BILL_METHOD_TYPE, "10");
+										Str_Cpy(m_stOzData.OZ_LMS_REQ_FLAG     , "");
+										Str_Cpy(m_stOzData.OZ_EMAIL_REQ_FLAG     , "new");
+									}
+									else
+									{
+										Str_Cpy(m_stOzData.BILL_METHOD_TYPE, "");
+										Str_Cpy(m_stOzData.OZ_LMS_REQ_FLAG     , "");
+										Str_Cpy(m_stOzData.OZ_EMAIL_REQ_FLAG     , "");
+									}
+								}
+							}
+						}
+						
+						//Str_Cat(m_stOzData.EMAIL_REQ_ADDR, "@");
+						//Str_Cat(m_stOzData.EMAIL_REQ_ADDR, szTmp);
+						if( Str_Len(m_stOzData.EMAIL_REQ_ADDR) > 0 || Str_Len(szTmp) > 0 )
+						{
+							Str_Cat(m_stOzData.EMAIL_REQ_ADDR, "@");
+							Str_Cat(m_stOzData.EMAIL_REQ_ADDR, szTmp);
+
+							//입력된 이메일 주소가 없는 경우 @제거
+							Str_Chg(m_stOzData.EMAIL_REQ_ADDR, STRCHG_DEL_ALL_SPACE);
+							if( Str_Cmp(m_stOzData.EMAIL_REQ_ADDR, "@") == 0 )
+							{
+								Str_Cpy(m_stOzData.EMAIL_REQ_ADDR, "");
+							}
+						}
+						else
+						{
+							Str_Cat(m_stOzData.EMAIL_REQ_ADDR, "");
+						}
+
+						Str_Cpy(m_stOzData.LMS_TEL_DDD         , "" );
+						Str_Cpy(m_stOzData.LMS_TEL_EXN         , "" );
+						Str_Cpy(m_stOzData.LMS_TEL_NUM         , "" );
+					}
+					else
+					{
+						if( g_nWorkFlag == 610 )
+						{
+							if( Str_Cmp(szTmp, "모바일") == 0 )
+							{
+								Str_Cpy(m_stOzData.OZ_LMS_REQ_FLAG     , "");
+								Str_Cpy(m_stOzData.OZ_EMAIL_REQ_FLAG   , "");
+								Str_Cpy(m_stOzData.BILL_METHOD_TYPE, "10");
+							}
+							else
+							{
+								Str_Cpy(m_stOzData.OZ_LMS_REQ_FLAG     , "");
+								Str_Cpy(m_stOzData.OZ_EMAIL_REQ_FLAG   , "");
+								Str_Cpy(m_stOzData.BILL_METHOD_TYPE, "");
+							}
+						}
+						else
+						{
+							//기존 청구방법 확인 -> 취소 or 고지서
+							if( Str_Cmp(m_stUsedata.BILING_METHOD, "70") == 0 )
+							{
+								Str_Cpy(m_stOzData.OZ_EMAIL_REQ_FLAG   , "");
+								Str_Cpy(m_stOzData.OZ_LMS_REQ_FLAG     , "cancel");
+								Str_Cpy(m_stOzData.BILL_METHOD_TYPE, "20");
+							}
+							else if( Str_Cmp(m_stUsedata.BILING_METHOD, "40") == 0 )
+							{
+								Str_Cpy(m_stOzData.OZ_EMAIL_REQ_FLAG     , "cancel");
+								Str_Cpy(m_stOzData.OZ_LMS_REQ_FLAG     , "");
+								Str_Cpy(m_stOzData.BILL_METHOD_TYPE, "20");
+							}
+							else
+							{
+								if( Str_Cmp(szTmp, "모바일") == 0 )
+								{
+									Str_Cpy(m_stOzData.OZ_LMS_REQ_FLAG     , "");
+									Str_Cpy(m_stOzData.OZ_EMAIL_REQ_FLAG   , "");
+									Str_Cpy(m_stOzData.BILL_METHOD_TYPE, "10");
+								}
+								else
+								{
+									Str_Cpy(m_stOzData.OZ_LMS_REQ_FLAG     , "");
+									Str_Cpy(m_stOzData.OZ_EMAIL_REQ_FLAG   , "");
+									Str_Cpy(m_stOzData.BILL_METHOD_TYPE, "");
+								}
+							}
+						}
+						
+						if( Str_Cmp(szTmp, "모바일") == 0 )
+						{
+							Str_Cpy(m_stOzData.BILING_METHOD, "50");
+						}
+						else
+						{
+							Str_Cpy(m_stOzData.BILING_METHOD, "");
+						}
+						
+						Str_Cpy(m_stOzData.LMS_TEL_DDD         , "" );
+						Str_Cpy(m_stOzData.LMS_TEL_EXN         , "" );
+						Str_Cpy(m_stOzData.LMS_TEL_NUM         , "" );
+
+						Mem_Set((byte*)szTmp, 0x00, sizeof(szTmp));
+						Str_Cpy(m_stOzData.EMAIL_REQ_ADDR      , JSON_GetValue (hData, "pmEmail1",    szType) );
+						Str_Cpy(szTmp                          , JSON_GetValue (hData, "pmEmail2",    szType) );
+						//Str_Cat(m_stOzData.EMAIL_REQ_ADDR, "@");
+						//Str_Cat(m_stOzData.EMAIL_REQ_ADDR, szTmp);
+						if( Str_Len(m_stOzData.EMAIL_REQ_ADDR) > 0 || Str_Len(szTmp) > 0 )
+						{
+							Str_Cat(m_stOzData.EMAIL_REQ_ADDR, "@");
+							Str_Cat(m_stOzData.EMAIL_REQ_ADDR, szTmp);
+
+							//입력된 이메일 주소가 없는 경우 @제거
+							Str_Chg(m_stOzData.EMAIL_REQ_ADDR, STRCHG_DEL_ALL_SPACE);
+							if( Str_Cmp(m_stOzData.EMAIL_REQ_ADDR, "@") == 0 )
+							{
+								Str_Cpy(m_stOzData.EMAIL_REQ_ADDR, "");
+							}
+						}
+						else
+						{
+							Str_Cat(m_stOzData.EMAIL_REQ_ADDR, "");
+						}
+					}
+
+					//입력데이터 형식 확인(yyyymmdd OR yyyy년mm월dd일) -> 현재는 후자로 내려옴
+					Str_Cpy(m_stOzData.SOC_NUM                     , JSON_GetValue (hData, "pmBirthdate",    szType) );
+					Str_Cat(m_stOzData.SOC_NUM, "0000000");
+					Str_Chg(m_stOzData.SOC_NUM, STRCHG_DEL_NONDIGIT);
+					
+					Str_Cpy(m_stOzData.GENDER                      , JSON_GetValue (hData, "pmSex",    szType) );
+					Str_Cpy(m_stOzData.TRAN_REQ_YMD                , JSON_GetValue (hData, "pmCurrentdate",    szType) );
+					Str_Chg(m_stOzData.TRAN_REQ_YMD, STRCHG_DEL_NONDIGIT);
+
+					//내려오는 데이터 전화번호 필드 확인(OZ쪽)
+					Str_Cpy(m_stOzData.OWNHOUSE_TEL_DDD            , JSON_GetValue (hData, "pmTel1",    szType) );
+					Str_Cpy(m_stOzData.OWNHOUSE_TEL_EXN            , JSON_GetValue (hData, "pmTel2",    szType) );
+					Str_Cpy(m_stOzData.OWNHOUSE_TEL_NUM            , JSON_GetValue (hData, "pmTel3",    szType) );
+					Str_Cpy(m_stOzData.CP_DDD                      , JSON_GetValue (hData, "pmPhone1",    szType) );
+					Str_Cpy(m_stOzData.CP_EXN                      , JSON_GetValue (hData, "pmPhone2",    szType) );
+					Str_Cpy(m_stOzData.CP_NUM                      , JSON_GetValue (hData, "pmPhone3",    szType) );
+					Str_Cpy(m_stOzData.ADDR_UNION                  , JSON_GetValue (hData, "pmAddr",    szType) );
+					
+					Str_Cpy(m_stOzData.INFO_USE_AGREE_YN           , JSON_GetValue (hData, "pmAgreetitle1",    szType) );
+					Str_Cpy(m_stOzData.INFO_USE_YN4                , JSON_GetValue (hData, "pmAgreetitle2",    szType) );
+					Str_Cpy(m_stOzData.INFO_USE_YN                 , JSON_GetValue (hData, "pmAgreetitle3",    szType) );
+					Str_Cpy(m_stOzData.INFO_USE_YN5                , JSON_GetValue (hData, "pmAgreetitle4",    szType) );
+					Str_Cpy(m_stOzData.INFO_USE_YN6                , JSON_GetValue (hData, "pmAgreetitle5",    szType) );
+				}
+				
+				//인증 카드 정보
+				Str_Cpy(m_stOzData.CARD_VALID_PERIOD               , JSON_GetValue (hItem, "card_valid_period",    szType) );
+				Str_Cpy(m_stOzData.CARD_JOIN_YN                    , JSON_GetValue (hItem, "card_join_yn",    szType) );
+
+				
+				//PDF 경로
+				szPath = JSON_GetValue (hItem, "pdf_path",    szType);
+	
+				hPath = JSON_Create( JSON_Object );
+				if( hPath != NULL )
+				{
+					//OZ 파일(PDF) 을 Smart폴더 안의 폴더에 복사
+					JSON_toJson( hPath, szPath ) ;
+		
+					j = 0;
+					k = 0;
+					Mem_Set((byte*)szTmp, 0x00, sizeof(szTmp));
+					Mem_Set((byte*)szFolderNm, 0x00, sizeof(szFolderNm));
+					Mem_Set((byte*)szCopyNm, 0x00, sizeof(szCopyNm));
+					
+					Str_Cpy(szTmp, JSON_GetValue (hPath, "Path",    szType));
+					lFileLen = Str_Len(szTmp);
+					if( lFileLen > 0 )
+					{
+						for( i=0 ; lFileLen ; i++)
+						{
+							if(szTmp[i] == '0')
+							{
+								j = i;
+								break;
+							}
+							else
+							{
+								k++;
+							}
+						}
+
+						Mem_Cpy((byte *)szFolderNm, (byte *)szTmp+(j+9), 17);
+						Mem_Cpy((byte *)szCopyNm, (byte *)szTmp+(j+9), 14);
+					}
+	
+					Mem_Set((byte*)szBuf, 0x00, sizeof(szBuf));
+					Mem_Set((byte*)szFileNm, 0x00, sizeof(szFileNm));
+					Str_Cpy(szBuf, "../LCTECH/");
+					Str_Cat(szBuf, szFolderNm);
+					if( FFS_Exist(szBuf) )
+					{
+						lRet = g_FindFiles( szBuf, "*.Enc" , szFileNm);
+						if( lRet > 0 )
+						{
+							SPRINT (m_stOzData.PDFPATH, "OZ_FILE/%s_%s_.pdf.Enc",  szCopyNm, m_stOzData.USE_CONT_NUM, 0);
+							FFS_Copy(szFileNm, m_stOzData.PDFPATH);
+							
+							//데이터 옮긴 후 LCTECH 폴더 클리어(남은 oz파일 삭제)
+							FFS_Delete(szFileNm);
+
+							Mem_Set((byte*)szFileNm, 0x00, sizeof(szFileNm));
+							lRet = g_FindFiles( szBuf, "*.pdf" , szFileNm);
+							if( lRet > 0 )
+							{
+								//데이터 옮긴 후 LCTECH 폴더 클리어(남은 oz파일 삭제)
+								FFS_Delete(szFileNm);
+							}
+						}
+					}
+				}
+			}
+			else
+			{
+				if(hItem != NULL)
+				{
+					JSON_Finalize(hItem);
+					hItem = NULL;
+				}
+				
+				if(hPath != NULL)
+				{
+					JSON_Finalize(hPath);
+					hPath = NULL;
+				}
+				
+				if(hData != NULL)
+				{
+					JSON_Finalize(hData);
+					hData = NULL;
+				}
+				g_Close_SubDlg();
+				ON_DRAW();
+				return;
+			}
+		}
+
+
+		if(hItem != NULL)
+		{
+			JSON_Finalize(hItem);
+			hItem = NULL;
+		}
+		
+		if(hPath != NULL)
+		{
+			JSON_Finalize(hPath);
+			hPath = NULL;
+		}
+		
+		if(hData != NULL)
+		{
+			JSON_Finalize(hData);
+			hData = NULL;
+		}
+
+		g_Close_SubDlg();
+
+		Snd_OzView();
+		ON_DRAW();
+		return;
+	}
+	
+	long Rcv_62602(void)
+	{
+	char sztmp[32];
+	char szUrl[256];
+	char szbuf[128];
+	char* sndbuf;
+	long ret;
+		
+		if(  Str_Len(stMw.szCp_ddd) < 2  ||Str_Len(stMw.szCp_exn) < 3  ||Str_Len(stMw.szCp_exn) != 4  )
+		{
+			MessageBoxEx (CONFIRM_OK, "전화번호 확인하세요.");
+			return 1;
+		}
+		
+		if( g_pjcomm != NULL)
+		{
+			JSON_Finalize( g_pjcomm );
+			g_pjcomm = NULL;
+		}		
+		g_pjcomm = g_CreateJsonHead(g_pjcomm, szUrl, 62602, FALSE);
+		
+		JSON_SetValue( g_pjcomm, 'C', "use_cont_num", m_szUse_cont_num);
+		//JSON_SetValue( g_pjcomm, 'C', "cust_num", stMw.szCust_num);
+		JSON_SetValue( g_pjcomm, 'C', "cust_num", m_szCust_num);
+		JSON_SetValue( g_pjcomm, 'C', "cp_ddd", stMw.szCp_ddd);
+		JSON_SetValue( g_pjcomm, 'C', "cp_exn", stMw.szCp_exn);
+		JSON_SetValue( g_pjcomm, 'C', "cp_num", stMw.szCp_num);
+		Mem_Set((byte*)szbuf, 0x00, sizeof(szbuf));
+		SQL_ConvUcStr( szbuf, stMw.szCust_nm );
+		JSON_SetValue( g_pjcomm, 'C', "cust_nm", szbuf);
+				
+		sndbuf = JSON_toString(g_pjcomm);
+		
+		//g_Save_JsonFile(sndbuf);
+		
+		Mem_Set((byte*)sztmp, 0x00, sizeof(sztmp));	
+		GET_FILENM(sztmp, SQLITE_DB);
+		
+		callBackfunc = TR62602; //통신완료 후에 호출 함수
+		ret = HTTP_DownloadData(szUrl, "FR62602_IN",  "FR62602" , sndbuf, sztmp );
+		return 0 ;
+	}
+	
+	long TR62602(void)
+	{
+		if( g_Chk_Json(62602) >= 0)
+		{
+			MessageBoxEx (CONFIRM_OK, "사용계약서 MMS발송신청에 완료하였습니다.");
+			return 1;
+		}
+		else
+		{
+			g_Sock_Close();
+			ON_DRAW();
+			return -1;
+		}
+	}
+	
+
+	long Rcv_62604(void)
+	{
+		char sztmp[32];
+		char szUrl[256];
+		char* sndbuf;
+		long ret;
+
+		if( g_pjcomm != NULL)
+		{
+			JSON_Finalize( g_pjcomm );
+			g_pjcomm = NULL;
+		}		
+		g_pjcomm = g_CreateJsonHead(g_pjcomm, szUrl, 62604, FALSE);
+		
+		JSON_SetValue( g_pjcomm, 'C', "inst_place_num", stMw.szInst_place_num);
+		
+		sndbuf = JSON_toString(g_pjcomm);
+		
+		//g_Save_JsonFile(sndbuf);
+		
+		Mem_Set((byte*)sztmp, 0x00, sizeof(sztmp));	
+		GET_FILENM(sztmp, SQLITE_DB);
+		
+		callBackfunc = TR62604; //통신완료 후에 호출 함수
+		ret = HTTP_DownloadData(szUrl, "FR62604_IN",  "FR62604" , sndbuf, sztmp );
+		return 0 ;
+	}
+	
+	long TR62604(void)
+	{
+	
+		if( Chk_Json_62604() >= 0)
+		{
+			if(m_lDocFlag == 1)
+				Rcv_Data();
+			else
+				Rcv_62602();
+			return 1;	
+		}
+		else
+		{
+			g_Sock_Close();
+			ON_DRAW();
+			return -1;
+		}
+	}
+	
+	long Chk_Json_62604(void)
+	{		
+	char szJsonpath[500];
+	char szMsg[500];
+	long fd, i;
+	long chkmsg = 0;
+	long chkcode = 0;
+	long fsize = 0;
+	char *pStr = NULL;
+	char *szcode = NULL;
+	char *szmessage = NULL;
+	char *szuse_cont_num = NULL;
+	char *szCust_num = NULL;
+	long *nCol = NULL;
+	long nCnt = 0;
+	char szType[2] = {0,0};
+	long ret = 11;
+	handle hitem = NULL;
+	handle hcnt = NULL;
+		
+		MessageBox(MESSAGE, "자료 확인중 입니다.", 0, 0, 0, 0);
+		
+		Mem_Set((byte*) szJsonpath, 0x00, sizeof( szJsonpath) );
+		SPRINT(szJsonpath, "%sFR%d_Res.JSON",  SYSTEM_COMM, 62604, 0 );
+		
+		if(FFS_Exist(szJsonpath) != TRUE )
+		{
+			Mem_Set((byte*) szJsonpath, 0x00, sizeof( szJsonpath) );
+			SPRINT(szJsonpath, "%sFR%d.JSON",  SYSTEM_COMM, 62604, 0 );
+		}
+
+		fsize = FFS_GetSize(szJsonpath);
+
+		if(fsize <= 15)
+		{
+
+			ret = -1;
+			goto Finally;
+		}
+		pStr = Mem_Alloc(fsize);
+		fd = FFS_Open(szJsonpath, FS_READ_MODE, FS_NORMAL_FLAG);
+		if(fd == -1)
+		{
+			ret = -1;
+			goto Finally;
+		}
+
+		FFS_Read(fd, (byte*)pStr, fsize);
+		for(i = 0 ; i < fsize-9 ; i++ )
+		{
+			if( Mem_Cmp((byte*)pStr+i,(byte*) "\"code\"", 6) == 0  )
+			{
+				chkcode++;
+			}
+			if( Mem_Cmp((byte*)pStr+i,(byte*) "\"message\"", 9) == 0  )
+			{
+				chkmsg++;
+			}
+			if(chkmsg > 0 &&  chkcode > 0)
+				break;
+		}
+
+		FFS_Close(fd);
+		
+		Mem_Free((byte*)pStr);
+		if(chkmsg == 0 || chkcode == 0)
+		{
+			ret = -1;
+			goto Finally;
+		}
+		
+		if(g_pjcomm != NULL)
+		{
+			JSON_Finalize(g_pjcomm);
+			g_pjcomm = NULL;
+		}
+		
+		g_pjcomm = JSON_Create( JSON_Object );
+		if(g_pjcomm == NULL)
+		{
+			ret = -1;
+			goto Finally;
+		}
+	
+		if( JSON_LoadFile(g_pjcomm, szJsonpath) > 0)
+		{
+			szcode    = JSON_GetValue (g_pjcomm, "code",    szType);
+			szmessage = JSON_GetValue (g_pjcomm, "message", szType);
+			szuse_cont_num = JSON_GetValue (g_pjcomm, "use_cont_num", szType);
+			szCust_num = JSON_GetValue (g_pjcomm, "cust_num", szType);
+
+			if( Str_Cmp(szcode, "0000") != 0)
+			{
+			  char* pMsg = NULL;
+			  
+				Mem_Set((byte*) szJsonpath, 0x00, sizeof( szJsonpath) );
+				if(Str_Len(szmessage) < 500 )
+					SQL_ConvMbStr( szMsg, szmessage);
+				
+				//SPRINT(szJsonpath, "[%s] %s", szcode, szMsg, 0 );
+				pMsg = g_Chk_Code(szJsonpath, szcode, szMsg);
+			
+				MessageBoxEx (WARNING_OK, pMsg);
+				EvtDraw();
+				ret = -1;
+			}
+			else
+			{
+				Mem_Set((byte*) m_szUse_cont_num, 0x00, sizeof( m_szUse_cont_num) );
+				Mem_Set((byte*) m_szCust_num, 0x00, sizeof( m_szCust_num) );
+				Str_Cpy( m_szUse_cont_num, szuse_cont_num );
+				Str_Cpy( m_szCust_num, szCust_num);
+			}
+		}
+		else
+		{
+			ret = 0;
+		}
+Finally:		
+		
+		if(g_pjcomm != NULL)
+		{
+			JSON_Finalize(g_pjcomm);
+			g_pjcomm = NULL;
+		}
+		
+		g_Close_SubDlg();
+		ON_DRAW();
+		return ret;
+	}
+	
+//------------------------------------------------------------------------------------------
+	long Rcv_Data(void)
+	{
+		char szNonpayManageZone[20];
+		char sztmp[32];
+		char szUrl[256];
+		char* sndbuf;
+		long ret;
+
+		if( g_pjcomm != NULL)
+		{
+			JSON_Finalize( g_pjcomm );
+			g_pjcomm = NULL;
+		}
+		
+		g_pjcomm = g_CreateJsonHead(g_pjcomm, szUrl, 82256, FALSE);
+		
+		JSON_SetValue( g_pjcomm, 'C', "civil_serv_receive_num",     stMw.szCivil_serv_receive_num );
+		JSON_SetValue( g_pjcomm, 'C', "use_cont_num",               m_szUse_cont_num );
+		
+		// 20190509 정보연계
+		if( Str_Cmp(stMw.szSend_Info_Trans_yn, "Y") == 0 )
+		{
+			JSON_SetValue( g_pjcomm, 'C', "cust_num",                   m_szCust_num);
+			m_lDocFlag = 2;
+		}
+		else
+		{
+			JSON_SetValue( g_pjcomm, 'C', "cust_num",                   stMw.szCust_num);
+		}
+		
+		//계약서 작성형태 > 1(전입민원), 2(명의유지), 3(명의변경), 4(신규)
+		//long m_lDocFlag = 0;	//전입신규 = 1, 명의유지 = 2, 명의변경 = 3, 공가(신규) = 4
+		if( m_lDocFlag == 1 )
+		{
+			JSON_SetValue( g_pjcomm, 'C', "trans_flag",     "1" );
+		}
+		else if( m_lDocFlag == 2 )
+		{
+			JSON_SetValue( g_pjcomm, 'C', "trans_flag",     "2" );
+		}
+		else if( m_lDocFlag == 3 )
+		{
+			JSON_SetValue( g_pjcomm, 'C', "trans_flag",     "3" );
+		}
+		else if ( m_lDocFlag == 4 )
+		{
+			JSON_SetValue( g_pjcomm, 'C', "trans_flag",     "4" );
+		}
+		
+		sndbuf = JSON_toString(g_pjcomm);
+		
+		//g_Save_JsonFile(sndbuf);
+		
+		Mem_Set((byte*)sztmp, 0x00, sizeof(sztmp));	
+		GET_FILENM(sztmp, SQLITE_DB);
+		
+		callBackfunc = TR82256; //통신완료 후에 호출 함수
+		ret = HTTP_DownloadData(szUrl, "FR82256_IN",  "FR82256" , sndbuf, sztmp );
+		return 0 ;
+	}
+	
+	
+//------------------------------------------------------------------------------------------
+	long TR82256(void)	
+	{
+		long ntotcnt = 0;
+	
+		if( g_Chk_Json(82256) >= 0)
+		{
+			Rev_SetData(82256);
+			
+			if( Str_Cmp( stMw.szSend_Info_Trans_yn, "Y" ) == 0 )
+			{
+				OzView();
+			}
+			
+			//2017-05-25 Sanghyun Lee
+			//임시고객, 모바일앱사용고객, 사업자고객은 모바일사용계약서 작성 불가 처리되어야 함
+			if( Str_Cmp(m_stUsedata.BILING_METHOD, "80") == 0 )
+			{
+				//BILLING_METHOD = 80 -> 모바일앱 사용고객
+				MessageBoxEx (CONFIRM_OK, "모바일앱사용 고객은 작성 할 수 없습니다.");
+			}
+			else if(m_stUsedata.CUST_NUM[0] == '0' )
+			{
+				if( m_lDocFlag == 1 || m_lDocFlag == 3 )
+				{
+					OzView();
+				}
+				else
+				{
+					MessageBoxEx (CONFIRM_OK, "임시 고객은 작성 할 수 없습니다.\n작성을 원하시면 명의변경을 사용해주세요.");
+				}
+			}
+			else if( Str_Len(m_stUsedata.BIZ_REGI_NUM) > 1 )
+			{
+				//명의변경, 명의유지 > BIZ_REGI_NUM 값이 존재하면 서면으로 받으라는 메세지 호출
+				MessageBoxEx (CONFIRM_OK, "사업자 대상은 서면 등록 해주세요.");
+			}
+			else
+			{
+				OzView();
+			}
+			return 1;
+		}
+		else
+		{
+			g_Sock_Close();
+			ON_DRAW();
+			return -1;
+		}
+	}
+
+//------------------------------------------------------------------------------------------
+//납부확약대상 정보
+	long Rev_SetData(long nservicenum)
+	{
+	char szJsonpath[500];
+	char szMsg[500];
+	char szCol[128];
+	char szDate[50];
+	long *nCol;
+	long nCnt = 0;
+	long fd, i;
+	long chkmsg = 0;
+	long chkcode = 0;
+	long fsize = 0;
+	long k = 0, len = 0, length = 0;
+	char *pStr;
+	char *szcode;
+	char *szmessage;
+	char *szitem;
+	char szType[2] = {0,0};
+	long ret = 11;
+	handle hitem = NULL;
+	handle hcnt = NULL;
+		
+		MessageBox(MESSAGE, "자료 확인중 입니다.", 0, 0, 0, 0);
+		
+		Mem_Set((byte*) szJsonpath, 0x00, sizeof( szJsonpath) );
+		SPRINT(szJsonpath, "%sFR%d_Res.JSON",  SYSTEM_COMM, nservicenum, 0 );
+		
+		if(FFS_Exist(szJsonpath) != TRUE )
+		{
+			Mem_Set((byte*) szJsonpath, 0x00, sizeof( szJsonpath) );
+			SPRINT(szJsonpath, "%sFR%d.JSON",  SYSTEM_COMM, nservicenum, 0 );
+		}
+		
+		fsize = FFS_GetSize(szJsonpath);
+		if(fsize <= 15)
+		{
+			ret = -1;
+			goto Finally;
+		}
+		pStr = Mem_Alloc(fsize);
+		fd = FFS_Open(szJsonpath, FS_READ_MODE, FS_NORMAL_FLAG);
+		if(fd == -1)
+		{
+			ret = -1;
+			goto Finally;
+		}
+
+		FFS_Read(fd, (byte*)pStr, fsize);
+		for(i = 0 ; i < fsize-9 ; i++ )
+		{
+			if( Mem_Cmp((byte*)pStr+i,(byte*) "\"code\"", 6) == 0  )
+			{
+				chkcode++;
+			}
+			if( Mem_Cmp((byte*)pStr+i,(byte*) "\"message\"", 9) == 0  )
+			{
+				chkmsg++;
+			}
+			if(chkmsg > 0 &&  chkcode > 0)
+				break;
+		}
+
+		FFS_Close(fd);
+		
+		Mem_Free((byte*)pStr);
+		if(chkmsg == 0 || chkcode == 0)
+		{
+			ret = -1;
+			goto Finally;
+		}
+		
+		if(g_pjcomm != NULL)
+		{
+			JSON_Finalize(g_pjcomm);
+			g_pjcomm = NULL;
+		}
+		
+		g_pjcomm = JSON_Create( JSON_Object );
+		if(g_pjcomm == NULL)
+		{
+			ret = -1;
+			goto Finally;
+		}
+	
+		if( JSON_LoadFile(g_pjcomm, szJsonpath) > 0)
+		{
+			szcode    = JSON_GetValue (g_pjcomm, "code",    szType);
+			szmessage = JSON_GetValue (g_pjcomm, "message", szType);
+
+			if( Str_Cmp(szcode, "0000") != 0)
+			{
+				char* pMsg = NULL;
+			  
+				Mem_Set((byte*) szJsonpath, 0x00, sizeof( szJsonpath) );
+				if(Str_Len(szmessage) < 500 )
+					SQL_ConvMbStr( szMsg, szmessage);
+				
+				//SPRINT(szJsonpath, "[%s] %s", szcode, szMsg, 0 );
+				pMsg = g_Chk_Code(szJsonpath, szcode, szMsg);
+			
+				MessageBoxEx (WARNING_OK, pMsg);
+
+				ret = -1;
+				
+				
+				ON_DRAW();
+			}
+			else
+			{
+				if( nservicenum == 822566 )
+				{
+					//사용계약서 송신 완료 후 메시지
+					Mem_Set((byte*) szMsg, 0x00, sizeof( szMsg) );
+					Str_Cpy(szMsg, szmessage);
+					if( Str_Cmp(szMsg, "OK") == 0 )
+					{
+						Str_Cpy(szMsg, "사용계약서 저장에 성공하였습니다.");
+					}
+					MessageBoxEx (CONFIRM_OK, szMsg);
+				}
+				else
+				{
+					m_lReActionFlag = 0;
+				
+					//사용계약서에 넘겨주는 데이터
+					Mem_Set((byte*)&m_stUsedata, 0x00, sizeof(m_stUsedata) );
+					//청구방법 해제시 필요한 기존 대상 정보
+					Mem_Set((byte*)&m_stCancelData, 0x00, sizeof(m_stCancelData) );
+					//PRINT("JSON_toString(g_pjcomm) : %s",JSON_toString(g_pjcomm),0,0);	
+					
+					Str_Cpy(m_stUsedata.BIZ_REGI_NUM    , JSON_GetValue (g_pjcomm, "biz_regi_num",        szType));
+					Str_Chg(m_stUsedata.BIZ_REGI_NUM, STRCHG_DEL_ALL_SPACE);
+		
+					//기본정보
+					Str_Cpy(m_stUsedata.USE_CONT_NUM    , JSON_GetValue (g_pjcomm, "use_cont_num",        szType));
+					Str_Cpy(m_stUsedata.CUST_NUM        , JSON_GetValue (g_pjcomm, "cust_num",            szType));
+					Str_Cpy(m_stUsedata.OWNHOUSE_TEL_DDD, JSON_GetValue (g_pjcomm, "ownhouse_tel_ddd",    szType));
+					Str_Cpy(m_stUsedata.OWNHOUSE_TEL_EXN, JSON_GetValue (g_pjcomm, "ownhouse_tel_exn",    szType));
+					Str_Cpy(m_stUsedata.OWNHOUSE_TEL_NUM, JSON_GetValue (g_pjcomm, "ownhouse_tel_num",    szType));
+					Str_Cpy(m_stUsedata.CP_DDD          , JSON_GetValue (g_pjcomm, "cp_ddd",              szType));
+					Str_Cpy(m_stUsedata.CP_EXN          , JSON_GetValue (g_pjcomm, "cp_exn",              szType));
+					Str_Cpy(m_stUsedata.CP_NUM          , JSON_GetValue (g_pjcomm, "cp_num",              szType));
+					Str_Cpy(m_stUsedata.INST_PLACE_NUM  , JSON_GetValue (g_pjcomm, "inst_place_num",      szType));
+					Mem_Set((byte*) szMsg, 0x00, sizeof( szMsg) );
+					//Str_Cpy(szMsg      , JSON_GetValue (g_pjcomm, "birth_date",          szType));
+					Str_Cat(szMsg      , JSON_GetValue (g_pjcomm, "soc_num",          szType));
+					Mem_Cpy((byte *)m_stUsedata.SOC_NUM, (byte *)szMsg, 6);
+					Str_Chg(m_stUsedata.SOC_NUM, STRCHG_DEL_NONDIGIT);
+
+					Str_Cpy(m_stUsedata.GENDER          , JSON_GetValue (g_pjcomm, "gender",              szType));
+					
+					Str_Cpy(m_stUsedata.SAFE_KEY        , JSON_GetValue (g_pjcomm, "safe_key",            szType));
+					Str_Chg(m_stUsedata.SAFE_KEY, STRCHG_DEL_ALL_SPACE);
+					Str_Cpy(m_stCancelData.SAFE_KEY , m_stUsedata.SAFE_KEY);
+	
+					Mem_Set((byte*) szMsg, 0x00, sizeof( szMsg) );
+					Str_Cpy(szMsg , JSON_GetValue (g_pjcomm, "new_addr_union",     szType));
+					SQL_ConvMbStr( m_stUsedata.NEW_ADDR_UNION, szMsg);
+					
+					Mem_Set((byte*) szMsg, 0x00, sizeof( szMsg) );
+					Str_Cpy(szMsg , JSON_GetValue (g_pjcomm, "curr_addr_union",     szType));
+					SQL_ConvMbStr( m_stUsedata.CURR_ADDR_UNION, szMsg);
+					//Str_Cpy(m_stUsedata.CURR_ADDR_UNION , JSON_GetValue (g_pjcomm, "curr_addr_union",     szType));
+					
+					Str_Cpy(m_stUsedata.LMS_TEL_DDD     , JSON_GetValue (g_pjcomm, "lms_tel_ddd",         szType));
+					Str_Cpy(m_stUsedata.LMS_TEL_EXN     , JSON_GetValue (g_pjcomm, "lms_tel_exn",         szType));
+					Str_Cpy(m_stUsedata.LMS_TEL_NUM     , JSON_GetValue (g_pjcomm, "lms_tel_num",         szType));
+					Str_Cpy(m_stCancelData.LMS_TEL_DDD  , m_stUsedata.LMS_TEL_DDD);
+					Str_Cpy(m_stCancelData.LMS_TEL_EXN  , m_stUsedata.LMS_TEL_EXN);
+					Str_Cpy(m_stCancelData.LMS_TEL_NUM  , m_stUsedata.LMS_TEL_NUM);
+					
+					//계약서 작성형태 > 1(전입민원), 2(명의유지), 3(명의변경)
+					//long m_lDocFlag = 0;	//명의유지 = 2, 명의변경 = 3 flag
+					Mem_Set((byte*) szMsg, 0x00, sizeof( szMsg) );
+					if( m_lDocFlag == 1 )
+					{
+						//전입민원 -> 메일 필드가 나뉘어져 있음
+						Str_Cpy(m_stUsedata.EMAIL_REQ_ID  , JSON_GetValue (g_pjcomm, "email_req_id",      szType));
+						Str_Cpy(m_stUsedata.EMAIL_REQ_ADDR  , JSON_GetValue (g_pjcomm, "email_req_addr",      szType));
+						Str_Cpy(szMsg, m_stUsedata.EMAIL_REQ_ID);
+						Str_Cat(szMsg, m_stUsedata.EMAIL_REQ_ADDR);
+						Str_Cpy(m_stCancelData.EMAIL_REQ_ADDR  , szMsg);
+					}
+					else
+					{
+						//전입민원 외-> 메일 필드가 하나임.
+						Str_Cpy(szMsg  , JSON_GetValue (g_pjcomm, "email_req_addr",      szType));
+						Str_Cpy(m_stCancelData.EMAIL_REQ_ADDR  , szMsg);
+					}
+					
+					if( Str_Cmp(szMsg, "null") == 0 || Str_Cmp(szMsg, "nullnull") == 0 || Str_Cmp(szMsg, "") == 0 )
+					{
+						Str_Cpy(m_stUsedata.EMAIL_REQ_ID  , "");
+						Str_Cpy(m_stUsedata.EMAIL_REQ_ADDR  , "");
+						Str_Cpy(m_stCancelData.EMAIL_REQ_ADDR  , "");
+					}
+					else
+					{
+						length = Str_Len(szMsg);
+						if( length > 0 )
+						{
+							for( i=0 ; length ; i++)
+							{
+								if(szMsg[i] == '@')
+								{
+									len = i;
+									break;
+								}
+								else if(szMsg[i] == '')
+								{
+									k++;
+									break;
+								}
+							}
+			
+							Mem_Cpy((byte *)m_stUsedata.EMAIL_REQ_ID, (byte *)szMsg, len);
+							Mem_Cpy((byte *)m_stUsedata.EMAIL_REQ_ADDR, (byte *)szMsg+(len+1), length-(len+1));
+						}
+					}
+	
+					Str_Cpy(m_stUsedata.BILING_METHOD   , JSON_GetValue (g_pjcomm, "biling_method",       szType));
+					Str_Cpy(m_stUsedata.PAYMENT_METHOD  , JSON_GetValue (g_pjcomm, "payment_method",      szType));
+
+					//납부방법 ( 10 : 은행자동이체, 20 : 카드자동이체, NULL : 지로 )
+					if( Str_Cmp(m_stUsedata.PAYMENT_METHOD, "20") == 0 )
+					{
+						Str_Cpy(m_stCancelData.PAYMENT_METHOD, "10");
+						
+					}
+					else if( Str_Cmp(m_stUsedata.PAYMENT_METHOD, "30") == 0 )
+					{
+						Str_Cpy(m_stCancelData.PAYMENT_METHOD, "20");
+					}
+					else
+					{
+						Str_Cpy(m_stCancelData.PAYMENT_METHOD, "");
+					}
+					
+					Mem_Set((byte*) szMsg, 0x00, sizeof( szMsg) );
+					Str_Cpy(szMsg , JSON_GetValue (g_pjcomm, "cust_nm",     szType));
+					SQL_ConvMbStr( m_stUsedata.CUST_NM, szMsg);
+					
+					ret = 0;
+					szitem =JSON_GetValue(g_pjcomm, "item", szType);
+					if(szitem != NULL)
+					{
+						if( Str_Len(szitem) > 0 )
+						{
+							hitem = JSON_Create( JSON_Array );
+							if( hitem != NULL)
+							{
+								JSON_toJson(hitem, szitem ) ;
+								ret = JSON_GetArrayCount( hitem );
+	
+								if( ret > 0 )
+								{
+									//자동이체 정보
+									Str_Cpy(m_stUsedata.BNK_CD              , JSON_GetValue (hitem, "bnk_cd",      szType));
+									Str_Cpy(m_stCancelData.BNK_CD , m_stUsedata.BNK_CD);
+
+									Mem_Set((byte*) szMsg, 0x00, sizeof( szMsg) );
+									Str_Cpy(szMsg , JSON_GetValue (hitem, "bnk_branch_nm",     szType));
+									SQL_ConvMbStr( m_stUsedata.BNK_BRANCH_NM, szMsg);
+									//PRINT("Rev_SetData m_stUsedata.BNK_BRANCH_NM:[%s]", m_stUsedata.BNK_BRANCH_NM, 0, 0);
+									
+									Mem_Set((byte*) szMsg, 0x00, sizeof( szMsg) );
+									Str_Cpy(szMsg , JSON_GetValue (hitem, "depositor_nm",     szType));
+									SQL_ConvMbStr( m_stUsedata.DEPOSITOR_NM, szMsg);
+									Str_Cpy(m_stCancelData.DEPOSITOR_NM , m_stUsedata.DEPOSITOR_NM);
+									
+									Str_Cpy(m_stUsedata.DEPOSITOR_TEL_DDD   , JSON_GetValue (hitem, "depositor_tel_ddd",     szType));
+									Str_Cpy(m_stUsedata.DEPOSITOR_TEL_EXN   , JSON_GetValue (hitem, "depositor_tel_exn",     szType));
+									Str_Cpy(m_stUsedata.DEPOSITOR_TEL_NUM   , JSON_GetValue (hitem, "depositor_tel_num",     szType));
+									
+									Str_Cpy(m_stUsedata.DEFRAY_ACCOUNT_NUM  , JSON_GetValue (hitem, "defray_account_num",    szType));
+									Str_Cpy(m_stCancelData.DEFRAY_ACCOUNT_NUM , m_stUsedata.DEFRAY_ACCOUNT_NUM);
+									
+									Str_Cpy(m_stUsedata.DEPOSITOR_BIRTH_DATE, JSON_GetValue (hitem, "depositor_birth_date",  szType));
+									Str_Cpy(m_stCancelData.DEPOSITOR_BIRTH_DATE , m_stUsedata.DEPOSITOR_BIRTH_DATE);
+									
+									Str_Cpy(m_stUsedata.DEPOSITOR_RELAT_CD  , JSON_GetValue (hitem, "depositor_relat_cd",    szType));
+									Str_Cpy(m_stCancelData.DEPOSITOR_RELAT_CD , m_stUsedata.DEPOSITOR_RELAT_CD);
+									//Str_Cpy(m_stUsedata.CUST_RELAT_CD       , JSON_GetValue (hitem, "cust_relat_cd",         szType));
+	
+									Mem_Set((byte*) szMsg, 0x00, sizeof( szMsg) );
+									Str_Cpy(szMsg , JSON_GetValue (hitem, "req_nm",     szType));
+									SQL_ConvMbStr( m_stUsedata.REQ_NM, szMsg);
+									//Str_Cpy(m_stUsedata.REQ_NM              , JSON_GetValue (hitem, "req_nm",                szType));
+	
+									Str_Cpy(m_stUsedata.REQ_TEL_DDD         , JSON_GetValue (hitem, "req_tel_ddd",           szType));
+									Str_Cpy(m_stUsedata.REQ_TEL_EXN         , JSON_GetValue (hitem, "req_tel_exn",           szType));
+									Str_Cpy(m_stUsedata.REQ_TEL_NUM         , JSON_GetValue (hitem, "req_tel_num",           szType));
+									
+									//PRINT("JSON_toString(hitem) : %s",JSON_toString(hitem),0,0);
+								}
+	
+								JSON_Finalize(hitem);
+								hitem = NULL;
+							}
+						}
+					}
+				}
+			}
+		}
+		else
+		{
+			ret = 0;
+		}
+		
+Finally:		
+		
+		if(g_pjcomm != NULL)
+		{
+			JSON_Finalize(g_pjcomm);
+			g_pjcomm = NULL;
+		}
+		
+		g_Close_SubDlg();
+		EvtDraw();
+		
+		return ret;
+	}
+	
+//------------------------------------------------------------------------------------------
+	void OzView(void)
+	{
+		handle hHeader = NULL;
+		handle h = NULL;
+		handle hdb = NULL;
+		handle hstmt = NULL;
+		SQLITE sql = NewSqLite();
+		
+		//PRINT("OzView start", 0, 0, 0);
+		
+		hdb = sql->Open(sql);
+		if( hdb == NULL )
+		{
+			goto Finally;
+		}
+		
+		MessageBox(MESSAGE, "자료 확인중 입니다.", 0, 0, 0, 0);
+
+		h = JSON_Create( JSON_Object );
+		if (h)
+		{
+			hHeader = JSON_Create( JSON_Object );
+			if(hHeader == NULL)
+			{
+				goto Finally;
+			}
+			
+			m_hBody = JSON_Create( JSON_Object );
+			if(m_hBody == NULL)
+			{
+				goto Finally;
+			}		
+			
+			SetMessageBoxText("20 % 처리중...");
+			
+			//문서 별 Body 값 셋팅
+			SetJsonBody(sql);
+			//PRINT("JSON_toString(m_hBody) : %s",JSON_toString(m_hBody),0,0);
+			//자동이체 인증 데이터(고객번호, 은행,카드 코드)
+			SetJsonArray_Bank(sql);
+			SetJsonArray_Payment();
+
+			JSON_SetValue( m_hBody, 'C', "cust_num",     m_stUsedata.CUST_NUM );
+			
+			SetMessageBoxText("100 % 완료.");
+			
+			//납부이행확약서 및 연대납부확약서 약관동의서 내용
+			//JSON_SetValue( m_hBody, 'C', "detail1",     "<body> <div id='content' style='outline-style: groove;outline-width: thin;outline-color: #bcbcbc;'> <div id ='con_header' style='outline-style: groove;outline-width: thin;outline-color: #bcbcbc;'> <table class='list_th'> <thead> <tr> <th>개인정보 수집 및 이용 동의 [필수]</th> </tr> </thead> </table> </div> <div id='con_container'> <div id='con_table'> <table class='list_td' style='width:100%;margin: 10px;'> <thead style='outline-style: groove;outline-width: thin;outline-color: #bcbcbc;'> <tr> <th>수집·이용하려는 개인정보의 항목</th> </tr> </thead> <tbody style='outline-style: groove;outline-width: thin;outline-color: #bcbcbc;'> <tr class='current'> <td>- 사용고객정보 : 성명, 생년월일, 성별,<br> 전화번호, 휴대폰번호, 주소, 이메일<br> - 자동이체신청 시 : 성명, 생년월일, 은행명,<br> 계좌번호, 전화번호(자동이체 신청 대리인)<br> 성명, 전화번호<br> - 관리고객(임대업주 또는 집주인) : 성명,<br> 전화번호, 휴대폰 </td> </tr> </tbody> </table> <table class='list_td' style='width:100%;margin: 10px;'> <thead style='outline-style: groove;outline-width: thin;outline-color: #bcbcbc;'> <tr> <th>수집·이용하려는 개인정보의 항목</th> </tr> </thead> <tbody style='outline-style: groove;outline-width: thin;outline-color: #bcbcbc;'> <tr class='current'> <td>도시가스 공급(사용고객 등록, 변경, 해지)관<br> 리 요금고지<br> (모바일, 어플, LMS청구) 및 LMS사전안내,결<br> 제 및 추심관리,<br> 안전점검 관리 및 SMS사전안내, 계량기 교체<br> 관리, 휴대폰인증<br> 민원처리 및 결과확인, LMS요금미납안내,  부<br> 가서비스 제공 등 </td> </tr> </tbody> </table> <table class='list_td' style='width:100%;margin: 10px;'> <thead style='outline-style: groove;outline-width: thin;outline-color: #bcbcbc;'> <tr> <th>개인정보 보유 및 이용기간</th> </tr> </thead> <tbody style='outline-style: groove;outline-width: thin;outline-color: #bcbcbc;'> <tr class='current'> <td>사용계약 만료 후 5년</td> </tr> </tbody> </table> </div> </div> </div> </body>" );
+			//JSON_SetValue( m_hBody, 'C', "detail1",     "<div class='content' style = 'border: 2px solid #bbbbbb; width : 100%; height : 100%; overflow-x: auto;' > <div class ='con_header'> <table class='list_table_h'> <thead> <tr> <th style='text-align: left;'> <p>개인정보 수집 및 이용 동의 [필수]</p> </th> </tr> </thead> </table> </div> <div class='con_container'> <table class='list_table_f'> <thead> <tr> <th class='list_th'> <p>수집·이용하려는 개인정보의 항목</p> </th> </tr> </thead> <tbody> <tr> <td class='list_td'> <p>- 사용고객정보 : 성명, 생년월일, 성별, 전화번호, 휴대폰번호, 주소, 이메일</p> <p>- 자동이체신청 시 : 성명, 생년월일, 은행명, 계좌번호, 전화번호</p> <p>&nbsp;&nbsp;(자동이체 신청 대리인) 성명, 전화번호</p> <p>- 관리고객(임대업주 또는 집주인) : 성명, 전화번호, 휴대폰</p> </td> </tr> </tbody> </table> <table class='list_table_m'> <thead> <tr> <th class='list_th'> <p>수집·이용하려는 개인정보의 항목</p> </th> </tr> </thead> <tbody> <tr> <td class='list_td'> <p>도시가스 공급(사용고객 등록, 변경, 해지)관리, 요금고지</p> <p>(모바일, 어플, LMS청구) 및 LMS사전안내, 결제 및 추심관리,</p> <p>안전점검 관리 및 SMS사전안내, 계량기 교체관리, 휴대폰인증</p> <p>민원처리 및 결과확인, LMS요금미납안내, 부가서비스 제공 등</p> </td> </tr> </tbody> </table> <table class='list_table_m'> <thead> <tr> <th class='list_th'> <p>개인정보 보유 및 이용기간</p> </th> </tr> </thead> <tbody> <tr> <td class='list_td'> <p>사용계약 만료 후 5년</p> </td> </tr> </tbody> </table> </div> </div>");
+			JSON_SetValue( m_hBody, 'C', "detail1",     "개인정보 수집 및 이용 동의 [필수]<br><br> 1.수집·이용하려는 개인정보의 항목<br> - 사용고객정보 : 성명, 생년월일, 성별, 전화번호, 휴대폰번호, 주소, 이메일<br> - 자동이체신청 시 : 성명, 생년월일, 은행명, 계좌번호, 전화번호(자동이체 신청 대리인) 성명, 전화번호<br> - 관리고객(임대업주 또는 집주인) : 성명, 전화번호, 휴대폰<br> 2.수집·이용하려는 개인정보의 항목<br> - 도시가스 공급(사용고객 등록, 변경, 해지)관리, 요금고지(모바일, 어플, LMS청구) 및 LMS사전안내, 결제 및 추심관리,안전점검 관리 및 SMS사전안내, 계량기 교체관리, 휴대폰인증 민원처리 및 결과확인, LMS요금미납안내, 부가서비스 제공 등<br> 3.개인정보 보유 및 이용기간<br> - 사용계약 만료 후 5년" );
+			JSON_SetValue( m_hBody, 'C', "detail2",     "개인(신용)정보 제공 동의 [필수]<br><br> 1.개인정보를 제공받는자<br> - NICE평가정보(주)<br> 2.제공받는 개인정보의 항목<br> - 고객관리번호, 성명, 연락처, 생년월일, 성별, 연체정보<br> 3.개인정보를 제공받는자의 개인정보 이용목적<br> - 고객관리번호발급, 신용정보조회, 채무불이행 등록<br> 4.개인정보를 제공받는자의 개인정보 보유 및 이용기간<br> - 이용목적 기간내<br>※ 제3자에 대한 신용정보조회 목적의 개인정보 제공은 <개인정보 제3자 제공>에 동의할 뿐 아니라 <개인(신용)정보 조회>에도 동의하는 경우에만 이루어집니다." );
+			JSON_SetValue( m_hBody, 'C', "detail3",     "개인(신용)정보 조회 동의 [필수]<br><br> 1.신용조회회사<br> - NICE평가정보㈜<br> 2.조회 대상 정보<br> - 개인정보, 신용도판단정보(연체, 부도, 금융질서문란), 공공정보, 신용등급, 경매관련<br> 3.조회 목적<br> - 확약서 체결 및 유지판단여부, 연체관리, 여신심사<br> 4.조회 동의의 효력기간<br> - 동의시점부터 계약 종료 시까지<br> ※본 조회 동의에 따른 조회 기록은 신용등급에 영향을 주지 않습니다." );
+			JSON_SetValue( m_hBody, 'C', "detail4",     "고유식별정보 제공 및 제공받는 동의 [선택]<br><br> 1.고유식별정보를 제공하는자<br> - NICE평가정보㈜, 서울도시가스<br> 2.고유식별정보를 제공받는자<br> - 서울도시가스, NICE평가정보㈜<br> 3.제공받으려는 고유식별정보의 항목<br> - 연체자의 주민등록번호 및 외국인 등록번호<br> 4.고유식별정보를 제공받는자의 고유식별정보 이용목적<br> - 미납요금의 회수 및 채권추심업무<br> 5.고유식별정보를 제공받는자의 고유식별정보 보유 및 이용기간<br> - 이용목적 기간내<br> ※개인정보처리 위탁자 등 자세한 내용은 서울도시가스 홈페이지(www.seoulgas.co.kr)에 공개된‘개인정보처리방침’을 참조하시기 바랍니다." );
+			
+			//JSON_SetValue( m_hBody, 'C', "detail1",     "<html> <head> <style type='text/css'> p { margin: 0px; } body { overflow: hidden; } .content { border: 2px solid #bcbcbc; width : 100%; height : 100%; overflow-x: auto; } .con_header { border-bottom: 2px solid #bcbcbc; width : 100%; height : 37px; } .list_table_h { width: 100%; padding: 5px; top : 14px; } .list_table_f { width: 100%; padding: 8px; } .list_table_m { width: 100%; padding: 0px 8px 8px 8px; } .list_th { border: 1px solid #bcbcbc; text-align : left; background-color: #bcbcbc; } .list_td { border: 1px solid #bcbcbc; } </style> </head> <body> <div class='content'> <div class ='con_header'> <table class='list_table_h'> <thead> <tr> <th style='text-align: left;'> <p>개인정보 수집 및 이용 동의 [필수]</p> </th> </tr> </thead> </table> </div> <div class='con_container'> <table class='list_table_f'> <thead> <tr> <th class='list_th'> <p>수집·이용하려는 개인정보의 항목</p> </th> </tr> </thead> <tbody> <tr> <td class='list_td'> <p>- 사용고객정보 : 성명, 생년월일, 성별, 전화번호, 휴대폰번호, 주소, 이메일</p> <p>- 자동이체신청 시 : 성명, 생년월일, 은행명, 계좌번호, 전화번호</p> <p>&nbsp;&nbsp;(자동이체 신청 대리인) 성명, 전화번호</p> <p>- 관리고객(임대업주 또는 집주인) : 성명, 전화번호, 휴대폰</p> </td> </tr> </tbody> </table> <table class='list_table_m'> <thead> <tr> <th class='list_th'> <p>수집·이용하려는 개인정보의 항목</p> </th> </tr> </thead> <tbody> <tr> <td class='list_td'> <p>도시가스 공급(사용고객 등록, 변경, 해지)관리, 요금고지</p> <p>(모바일, 어플, LMS청구) 및 LMS사전안내, 결제 및 추심관리,</p> <p>안전점검 관리 및 SMS사전안내, 계량기 교체관리, 휴대폰인증</p> <p>민원처리 및 결과확인, LMS요금미납안내, 부가서비스 제공 등</p> </td> </tr> </tbody> </table> <table class='list_table_m'> <thead> <tr> <th class='list_th'> <p>개인정보 보유 및 이용기간</p> </th> </tr> </thead> <tbody> <tr> <td class='list_td'> <p>사용계약 만료 후 5년</p> </td> </tr> </tbody> </table> </div> </div> </body> </html>");
+			//JSON_SetValue( m_hBody, 'C', "detail2",     "<html> <head> <style type='text/css'> p { margin: 0px; } body { overflow: hidden; } .content { border: 2px solid #bcbcbc; width : 100%; height : 100%; overflow-x: auto; } .con_header { border-bottom: 2px solid #bcbcbc; width : 100%; height : 37px; } .list_table_h { width: 100%; padding: 5px; top : 14px; } .list_table_f { width: 100%; padding: 8px; } .list_table_m { width: 100%; padding: 0px 8px 8px 8px; } .list_th { border: 1px solid #bcbcbc; text-align : left; background-color: #bcbcbc; } .list_td { border: 1px solid #bcbcbc; } </style> </head> <body> <div class='content'> <div class ='con_header'> <table class='list_table_h' style='padding : 5px; top : 14px;'> <thead> <tr> <th style='text-align: left;'> <p>개인(신용)정보 제공 동의 [필수]</p> </th> </tr> </thead> </table> </div> <div class='con_container'> <table class='list_table_f'> <thead> <tr> <th class='list_th'> <p>개인정보를 제공받는자</p> </th> </tr> </thead> <tbody> <tr> <td class='list_td'> <p>NICE평가정보(주)</p> </td> </tr> </tbody> </table> <table class='list_table_m'> <tbody> <tr> <th class='list_th'> <p>제공받는 개인정보의 항목</p> </th> </tr> </tbody> <tbody> <tr> <td class='list_td'> <p>고객관리번호, 성명, 연락처, 생년월일, 성별, 연체정보</p> </td> </tr> </tbody> </table> <table class='list_table_m'> <tbody> <tr> <th class='list_th'> <p>개인정보를 제공받는자의 개인정보 이용목적</p> </th> </tr> </tbody> <tbody> <tr> <td class='list_td'> <p>고객관리번호발급, 신용정보조회, 채무불이행 등록</p> </td> </tr> </tbody> </table> <table class='list_table_m'> <tbody> <tr> <th class='list_th'> <p>개인정보를 제공받는자의 개인정보 보유 및 이용기간</p> </th> </tr> </tbody> <tbody> <tr> <td class='list_td'> <p>이용목적 기간내</p> </td> </tr> </tbody> </table> <table class='list_table_m'> <tbody> <tr> <td class='list_memo'> <p>※ 제3자에 대한 신용정보조회 목적의 개인정보 제공은</p> <p>&nbsp;&nbsp;<개인정보 제3자 제공>에 동의할 뿐 아니라</p> <p>&nbsp;&nbsp;<개인(신용)정보 조회>에도 동의하는 경우에만</p> <p>&nbsp;&nbsp;이루어집니다.</p> </td> </tr> </tbody> </table> </div> </div> </body> </html> " );
+			//JSON_SetValue( m_hBody, 'C', "detail3",     "<html> <head> <style type='text/css'> p { margin: 0px; } body { overflow: hidden; } .content { border: 2px solid #bcbcbc; width : 100%; height : 100%; overflow-x: auto; } .con_header { border-bottom: 2px solid #bcbcbc; width : 100%; height : 37px; } .list_table_h { width: 100%; padding: 5px; top : 14px; } .list_table_f { width: 100%; padding: 8px; } .list_table_m { width: 100%; padding: 0px 8px 8px 8px; } .list_th { border: 1px solid #bcbcbc; text-align : left; background-color: #bcbcbc; } .list_td { border: 1px solid #bcbcbc; } </style> </head> <body> <div class='content'> <div class ='con_header'> <table class='list_table_h' style='padding : 5px; top : 14px;'> <thead> <tr> <th style='text-align: left;'> <p>개인(신용)정보 조회 동의 [선택]</p> </th> </tr> </thead> </table> </div> <div class='con_container'> <table class='list_table_f'> <thead> <tr> <th class='list_th'> <p>신용조회회사</p> </th> </tr> </thead> <tbody> <tr> <td class='list_td'> <p>NICE평가정보(주)</p> </td> </tr> </tbody> </table> <table class='list_table_m'> <tbody> <tr> <th class='list_th'> <p>조회 대상 정보</p> </th> </tr> </tbody> <tbody> <tr> <td class='list_td'> <p>개인정보, 신용도판단정보(연체, 부도, 금융질서문란), 공공정보, 신용등급, 경매관련</p> </td> </tr> </tbody> </table> <table class='list_table_m'> <tbody> <tr> <th class='list_th'> <p>조회 목적</p> </th> </tr> </tbody> <tbody> <tr> <td class='list_td'> <p>계약의 체결 및 유지판단여부, 연체관리, 여신심사</p> </td> </tr> </tbody> </table> <table class='list_table_m'> <tbody> <tr> <th class='list_th'> <p>조회 동의의 효력기간</p> </th> </tr> </tbody> <tbody> <tr> <td class='list_td'> <p>동의시점부터 계약 종료 시까지</p> </td> </tr> </tbody> </table> <table class='list_table_m'> <tbody> <tr> <td class='list_memo'> <p>※ 본 조회 동의에 따른 조회 기록은 신용등급에 영향을 주지 않습니다.</p> </td> </tr> </tbody> </table> </div> </div> </body> </html> " );
+			//JSON_SetValue( m_hBody, 'C', "detail4",     "<html> <head> <style type='text/css'> p { margin: 0px; } body { overflow: hidden; } .content { border: 2px solid #bcbcbc; width : 100%; height : 100%; overflow-x: auto; } .con_header { border-bottom: 2px solid #bcbcbc; width : 100%; height : 37px; } .list_table_h { width: 100%; padding: 5px; top : 14px; } .list_table_f { width: 100%; padding: 8px; } .list_table_m { width: 100%; padding: 0px 8px 8px 8px; } .list_th { border: 1px solid #bcbcbc; text-align : left; background-color: #bcbcbc; } .list_td { border: 1px solid #bcbcbc; } </style> </head> <body> <div class='content'> <div class ='con_header'> <table class='list_table_h' style='padding : 5px; top : 14px;'> <thead> <tr> <th style='text-align: left;'> <p>고유식별정보 제공 및 제공받는 동의 [선택]</p> </th> </tr> </thead> </table> </div> <div class='con_container'> <table class='list_table_f'> <thead> <tr> <th class='list_th'> <p>고유식별정보를 제공하는자</p> </th> <th class='list_th'> <p>고유식별정보를 제공받는자</p> </th> </tr> </thead> <tbody> <tr> <td class='list_td'> <p>NICE평가정보(주)</p> </td> <td class='list_td'> <p>서울도시가스</p> </td> </tr> <tr> <td class='list_td'> <p>서울도시가스</p> </td> <td class='list_td'> <p>NICE평가정보(주)</p> </td> </tr> </tbody> </table> <table class='list_table_m'> <tbody> <tr> <th class='list_th'> <p>제공받으려는 고유식별정보의 항목</p> </th> </tr> </tbody> <tbody> <tr> <td class='list_td'> <p>연체자의 주민등록번호 및 외국인 등록번호</p> </td> </tr> </tbody> </table> <table class='list_table_m'> <tbody> <tr> <th class='list_th'> <p>고유식별정보를 제공받는자의 고유식별정보 이용목적</p> </th> </tr> </tbody> <tbody> <tr> <td class='list_td'> <p>미납요금의 회수 및 채권추심업무</p> </td> </tr> </tbody> </table> <table class='list_table_m'> <tbody> <tr> <th class='list_th'> <p>고유식별정보를 제공받는자의고유식별정보 보유 및 이용기간</p> </th> </tr> </tbody> <tbody> <tr> <td class='list_td'> <p>이용목적 기간내</p> </td> </tr> </tbody> </table> <table class='list_table_m'> <tbody> <tr> <td class='list_memo'> <p>※ 개인정보처리 위탁자 등 자세한 내용은</p> <p>&nbsp;&nbsp;서울도시가스 홈페이지(www.seoulgas.co.kr)에 공개된</p> <p>&nbsp;&nbsp;'개인정보처리방침'을 참조하시기 바랍니다.</p> </td> </tr> </tbody> </table> </div> </div> </body> </html> " );
+			
+			//주소 입력 화면 기본 데이터
+			JSON_SetValue( m_hBody, 'C', "url",          GET_URL(WAS_BASE_URL) );
+			JSON_SetValue( m_hBody, 'C', "clientid",     stUserinfo.szpda_ip );
+			JSON_SetValue( m_hBody, 'C', "userid",       stUserinfo.szemployee_id );
+			JSON_SetValue( m_hBody, 'C', "workcd",       stUserinfo.szworkcd );
+			JSON_SetValue( m_hBody, 'C', "vmversion",    stUserinfo.szver_num );
+			JSON_SetValue( m_hBody, 'C', "appversion",   stUserinfo.szappversion );
+			
+			//헤더 입력
+			//사용계약서 폼 코드(00001)
+			JSON_SetValue	(hHeader	, 'C', "Formcode"			, "00001");
+			JSON_SetValue	(hHeader	, 'C', "Ozserver"			, GET_URL(OZ_BASE_URL));
+			JSON_Attach 	(hHeader	, "Paramdata"			, m_hBody);
+			
+			//시스템콜 요청
+			// { "method" : "시스템콜 매쏘드명", "data" : "json object 스트링" }
+			JSON_SetValue	(h, 'C', "method", "OzViewActivity");
+			JSON_Attach 	(h, "data", hHeader);
+			
+			System_Call		("Native_System_Call" , JSON_toString(h));
+		}
+		
+	Finally:
+	
+		DelSqLite(sql);
+		//PRINT("OzView DelSqLite", 0, 0, 0);
+		if (h)
+		{
+			JSON_Finalize(h);
+		}	
+	
+		if (hHeader)
+		{
+			JSON_Finalize(hHeader);
+		}
+			
+		if (m_hBody)
+		{
+			JSON_Finalize(m_hBody);
+		}	
+
+		g_Close_SubDlg();
+		return;
+	}
+
+//------------------------------------------------------------------------------------------
+	void SetJsonBody(SQLITE sql)
+	{
+		long i = 0, j = 0;
+		long lAllAmt = 0;
+		char szUseHpNum[20];
+		char szUseTelNum[20];
+		char szTemlNum[20];
+		char szNumber[5];
+		char szpmCost[50];
+		char szTmp[256];	
+		char szComboData[1500];
+
+		//계약서 작성형태 > 1(전입민원), 2(명의유지), 3(명의변경)
+		//long m_lDocFlag = 0;	//명의유지 = 2, 명의변경 = 3 flag
+		if( m_lDocFlag == 1 )
+		{
+			JSON_SetValue	(m_hBody	, 'C', "pmWritetype"		, "1");
+		}
+		else if( m_lDocFlag == 2 )
+		{
+			JSON_SetValue	(m_hBody	, 'C', "pmWritetype"		, "2");
+		}
+		else if( m_lDocFlag == 3 )
+		{
+			JSON_SetValue	(m_hBody	, 'C', "pmWritetype"		, "3");
+		}
+		else if( m_lDocFlag == 4 )
+		{
+			JSON_SetValue	(m_hBody	, 'C', "pmWritetype"		, "4");
+		}
+
+		//바디 - 사용고객정보
+		JSON_SetValue	(m_hBody	, 'C', "pmUsecontnum"		, m_stUsedata.INST_PLACE_NUM);  //<<--설치장소번호!!
+		
+		if( m_lDocFlag == 4 )
+		{
+			JSON_SetValue	(m_hBody	, 'C', "pmCustnum"			, ""); 	//<<--사용계약번호!!
+		}
+		else
+		{
+			JSON_SetValue	(m_hBody	, 'C', "pmCustnum"			, m_stUsedata.USE_CONT_NUM); 	//<<--사용계약번호!!
+		}
+		
+		if( m_stUsedata.CUST_NUM[0] == '0' || m_lDocFlag == 4 )
+		{
+			JSON_SetValue	(m_hBody	, 'C', "pmName"			    , "");
+			JSON_SetValue	(m_hBody	, 'C', "pmBirthdate"		, "");
+			JSON_SetValue	(m_hBody	, 'C', "pmSex"				, "");
+		}
+		else
+		{
+			JSON_SetValue	(m_hBody	, 'C', "pmName"			    , m_stUsedata.CUST_NM);
+			JSON_SetValue	(m_hBody	, 'C', "pmBirthdate"		, m_stUsedata.SOC_NUM);
+			JSON_SetValue	(m_hBody	, 'C', "pmSex"				, m_stUsedata.GENDER);
+		}
+			
+		if( Str_Len(m_stUsedata.SAFE_KEY) > 0 )
+		{
+			JSON_SetValue	(m_hBody	, 'C', "pmSafekey"		    , "Y");
+		}
+		else
+		{
+			JSON_SetValue	(m_hBody	, 'C', "pmSafekey"		    , "");
+		}
+		
+		if( Str_Len(m_stUsedata.NEW_ADDR_UNION) > 10 )
+		{
+			JSON_SetValue	(m_hBody	, 'C', "pmAddr"		, m_stUsedata.NEW_ADDR_UNION);
+		}
+		else
+		{
+			JSON_SetValue	(m_hBody	, 'C', "pmAddr"		, m_stUsedata.CURR_ADDR_UNION);
+		}
+
+		//전화번호 콤보박스 값
+		Mem_Set((byte*)szTmp, 0x00, sizeof(szTmp));	
+		SPRINT(szTmp," CODE_ID = 'A10110' AND C_VALUE = '2' ORDER BY CAST(SORT_ORDER AS INTEGER) ",0,0,0);
+		JSON_SetValue	(m_hBody	, 'C', "pmTelcombo"			, g_SetOzComboData(sql, szTmp, szComboData, 0));
+		
+		if( m_stUsedata.CUST_NUM[0] == '0' || m_lDocFlag == 4  )
+		{
+			JSON_SetValue	(m_hBody	, 'C', "pmTel1"			    , "");
+			JSON_SetValue	(m_hBody	, 'C', "pmTel2"			    , "");
+			JSON_SetValue	(m_hBody	, 'C', "pmTel3"			    , "");
+		}
+		else
+		{
+			JSON_SetValue	(m_hBody	, 'C', "pmTel1"			    , m_stUsedata.OWNHOUSE_TEL_DDD);
+			JSON_SetValue	(m_hBody	, 'C', "pmTel2"			    , m_stUsedata.OWNHOUSE_TEL_EXN);
+			JSON_SetValue	(m_hBody	, 'C', "pmTel3"			    , m_stUsedata.OWNHOUSE_TEL_NUM);
+		}
+
+		SetMessageBoxText("30 % 처리중...");
+		
+		//휴대폰 콤보박스 값
+		Mem_Set((byte*)szTmp, 0x00, sizeof(szTmp));	
+		SPRINT(szTmp," CODE_ID = 'A10110' AND C_VALUE = '1' ORDER BY CAST(SORT_ORDER AS INTEGER) ",0,0,0);
+		JSON_SetValue	(m_hBody	, 'C', "pmPhonecombo"			, g_SetOzComboData(sql, szTmp, szComboData, 0));
+
+		if( m_stUsedata.CUST_NUM[0] == '0' || m_lDocFlag == 4 )
+		{
+			JSON_SetValue	(m_hBody	, 'C', "pmPhone1"			, "");
+			JSON_SetValue	(m_hBody	, 'C', "pmPhone2"			, "");
+			JSON_SetValue	(m_hBody	, 'C', "pmPhone3"			, "");
+		}
+		else
+		{
+			JSON_SetValue	(m_hBody	, 'C', "pmPhone1"			, m_stUsedata.CP_DDD);
+			JSON_SetValue	(m_hBody	, 'C', "pmPhone2"			, m_stUsedata.CP_EXN);
+			JSON_SetValue	(m_hBody	, 'C', "pmPhone3"			, m_stUsedata.CP_NUM);
+		}
+
+		if( m_lDocFlag == 3 || m_lDocFlag == 4 )
+		{
+				JSON_SetValue	(m_hBody	, 'C', "pmBilling"			, "");
+				
+				JSON_SetValue	(m_hBody	, 'C', "pmLms1"			    , "");
+				JSON_SetValue	(m_hBody	, 'C', "pmLms2"			    , "");
+				JSON_SetValue	(m_hBody	, 'C', "pmLms3"			    , "");
+				JSON_SetValue	(m_hBody	, 'C', "pmEmail1"			, "");
+				JSON_SetValue	(m_hBody	, 'C', "pmEmail2"			, "");
+		}
+		else
+		{
+			if( Str_Cmp(m_stUsedata.BILING_METHOD, "70") == 0 )
+			{
+				JSON_SetValue	(m_hBody	, 'C', "pmBilling"			, "LMS");
+
+				JSON_SetValue	(m_hBody	, 'C', "pmLms1"			    , m_stUsedata.LMS_TEL_DDD);
+				JSON_SetValue	(m_hBody	, 'C', "pmLms2"			    , m_stUsedata.LMS_TEL_EXN);
+				JSON_SetValue	(m_hBody	, 'C', "pmLms3"			    , m_stUsedata.LMS_TEL_NUM);
+				JSON_SetValue	(m_hBody	, 'C', "pmEmail1"			, "");
+				JSON_SetValue	(m_hBody	, 'C', "pmEmail2"			, "");
+			}
+			else if( Str_Cmp(m_stUsedata.BILING_METHOD, "40") == 0 )
+			{
+				JSON_SetValue	(m_hBody	, 'C', "pmBilling"			, "E-mail");
+
+				JSON_SetValue	(m_hBody	, 'C', "pmLms1"			    , "");
+				JSON_SetValue	(m_hBody	, 'C', "pmLms2"			    , "");
+				JSON_SetValue	(m_hBody	, 'C', "pmLms3"			    , "");
+				JSON_SetValue	(m_hBody	, 'C', "pmEmail1"			, m_stUsedata.EMAIL_REQ_ID);
+				JSON_SetValue	(m_hBody	, 'C', "pmEmail2"			, m_stUsedata.EMAIL_REQ_ADDR);
+			}
+			else if ( Str_Cmp(m_stUsedata.BILING_METHOD, "10") == 0 )
+			{
+				JSON_SetValue	(m_hBody	, 'C', "pmBilling"			, "고지서");
+
+				JSON_SetValue	(m_hBody	, 'C', "pmLms1"			    , "");
+				JSON_SetValue	(m_hBody	, 'C', "pmLms2"			    , "");
+				JSON_SetValue	(m_hBody	, 'C', "pmLms3"			    , "");
+				JSON_SetValue	(m_hBody	, 'C', "pmEmail1"			, "");
+				JSON_SetValue	(m_hBody	, 'C', "pmEmail2"			, "");
+			}
+			else
+			{
+				JSON_SetValue	(m_hBody	, 'C', "pmBilling"			, "");
+				
+				JSON_SetValue	(m_hBody	, 'C', "pmLms1"			    , "");
+				JSON_SetValue	(m_hBody	, 'C', "pmLms2"			    , "");
+				JSON_SetValue	(m_hBody	, 'C', "pmLms3"			    , "");
+				JSON_SetValue	(m_hBody	, 'C', "pmEmail1"			, "");
+				JSON_SetValue	(m_hBody	, 'C', "pmEmail2"			, "");
+			}
+		}
+		
+		SetMessageBoxText("40 % 처리중...");	
+
+		//이메일 주소 , @를 빼고 넘겨야함
+		Mem_Set((byte*)szTmp, 0x00, sizeof(szTmp));	
+		SPRINT(szTmp," CODE_ID = 'A10140' ",0,0,0);
+		JSON_SetValue	(m_hBody	, 'C', "pmEmailcombo"			, g_SetOzComboData(sql, szTmp, szComboData, 0));
+		
+		SetMessageBoxText("50 % 처리중...");
+		
+		//pmBankapply -> 자동이체 신청, 미신청 대상자 구분 (Y,N)
+		//납부방법 ( 10 : 은행자동이체, 20 : 카드자동이체, NULL : 지로 )
+		if(m_lDocFlag == 4)
+		{
+			JSON_SetValue	(m_hBody	, 'C', "pmBankapply"		, "N");
+			JSON_SetValue	(m_hBody	, 'C', "pmBanktitle"		, "");
+		}
+		else
+		{
+			if( Str_Cmp(m_stUsedata.PAYMENT_METHOD, "20") == 0 )
+			{
+				JSON_SetValue	(m_hBody	, 'C', "pmBankapply"		, "Y");
+				JSON_SetValue	(m_hBody	, 'C', "pmBanktitle"		, "은행");
+				
+			}
+			else if( Str_Cmp(m_stUsedata.PAYMENT_METHOD, "30") == 0 )
+			{
+				JSON_SetValue	(m_hBody	, 'C', "pmBankapply"		, "Y");
+				JSON_SetValue	(m_hBody	, 'C', "pmBanktitle"		, "카드");
+			}
+			else
+			{
+				JSON_SetValue	(m_hBody	, 'C', "pmBankapply"		, "N");
+				JSON_SetValue	(m_hBody	, 'C', "pmBanktitle"		, "");
+			}
+		}
+		
+		//은행 콤보
+		Mem_Set((byte*)szTmp, 0x00, sizeof(szTmp));	
+		SPRINT(szTmp," CODE_ID = 'C61999' ",0,0,0);
+		JSON_SetValue	(m_hBody	, 'C', "pmBankcombo"			, g_SetOzComboData(sql, szTmp, szComboData, 0));
+
+		SetMessageBoxText("60 % 처리중...");
+		
+		//카드 콤보
+		Mem_Set((byte*)szTmp, 0x00, sizeof(szTmp));	
+		SPRINT(szTmp," CODE_ID = 'C61998' ",0,0,0);
+		JSON_SetValue	(m_hBody	, 'C', "pmCardcombo"			, g_SetOzComboData(sql, szTmp, szComboData, 0));
+		
+		SetMessageBoxText("70 % 처리중...");
+		
+		//PRINT("70 Per m_stUsedata.BNK_BRANCH_NM:[%s]", m_stUsedata.BNK_BRANCH_NM, 0, 0);
+		JSON_SetValue	(m_hBody	, 'C', "pmBank"				, m_stUsedata.BNK_BRANCH_NM);
+		JSON_SetValue	(m_hBody	, 'C', "pmAcc"				, m_stUsedata.DEFRAY_ACCOUNT_NUM);
+		JSON_SetValue	(m_hBody	, 'C', "pmAccname"			, m_stUsedata.DEPOSITOR_NM);
+		
+		Mem_Set((byte*)szTmp, 0x00, sizeof(szTmp));	
+		if( Str_Len(m_stUsedata.DEPOSITOR_BIRTH_DATE) == 13 )
+		{
+			Mem_Cpy((byte *)szTmp, (byte *)m_stUsedata.DEPOSITOR_BIRTH_DATE, 6);			
+		}
+		else
+		{
+			Str_Cpy(szTmp, m_stUsedata.DEPOSITOR_BIRTH_DATE);
+		}
+		JSON_SetValue	(m_hBody	, 'C', "pmAccbirthdate"		, szTmp);
+		
+		JSON_SetValue	(m_hBody	, 'C', "pmAccphone1"		, m_stUsedata.DEPOSITOR_TEL_DDD);
+		JSON_SetValue	(m_hBody	, 'C', "pmAccphone2"		, m_stUsedata.DEPOSITOR_TEL_EXN);
+		JSON_SetValue	(m_hBody	, 'C', "pmAccphone3"		, m_stUsedata.DEPOSITOR_TEL_NUM);
+
+		//납부자와 관계 콤보박스 값
+		Mem_Set((byte*)szTmp, 0x00, sizeof(szTmp));	
+		SPRINT(szTmp," CODE_ID = 'C10004' ",0,0,0);
+		JSON_SetValue	(m_hBody	, 'C', "pmAccrelationcombo"			, g_SetOzComboData(sql, szTmp, szComboData, 0));
+
+		Mem_Set((byte*)szTmp, 0x00, sizeof(szTmp));	
+		SPRINT(szTmp," CODE_ID = 'C10004' AND CODE_ITEM = '%s'",m_stUsedata.DEPOSITOR_RELAT_CD,0,0);
+		JSON_SetValue	(m_hBody	, 'C', "pmAccrelation"		, g_SetOzComboData(sql, szTmp, szComboData, 0));
+		
+		SetMessageBoxText("80 % 처리중...");
+		
+		JSON_SetValue	(m_hBody	, 'C', "pmAgentname"		, m_stUsedata.REQ_NM);
+		JSON_SetValue	(m_hBody	, 'C', "pmAgentphone1"		, m_stUsedata.REQ_TEL_DDD);
+		JSON_SetValue	(m_hBody	, 'C', "pmAgentphone2"		, m_stUsedata.REQ_TEL_EXN);
+		JSON_SetValue	(m_hBody	, 'C', "pmAgentphone3"		, m_stUsedata.REQ_TEL_NUM);
+		JSON_SetValue	(m_hBody	, 'C', "pmCenter"				, stUserinfo.sznm_kor);
+
+		return;
+	}
+		
+//------------------------------------------------------------------
+	void SetJsonArray_Bank(SQLITE sql)
+	{
+		long i = 0;
+		long lCnt = 0;
+		char szSql[256];
+		char szTmp[128];
+		char szRet_Cd[10];
+		char szRet_Nm[128];
+		handle hArray = NULL;
+		bool sret = FALSE;
+		handle hstmt = NULL;
+		
+		hArray = JSON_Create(JSON_Array);
+		if( hArray == NULL  )
+		{
+			goto Finally;
+		}
+		
+		//카드 콤보 - 5개
+		Mem_Set( (byte*)szSql, 0x00, sizeof(szSql) );
+		SPRINT(szSql, " SELECT ITEM_KNAME FROM COMMONCODE WHERE CODE_ID = 'C61998' ", 0,  0, 0 );
+		//PRINT("szSql:[%s]", szSql, 0, 0);
+		hstmt = sql->CreateStatement( sql, szSql );
+		
+		if( hstmt == NULL )
+		{
+			PRINT("::SQL_CreateStatement fail [%s]", sql->GetLastError(sql), 0, 0);
+			goto Finally;
+		}
+	
+		sret = sql->Execute(sql);	
+		if(sret == FALSE)
+		{
+			PRINT("::sql->Execute [%s]", sql->GetLastError(sql), 0, 0);
+			goto Finally;
+		}
+		
+		//lCnt = 0;
+		//g_Sql_RetInt("SELECT COUNT(*) FROM COMMONCODE WHERE CODE_ID = 'C61998'", &lCnt);
+		
+		//for( i = 0 ; i < lCnt ; i++ )
+		while( sql->Next(sql) == TRUE )
+		{
+			Mem_Set((byte*)szTmp, 0x00, sizeof(szTmp));	
+			Mem_Set((byte*)szSql, 0x00, sizeof(szSql));	
+			Mem_Set((byte*)szRet_Cd, 0x00, sizeof(szRet_Cd));	
+			Mem_Set((byte*)szRet_Nm, 0x00, sizeof(szRet_Nm));	
+			//SPRINT(szSql,"SELECT ITEM_KNAME FROM COMMONCODE WHERE CODE_ID = 'C61998' LIMIT %d, 1",i,0,0);
+			//g_Sql_RetStr(szSql, 10, szTmp);
+			sql->GetValue( sql, 0, 'U', (long*)szTmp, sizeof(szTmp), DECRYPT );
+			//PRINT("C6101_WINFO SetJsonArray_Bank 1 ITEM_KNAME:[%s]", szTmp, 0, 0);
+			
+			Mem_Cpy((byte *)szRet_Cd, (byte *)szTmp, 3);
+			Mem_Cpy((byte *)szRet_Nm, (byte *)szTmp+5, Str_Len(szTmp)-5);
+
+			JSON_AddArrayItem(hArray);
+			JSON_SetArrayItem(hArray, 'C', "bnk_cd", szRet_Cd );
+			JSON_SetArrayItem(hArray, 'C', "bnk_nm", szRet_Nm  );
+		}
+		
+		sql->DeleteStatement(sql);
+		
+		//은행 콤보 - 44개
+		Mem_Set( (byte*)szSql, 0x00, sizeof(szSql) );
+		SPRINT(szSql, " SELECT ITEM_KNAME FROM COMMONCODE WHERE CODE_ID = 'C61999' ", 0,  0, 0 );
+		//PRINT("szSql:[%s]", szSql, 0, 0);
+		hstmt = sql->CreateStatement( sql, szSql );
+		
+		if( hstmt == NULL )
+		{
+			PRINT("::SQL_CreateStatement fail [%s]", sql->GetLastError(sql), 0, 0);
+			goto Finally;
+		}
+	
+		sret = sql->Execute(sql);	
+		if(sret == FALSE)
+		{
+			PRINT("::sql->Execute [%s]", sql->GetLastError(sql), 0, 0);
+			goto Finally;
+		}
+		
+		//lCnt = 0;
+		//g_Sql_RetInt("SELECT COUNT(*) FROM COMMONCODE WHERE CODE_ID = 'C61999'", &lCnt);
+		//for( i=0 ; i < lCnt ; i++ )
+		while( sql->Next(sql) == TRUE )
+		{
+			Mem_Set((byte*)szTmp, 0x00, sizeof(szTmp));	
+			Mem_Set((byte*)szSql, 0x00, sizeof(szSql));	
+			Mem_Set((byte*)szRet_Cd, 0x00, sizeof(szRet_Cd));	
+			Mem_Set((byte*)szRet_Nm, 0x00, sizeof(szRet_Nm));	
+			//SPRINT(szSql,"SELECT ITEM_KNAME FROM COMMONCODE WHERE CODE_ID = 'C61999' LIMIT %d, 1",i,0,0);
+			//g_Sql_RetStr(szSql, 10, szTmp);
+			sql->GetValue( sql, 0, 'U', (long*)szTmp, sizeof(szTmp), DECRYPT );
+			//PRINT("C6101_WINFO SetJsonArray_Bank 2 ITEM_KNAME:[%s]", szTmp, 0, 0);
+			
+			Mem_Cpy((byte *)szRet_Cd, (byte *)szTmp, 3);
+			Mem_Cpy((byte *)szRet_Nm, (byte *)szTmp+5, Str_Len(szTmp)-5);
+
+			JSON_AddArrayItem(hArray);
+			JSON_SetArrayItem(hArray, 'C', "bnk_cd", szRet_Cd );
+			JSON_SetArrayItem(hArray, 'C', "bnk_nm", szRet_Nm  );
+		}
+
+		JSON_Attach(m_hBody, "bnk_cd", hArray);
+	
+Finally:
+	
+		sql->DeleteStatement(sql);
+		
+		if (hArray)
+		{
+			JSON_Finalize(hArray);
+		}	
+		
+		return;
+	}
+	
+//------------------------------------------------------------------
+	void SetJsonArray_Payment(void)
+	{
+		long i = 0;
+		long lCnt = 0;
+		char szSql[256];
+		char szTmp[128];
+		char szRet_Cd[10];
+		char szRet_Nm[128];
+		handle hArray = NULL;
+		
+		hArray = JSON_Create(JSON_Array);
+		if( hArray == NULL  )
+		{
+			goto Finally;
+		}
+		
+		JSON_AddArrayItem(hArray);
+		JSON_SetArrayItem(hArray, 'C', "payment_cd", "10" );
+		JSON_SetArrayItem(hArray, 'C', "payment_nm", "은행자동이체"  );
+
+		JSON_AddArrayItem(hArray);
+		JSON_SetArrayItem(hArray, 'C', "payment_cd", "20" );
+		JSON_SetArrayItem(hArray, 'C', "payment_nm", "카드자동이체"  );
+
+		JSON_AddArrayItem(hArray);
+		JSON_SetArrayItem(hArray, 'C', "payment_cd", "" );
+		JSON_SetArrayItem(hArray, 'C', "payment_nm", "지로"  );
+
+		JSON_Attach(m_hBody, "payment_method", hArray);
+
+Finally:
+
+		if (hArray)
+		{
+			JSON_Finalize(hArray);
+		}	
+		
+		return;
+	}
+
+//------------------------------------------------------------------
+	long Snd_OzView(void)
+	{
+		char szTmp[500];
+		char szUrl[200];
+		char szbuf[128];
+		char* sndbuf;
+		long ret = 0;
+		long nLen = 0;
+		char* szfile;
+		char* filedata;
+		long nRet, filesize, fd;
+		handle file;		
+	
+		if( g_pjcomm != NULL)
+		{
+			JSON_Finalize( g_pjcomm );
+			g_pjcomm = NULL;
+		}		
+		
+		g_SeverConnection();	
+		
+		g_pjcomm = g_CreateJsonHead(g_pjcomm, szUrl, 822566, FALSE);
+		
+		if( m_lDocFlag == 4 )
+		{
+			JSON_SetValue( g_pjcomm, 'C', "cust_num",              " "                            );
+		}
+		else
+		{
+			JSON_SetValue( g_pjcomm, 'C', "cust_num",              m_stOzData.CUST_NUM            );
+		}
+		
+		JSON_SetValue( g_pjcomm, 'C', "use_cont_num",              m_stOzData.USE_CONT_NUM        );
+		JSON_SetValue( g_pjcomm, 'C', "branch_cd",                 m_stOzData.BRANCH_CD           );
+		JSON_SetValue( g_pjcomm, 'C', "center_cd",                 m_stOzData.CENTER_CD           );
+		JSON_SetValue( g_pjcomm, 'C', "inst_place_num",            m_stOzData.INST_PLACE_NUM      );
+	
+		Mem_Set((byte*)szTmp, 0x00, sizeof(szTmp));
+		SQL_ConvUcStr( szTmp, m_stOzData.CUST_NM );
+		JSON_SetValue( g_pjcomm, 'C', "cust_nm",                   szTmp                          );
+
+		JSON_SetValue( g_pjcomm, 'C', "chg_cust_type",             m_stOzData.CHG_CUST_TYPE       );
+		JSON_SetValue( g_pjcomm, 'C', "data_col_type",             m_stOzData.DATA_COL_TYPE       );
+		JSON_SetValue( g_pjcomm, 'C', "tran_flag",                 m_stOzData.TRAN_FLAG           );
+		JSON_SetValue( g_pjcomm, 'C', "gender",                    m_stOzData.GENDER              );
+		JSON_SetValue( g_pjcomm, 'C', "info_use_agree_yn",         m_stOzData.INFO_USE_AGREE_YN   );
+		JSON_SetValue( g_pjcomm, 'C', "info_use_yn",               m_stOzData.INFO_USE_YN         );
+		JSON_SetValue( g_pjcomm, 'C', "info_use_yn4",              m_stOzData.INFO_USE_YN4        );
+		JSON_SetValue( g_pjcomm, 'C', "info_use_yn5",              m_stOzData.INFO_USE_YN5        );
+		JSON_SetValue( g_pjcomm, 'C', "info_use_yn6",              m_stOzData.INFO_USE_YN6        );
+		
+		Mem_Set((byte*)szTmp, 0x00, sizeof(szTmp));
+		SQL_ConvUcStr( szTmp, m_stOzData.RMK );
+		JSON_SetValue( g_pjcomm, 'C', "rmk",                       szTmp                          );
+		
+		//JSON_SetValue( g_pjcomm, 'C', "tran_req_ymd",              m_stOzData.TRAN_REQ_YMD        );
+		JSON_SetValue( g_pjcomm, 'C', "trans_flag",                m_stOzData.TRANS_FLAG          );
+		JSON_SetValue( g_pjcomm, 'C', "lms_tel_ddd",               m_stOzData.LMS_TEL_DDD         );
+		JSON_SetValue( g_pjcomm, 'C', "lms_tel_exn",               m_stOzData.LMS_TEL_EXN         );
+		JSON_SetValue( g_pjcomm, 'C', "lms_tel_num",               m_stOzData.LMS_TEL_NUM         );
+		JSON_SetValue( g_pjcomm, 'C', "email_req_addr",            m_stOzData.EMAIL_REQ_ADDR      );
+		JSON_SetValue( g_pjcomm, 'C', "biling_method",             m_stOzData.BILING_METHOD       );
+		JSON_SetValue( g_pjcomm, 'C', "payment_method",            m_stOzData.PAYMENT_METHOD      );
+		JSON_SetValue( g_pjcomm, 'C', "pay_method_type",           m_stOzData.PAY_METHOD_TYPE     );
+		JSON_SetValue( g_pjcomm, 'C', "bill_method_type",          m_stOzData.BILL_METHOD_TYPE    );
+		JSON_SetValue( g_pjcomm, 'C', "bnk_cd",                    m_stOzData.BNK_CD              );
+		
+		//Mem_Set((byte*)szTmp, 0x00, sizeof(szTmp));
+		//SQL_ConvUcStr( szTmp, m_stOzData.BNK_BRANCH_NM );
+		//JSON_SetValue( g_pjcomm, 'C', "bnk_branch_nm",             szTmp                          );
+
+		Mem_Set((byte*)szTmp, 0x00, sizeof(szTmp));
+		SQL_ConvUcStr( szTmp, m_stOzData.DEPOSITOR_NM );
+		JSON_SetValue( g_pjcomm, 'C', "depositor_nm",              szTmp                          );
+
+		JSON_SetValue( g_pjcomm, 'C', "depositor_tel_ddd",         m_stOzData.DEPOSITOR_TEL_DDD   );
+		JSON_SetValue( g_pjcomm, 'C', "depositor_tel_exn",         m_stOzData.DEPOSITOR_TEL_EXN   );
+		JSON_SetValue( g_pjcomm, 'C', "depositor_tel_num",         m_stOzData.DEPOSITOR_TEL_NUM   );
+		JSON_SetValue( g_pjcomm, 'C', "defray_account_num",        m_stOzData.DEFRAY_ACCOUNT_NUM  );
+		JSON_SetValue( g_pjcomm, 'C', "depositor_birth_date",      m_stOzData.DEPOSITOR_BIRTH_DATE);
+		JSON_SetValue( g_pjcomm, 'C', "depositor_relat_cd",        m_stOzData.DEPOSITOR_RELAT_CD  );
+		//JSON_SetValue( g_pjcomm, 'C', "cust_relat_cd",             m_stOzData.CUST_RELAT_CD       );
+		
+		Mem_Set((byte*)szTmp, 0x00, sizeof(szTmp));
+		SQL_ConvUcStr( szTmp, m_stOzData.REQ_NM );
+		JSON_SetValue( g_pjcomm, 'C', "req_nm",                    szTmp                          );
+		
+		JSON_SetValue( g_pjcomm, 'C', "req_tel_ddd",               m_stOzData.REQ_TEL_DDD         );
+		JSON_SetValue( g_pjcomm, 'C', "req_tel_exn",               m_stOzData.REQ_TEL_EXN         );
+		JSON_SetValue( g_pjcomm, 'C', "req_tel_num",               m_stOzData.REQ_TEL_NUM         );
+		JSON_SetValue( g_pjcomm, 'C', "oz_tran_req_flag",          m_stOzData.OZ_TRAN_REQ_FLAG    );
+		
+		Mem_Set((byte*)szTmp, 0x00, sizeof(szTmp));
+		SQL_ConvUcStr( szTmp, m_stOzData.ADDR_UNION );
+		JSON_SetValue( g_pjcomm, 'C', "addr_union",                szTmp                          );
+		
+		JSON_SetValue( g_pjcomm, 'C', "soc_num",                   m_stOzData.SOC_NUM             );
+		JSON_SetValue( g_pjcomm, 'C', "ownhouse_tel_ddd",          m_stOzData.OWNHOUSE_TEL_DDD    );
+		JSON_SetValue( g_pjcomm, 'C', "ownhouse_tel_exn",          m_stOzData.OWNHOUSE_TEL_EXN    );
+		JSON_SetValue( g_pjcomm, 'C', "ownhouse_tel_num",          m_stOzData.OWNHOUSE_TEL_NUM    );
+		JSON_SetValue( g_pjcomm, 'C', "cp_ddd",                    m_stOzData.CP_DDD              );
+		JSON_SetValue( g_pjcomm, 'C', "cp_exn",                    m_stOzData.CP_EXN              );
+		JSON_SetValue( g_pjcomm, 'C', "cp_num",                    m_stOzData.CP_NUM              );
+		JSON_SetValue( g_pjcomm, 'C', "oz_email_req_flag",         m_stOzData.OZ_EMAIL_REQ_FLAG   );
+		JSON_SetValue( g_pjcomm, 'C', "oz_lms_req_flag",           m_stOzData.OZ_LMS_REQ_FLAG     );
+		
+		//기존 사용계약서 데이터(해지를 위해 필요함)
+		JSON_SetValue( g_pjcomm, 'C', "cancel_payment_method",     m_stCancelData.PAYMENT_METHOD     );
+		JSON_SetValue( g_pjcomm, 'C', "cancel_bnk_cd",             m_stCancelData.BNK_CD             );
+		JSON_SetValue( g_pjcomm, 'C', "cancel_defray_account_num", m_stCancelData.DEFRAY_ACCOUNT_NUM );
+		JSON_SetValue( g_pjcomm, 'C', "cancel_depositor_relat_cd", m_stCancelData.DEPOSITOR_RELAT_CD );
+		
+		Mem_Set((byte*)szTmp, 0x00, sizeof(szTmp));
+		SQL_ConvUcStr( szTmp, m_stOzData.DEPOSITOR_NM );
+		JSON_SetValue( g_pjcomm, 'C', "cancel_depositor_nm",       szTmp                          );
+		
+		//13자리면 주민번호 -> 앞의 6자리만
+		//아닌 경우는 사업자번호 -> 모두 넘기기
+		Mem_Set((byte*)szTmp, 0x00, sizeof(szTmp));
+		if( Str_Len(m_stCancelData.DEPOSITOR_BIRTH_DATE) == 13 )
+		{
+			Mem_Cpy((byte *)szTmp, (byte *)m_stCancelData.DEPOSITOR_BIRTH_DATE, 6);
+		}
+		else
+		{
+			Str_Cpy(szTmp, m_stCancelData.DEPOSITOR_BIRTH_DATE);
+		}
+		JSON_SetValue( g_pjcomm, 'C', "cancel_depositor_birth_date", szTmp );
+		
+		JSON_SetValue( g_pjcomm, 'C', "cancel_lms_tel_ddd", m_stCancelData.LMS_TEL_DDD );
+		JSON_SetValue( g_pjcomm, 'C', "cancel_lms_tel_exn", m_stCancelData.LMS_TEL_EXN );
+		JSON_SetValue( g_pjcomm, 'C', "cancel_lms_tel_num", m_stCancelData.LMS_TEL_NUM );
+		JSON_SetValue( g_pjcomm, 'C', "cancel_email_req_addr", m_stCancelData.EMAIL_REQ_ADDR);
+		JSON_SetValue( g_pjcomm, 'C', "card_valid_period", m_stOzData.CARD_VALID_PERIOD );
+		JSON_SetValue( g_pjcomm, 'C', "card_join_yn", m_stOzData.CARD_JOIN_YN );
+
+		JSON_SetValue( g_pjcomm, 'C', "civil_serv_receive_num", stMw.szCivil_serv_receive_num );
+		JSON_SetValue( g_pjcomm, 'C', "zip_seq", stMw.szZip_seq );
+
+		Mem_Set((byte*)szTmp, 0x00, sizeof(szTmp));
+		SQL_ConvUcStr( szTmp, stMw.szEtc_addr );
+		JSON_SetValue( g_pjcomm, 'C', "etc_addr", szTmp );
+		
+		Mem_Set((byte*)szTmp, 0x00, sizeof(szTmp));
+		SQL_ConvUcStr( szTmp, stMw.szTrans_in_cust_nm );
+		JSON_SetValue( g_pjcomm, 'C', "trans_in_cust_nm", szTmp );
+		
+		JSON_SetValue( g_pjcomm, 'C', "trans_in_soc_num", stMw.szTrans_in_soc_num );
+		JSON_SetValue( g_pjcomm, 'C', "trans_in_cust_num", stMw.szTrans_in_cust_num );
+		JSON_SetValue( g_pjcomm, 'C', "assign_req_tel_ddd", stMw.szReq_tel_ddd );
+		JSON_SetValue( g_pjcomm, 'C', "assign_req_tel_exn", stMw.szReq_tel_exn );
+		JSON_SetValue( g_pjcomm, 'C', "assign_req_tel_num", stMw.szReq_tel_num );
+		JSON_SetValue( g_pjcomm, 'C', "assign_req_cp_ddd", stMw.szReq_cp_ddd );
+		JSON_SetValue( g_pjcomm, 'C', "assign_req_cp_exn", stMw.szReq_cp_exn );
+		JSON_SetValue( g_pjcomm, 'C', "assign_req_cp_num", stMw.szReq_cp_num );
+		
+		// 신기호 추가 
+		if( Chk_chgUserInfo() > 0 )
+		{	
+			 Str_Cpy(m_stOzData.CHK_CHG_USERINFO_FLAG, "Y");
+		}	
+		else
+		{
+			Str_Cpy(m_stOzData.CHK_CHG_USERINFO_FLAG, "N");
+		}
+
+		JSON_SetValue( g_pjcomm, 'C', "chk_chg_userinfo_flag", m_stOzData.CHK_CHG_USERINFO_FLAG );
+
+		filesize = FFS_GetSize( m_stOzData.PDFPATH );
+		filedata = Mem_Alloc(filesize);
+		fd = FFS_Open(m_stOzData.PDFPATH, FS_READ_MODE, FS_NORMAL_FLAG );
+		FFS_Read ( fd, (byte*)filedata, filesize );
+		FFS_Close(fd);
+		file = BASE64_Create();
+		BASE64_Encode(file, filedata, filesize );
+		szfile = BASE64_GetResult(file);	
+		
+		JSON_SetValue( g_pjcomm, 'C', "oz_file",  szfile );
+		
+		sndbuf = JSON_toString(g_pjcomm);
+
+		//g_Save_JsonFile(sndbuf);
+		
+		Mem_Set((byte*)szbuf, 0x00, sizeof(szbuf));	
+		GET_FILENM(szbuf, SQLITE_DB);
+
+		callBackfunc = TR822566; //통신완료 후에 호출 함수
+		HTTP_DownloadData( szUrl, "FR822566_IN",  "FR822566" , sndbuf, szbuf );
+		
+		return 1;
+	}
+	
+	long TR822566(void)
+	{
+		long lRet = 0;
+		long lJsonRet = 0;
+		char szSql[350];
+	
+		lJsonRet = g_Chk_Json(822566);
+	
+		if(lJsonRet >= 0)
+		{
+			MessageBoxEx (CONFIRM_OK, "사용계약서 저장에 성공하였습니다.");
+			ON_DRAW();
+			ON_EXIT();
+			OnInit(INIT_MAIN);
+			return 1;
+		}
+		else
+		{
+			if( MessageBoxEx (CONFIRM_YESNO, "등록에 실패하였습니다. 다시 전송하시겠습니까?")  == MB_OK)
+			{
+				Snd_OzView();
+				return 0;
+			}
+			
+			g_Sock_Close();
+			CloseMessageBox();
+			ON_DRAW();
+			return -1;
+		}
+	}
+	//----------------------------------------------------------------------------------
+	void RcvDayMin(void)
+	{
+	char sztmp[10]; 
+	char szSql[200];
+	long nCnt = 0;
+		
+		//Mem_Set( (byte*)szSql, 0x00, sizeof(szSql) );
+		//Mem_Set( (byte*)sztmp, 0x00, sizeof(sztmp) );
+		//SPRINT( szSql ," SELECT count(*) FROM C6101_PROMISE_ASSIGN WHERE SEND_YN = 'S' OR SEND_YN = 'Y' ",g_szCHK_EXEC_NUM,0,0   );
+		
+		//g_Sql_RetInt(szSql, &nCnt);
+		if ( stMw.szSend_yn[0] == 'Y' || stMw.szSend_yn[0] == 'S' ) 
+		{
+			MessageBoxEx (CONFIRM_OK, "완료된 자료는 재수신할 수 없습니다.");
+			return;
+		}
+		
+		if( MessageBoxEx (CONFIRM_YESNO, "일일자료를 재수신하시겠습니까?") != MB_OK )
+		{
+			return;
+		}
+		
+		CloseMessageBox();
+		ON_DRAW();
+
+		Rev68402(stMw.szPromise_assign_seq, 1); // 재수신 받기
+	}
+	
+	//----------------------------------------------------------------------------------
+	long Rev68402(char* promise_assign_seq, long flag)
+	{
+	char szUrl[200];
+	char szFilepath[200];
+	char szbuf[128];
+	char* sndbuf;
+	long ret = 0;
+	
+		Mem_Set( (byte*)szUrl, 0x00, sizeof(szUrl) );
+		if( g_pjcomm != NULL)
+		{
+			JSON_Finalize( g_pjcomm );
+			g_pjcomm = NULL;
+		}
+		g_pjcomm =  g_CreateJsonHead(g_pjcomm, szUrl, 68402, TRUE);
+		JSON_SetValue( g_pjcomm, 'C', "center_cd",   stUserinfo.szcenter_cd );
+		Mem_Set( (byte*)szbuf, 0x00, sizeof(szbuf) );
+		Str_ItoA( Time_GetDate(),szbuf ,10);
+		JSON_SetValue( g_pjcomm, 'C', "promise_ymd",   szbuf );
+		if(flag == 1)
+			JSON_SetValue( g_pjcomm, 'C', "gubun",   "1" );
+		else
+			JSON_SetValue( g_pjcomm, 'C', "gubun",   "2" );
+			
+		JSON_SetValue( g_pjcomm, 'C', "promise_assign_seq",   promise_assign_seq );
+		
+		Mem_Set( (byte*)szbuf, 0x00, sizeof(szbuf) );
+		Str_Cpy(szbuf, "FR68402.JSON");
+
+		sndbuf = JSON_toString(g_pjcomm);
+		//g_Save_JsonFile(sndbuf);
+		g_SeverConnection();
+
+		//PROGRESS_DUMP("1111111");
+
+		callBackfunc = TR68402;
+		//ret = HTTP_DownloadData(szUrl, "FR68402_IN",  "FR68402", sndbuf, szbuf );
+		
+		//PRINT("Rev68402 HTTP_Url2File szUrl:[%s]", szUrl, 0, 0);
+		HTTP_Url2File("POST", szUrl, sndbuf, szbuf);
+		
+		PRINT("Rev68402 return", 0, 0, 0);
+		return 0;
+	}
+	
+	//----------------------------------------------------------------------------------
+	long TR68402(void)
+	{	
+		PRINT("callback Rev68402 start", 0, 0, 0);
+		g_Sock_Close();
+		
+		PRINT("callback Rev68402 Save_Min start", 0, 0, 0);
+		if( Save_Min() == 0 )
+		{
+			if (DeleteOldData()) {
+				if ( m_mincnt > 0 )
+					SND68404();
+				//PRINT("callback TR68402 success", 0, 0, 0);
+				return 1;
+			} else {
+				//PRINT("callback TR68402 DeleteOldData error", 0, 0, 0);
+				MessageBoxEx(ERROR_OK, "이전 데이터 삭제에 실패하였습니다. ");
+				ON_DRAW();
+				return -1;
+			}
+		} 
+		else 
+		{
+			// DB 가 최신이 아닌 경우 등등..
+			PRINT("callback TR68402 Save_Min error", 0, 0, 0);
+			MessageBoxEx(ERROR_OK, "데이터 저장에 실패하였습니다. [68402]");			
+			ON_DRAW();	
+			
+			return -1;
+		}
+	}
+	
+	//----------------------------------------------------------------------------------
+	// 기  능 : 전송 결과 파일을 검토한다.
+	// 설  명 : 
+	// 리턴값 : 0:정상적인 통신완료, -1: 에러응답or응답형식오류, 알수없는 에러
+	//----------------------------------------------------------------------------------
+	long Save_Min(void)
+	{
+	char szJsonpath[500];
+	char szMsg[500];
+	long fd, i;
+	long chkmsg = 0;
+	long chkcode = 0;
+	long fsize = 0;
+	char *pStr = NULL;
+	char *szcode = NULL;
+	char *szmessage = NULL;
+	char *szitem = NULL;
+	char szType[2] = {0,0};
+	long ret = 0;
+	handle hitem = NULL;
+	handle hcnt = NULL;
+	DBInfo assign;
+	DBInfo mtr;
+	DBInfo bur;
+	DBInfo custinfo;
+	DBInfo nonpay;
+	handle hdb = NULL;
+	SQLITE sql = NewSqLite();
+			
+		hdb = sql->Open(sql);
+		if( hdb == NULL )
+		{
+			DelSqLite(sql);
+			MessageBoxEx(ERROR_OK, "데이터베이스 연결 오류.. \n리셋후 초기버젼을 재설치 해 주세요.");
+			ret = -3;
+			goto Finally;
+		}
+		assign.szTblnm=  "C6101_PROMISE_ASSIGN";
+		assign.nKeyCnt=  AssignKeyCnt;
+		assign.nUTotCnt=  AssignUCnt;
+		assign.nITotCnt=  AssignICnt;
+		assign.keyinfo=  m_stMwAssignKey;
+		assign.Ufldinfo=  m_stMwAssignU;
+		assign.Ifldinfo=  m_stMwAssignI;
+
+
+		mtr.szTblnm=     "C6101_PROMISE_mtr";
+		mtr.nKeyCnt=  MtrKeyCnt;
+		mtr.nUTotCnt=  MtrUCnt;
+		mtr.nITotCnt=  MtrICnt;
+		mtr.keyinfo=  m_stMwMtrKey;
+		mtr.Ufldinfo=  m_stMwMtrU;
+		mtr.Ifldinfo=  m_stMwMtrI;
+
+		bur.szTblnm=     "C6101_PROMISE_bur";
+		bur.nKeyCnt=  BurKeyCnt;
+		bur.nUTotCnt=  BurUCnt;
+		bur.nITotCnt=  BurICnt;
+		bur.keyinfo=  m_stMwBurKey;
+		bur.Ufldinfo=  m_stMwBurU;
+		bur.Ifldinfo=  m_stMwBurI;
+
+		custinfo.szTblnm="C6101_Pre_cust_info";
+		custinfo.nKeyCnt=  CustKeyCnt;
+		custinfo.nUTotCnt=  CustUCnt;
+		custinfo.nITotCnt=  CustICnt;
+		custinfo.keyinfo=  m_stMwCustKey;
+		custinfo.Ufldinfo=  m_stMwCustU;
+		custinfo.Ifldinfo=  m_stMwCustI;
+
+		nonpay.szTblnm=  "C6101_nonpay";
+		nonpay.nKeyCnt=  NonpayKeyCnt;
+		nonpay.nUTotCnt=  NonpayUCnt;
+		nonpay.nITotCnt=  NonpayICnt;
+		nonpay.keyinfo=  m_stMwNospayKey;
+		nonpay.Ufldinfo=  m_stMwNospayU;
+		nonpay.Ifldinfo=  m_stMwNospayI;
+
+		MessageBox(MESSAGE, "자료 확인중 입니다.", 0, 0, 0, 0);
+		
+		Mem_Set((byte*) szJsonpath, 0x00, sizeof( szJsonpath) );
+		SPRINT(szJsonpath, "%sFR68402_Res.JSON",  SYSTEM_COMM, 0, 0 );
+		if(FFS_Exist(szJsonpath) != TRUE )
+		{
+			Mem_Set((byte*) szJsonpath, 0x00, sizeof( szJsonpath) );
+			SPRINT(szJsonpath, "%sFR68402.JSON",  SYSTEM_COMM, 0, 0 );
+		}
+
+		fsize = FFS_GetSize(szJsonpath);
+		if(fsize <= 15)
+		{
+			MessageBoxEx (WARNING_OK, "수신데이터 오류[0]");
+			PRINT("수신데이터 오류[0]", 0, 0, 0);
+			ret = -1;
+			goto Finally;
+		}
+
+		pStr = Mem_Alloc(fsize);
+		
+		fd = FFS_Open(szJsonpath, FS_READ_MODE, FS_NORMAL_FLAG);
+		if(fd == -1)
+		{
+			MessageBoxEx (WARNING_OK, "수신데이터 오류[1]");
+			PRINT("수신데이터 오류[1]", 0, 0, 0);
+			ret = -1;
+			Mem_Free((byte*)pStr);
+			goto Finally;
+		}
+		
+		FFS_Read(fd, (byte*)pStr, fsize);
+
+		for(i = 0 ; i < fsize-9 ; i++ )
+		{
+			if( Mem_Cmp((byte*)pStr+i,(byte*) "\"code\"", 6) == 0  )
+			{
+				chkcode++;
+			}
+			if( Mem_Cmp((byte*)pStr+i,(byte*) "\"message\"", 9) == 0  )
+			{
+				chkmsg++;
+			}
+			if(chkmsg > 0 &&  chkcode > 0)
+				break;
+		}
+
+		FFS_Close(fd);
+
+		Mem_Free((byte*)pStr);
+		
+		if(chkmsg == 0 || chkcode == 0)
+		{
+			MessageBoxEx (WARNING_OK, "수신데이터 오류[2]");
+			PRINT("수신데이터 오류[2]", 0, 0, 0);
+			ret = -1;
+			goto Finally;
+		}
+	
+		if(g_pjcomm != NULL)
+		{
+			JSON_Finalize(g_pjcomm);
+			g_pjcomm = NULL;
+		}
+
+		g_pjcomm = JSON_Create( JSON_Object );
+		if(g_pjcomm == NULL)
+		{		
+			MessageBoxEx (WARNING_OK, "수신데이터 오류[3]");
+			PRINT("수신데이터 오류[3]", 0, 0, 0);
+			ret = -1;
+			goto Finally;
+		}
+
+		if( JSON_LoadFile(g_pjcomm, szJsonpath) > 0)
+		{
+			szcode    = JSON_GetValue (g_pjcomm, "code",    szType);
+			szmessage = JSON_GetValue (g_pjcomm, "message", szType);
+
+			if( Str_Cmp(szcode, "0000") != 0)
+			{
+			  char* pMsg = NULL;
+			  
+				Mem_Set((byte*) szJsonpath, 0x00, sizeof( szJsonpath) );
+				if(Str_Len(szmessage) < 500 )
+					SQL_ConvMbStr( szMsg, szmessage);
+				
+				//SPRINT(szJsonpath, "[%s] %s", szcode, szMsg, 0 );
+				pMsg = g_Chk_Code(szJsonpath, szcode, szMsg);
+			
+				MessageBoxEx (WARNING_OK, pMsg);
+				EvtDraw();
+				PRINT("save_min szcode != 0000 ", 0, 0, 0);
+				ret = -1;
+				goto Finally;
+			}
+			else
+			{
+				
+				if(ret > -1 )
+				{
+					szitem =JSON_GetValue(g_pjcomm, "assign", szType);
+					if( Str_Len(szitem) > 0 )
+					{
+						hitem = JSON_Create( JSON_Array );
+						if( hitem != NULL)
+						{
+							JSON_toJson(hitem, szitem ) ;
+							m_mincnt = JSON_GetArrayCount( hitem );
+						}
+					}
+					
+					if(m_mincnt > 0 )// DB 입력
+					{
+						if ( SetJsonToDB( &assign, sql, hitem, m_mincnt ) == TRUE ) {
+						
+							//수신업데이터용 민원접수번호 저장
+							Save_assignseq(hitem, m_mincnt);
+						} 
+						else
+						{
+							ret = -1;
+							PRINT("SetJsonToDB assign error", 0, 0 , 0);
+							goto Finally;
+						}
+					}
+				}
+				
+				if(ret > -1 )
+				{
+					szitem =JSON_GetValue(g_pjcomm, "nonpay", szType);
+					if( Str_Len(szitem) > 0 )
+					{
+						hitem = JSON_Create( JSON_Array );
+						if( hitem != NULL)
+						{
+							JSON_toJson(hitem, szitem ) ;
+							ret = JSON_GetArrayCount( hitem );
+						}
+					}
+								
+					if(ret > 0 )// DB 입력
+					{				
+						if ( SetJsonToDB( &nonpay, sql, hitem, ret ) == FALSE )
+						{
+							ret = -1;
+							PRINT("SetJsonToDB nonpay error", 0, 0 , 0);
+							goto Finally;
+						}
+					}
+					
+				}
+				
+				if (ret > -1)
+				{
+					szitem =JSON_GetValue(g_pjcomm, "custinfo", szType);				
+					if( Str_Len(szitem) > 0 )
+					{
+						hitem = JSON_Create( JSON_Array );
+						if( hitem != NULL)
+						{
+							JSON_toJson(hitem, szitem ) ;
+							ret = JSON_GetArrayCount( hitem );
+						}
+					}
+					
+					if(ret > 0 )// DB 입력//json필드, 디비필드, 변수, 키필드, 순서, 테이블명,
+					{
+						if( hitem != NULL)
+						{
+							if ( SetJsonToDB( &custinfo, sql, hitem, ret ) == FALSE )
+							{
+								ret = -1;
+								PRINT("SetJsonToDB custinfo error", 0, 0 , 0);
+								goto Finally;
+							}
+						}
+					}
+				}
+				
+				if (ret > -1)
+				{	
+					szitem =JSON_GetValue(g_pjcomm, "mtr", szType);
+					if( Str_Len(szitem) > 0 )
+					{
+						hitem = JSON_Create( JSON_Array );
+						if( hitem != NULL)
+						{
+							JSON_toJson(hitem, szitem ) ;
+							ret = JSON_GetArrayCount( hitem );
+						}
+					}
+					
+					if(ret > 0 )// DB 입력
+					{
+						if ( SetJsonToDB( &mtr, sql, hitem, ret ) == FALSE )
+						{
+							ret = -1;
+							PRINT("SetJsonToDB mtr error", 0, 0 , 0);
+							goto Finally;
+						}
+					}
+							
+				}
+				
+				if (ret > -1)
+				{
+					szitem =JSON_GetValue(g_pjcomm, "bur", szType);
+					
+					if( Str_Len(szitem) > 0 )
+					{
+						hitem = JSON_Create( JSON_Array );
+						if( hitem != NULL)
+						{
+							JSON_toJson(hitem, szitem ) ;
+							ret = JSON_GetArrayCount( hitem );
+						}
+					}
+					
+					if(ret > 0 )// DB 입력
+					{
+						if ( SetJsonToDB( &bur, sql, hitem, ret ) == FALSE )
+						{
+							ret = -1;
+							PRINT("SetJsonToDB bur error", 0, 0 , 0);
+							goto Finally;
+						}
+					}
+				}
+				
+				if(hitem != NULL )
+				{
+					JSON_Finalize(hitem);
+					hitem = NULL;
+				}
+			
+				ret = 0;
+			}
+		}
+		else // if( JSON_LoadFile(g_pjcomm, szJsonpath) > 0)
+		{
+			ret = -2;
+		}
+
+Finally:		
+
+		m_nCurr = 0;
+
+		//sql->Commit(sql);
+		//sql->Close(sql);
+		DelSqLite(sql);
+		
+		//PRINT("DelSqLite END",0,0,0);
+		
+		if(g_pjcomm != NULL)
+		{
+			JSON_Finalize(g_pjcomm);
+			g_pjcomm = NULL;
+		}
+		
+		PRINT("save_min ret:[%d], m_mincnt:[%d]", ret, m_mincnt, 0);
+		
+		if(ret < 0)
+		{
+			MessageBoxEx (WARNING_OK, "금일 자료수신을 실패했습니다.[0]");
+		}
+		else if(m_mincnt == 0)
+		{
+			MessageBoxEx (WARNING_OK, "금일 자료가 없습니다.");
+		}
+		else if(m_mincnt < 0)
+		{
+			MessageBoxEx (WARNING_OK, "금일 자료수신을 실패했습니다.[1]");
+		}
+
+//2017-08-10 Sanghyun Lee
+//무슨의미 메세지??????? 불필요해보임.
+//		else
+//		{
+//			if(Str_Len(szcode) == 0)
+//				MessageBoxEx (WARNING_OK, "오류: 서버응답이 없습니다.");
+//		}
+		
+		ON_DRAW();
+		//PRINT("Save_Min ret:[%d]", ret, 0 , 0);
+		return ret;
+	}
+	
+	bool  Save_assignseq(handle hitem, long nTCnt)
+	{
+	long fd, i;
+	char sztmp[32];
+	long *Col;
+	void *Sts_Cd = NULL;
+	long nCol= 0;
+	char szType[2] = {0,0};
+	
+		fd = FFS_Open (  RcvAssignseq, FS_WRITE_MODE , FS_CREATE_FLAG );
+		
+		for( i = 0 ; i < nTCnt ; i++ )
+		{
+			Sts_Cd = JSON_GetArrayItem ( hitem, i,"PROC_STS_CD",  szType);
+			
+			if( Str_Cmp(Sts_Cd , "10" ) == 0 )
+			{			
+				Col = JSON_GetArrayItem ( hitem, i,"promise_assign_seq",  szType);
+				Mem_Set( (byte*)sztmp, 0x00, sizeof(sztmp )  );
+				nCol = *Col;
+				Str_ItoA(nCol,  sztmp, 10  );
+				FFS_Write(fd, (byte*)sztmp, RcvAssignseq_Len   );
+			}
+		}
+		
+		FFS_Close(fd);
+		return TRUE;
+	}
+	
+	//----------------------------------------------------------------------
+	//함수명: SetJsonToDB
+	//기  능: 파일정보와 테이블정보를 읽어서 파일에서 DB로 데이터를 넣는다.
+	//Param : TBL 정보
+	//Return: TRUE:성공, FALSE:실패
+	//----------------------------------------------------------------------
+	bool SetJsonToDB( DBInfo* info, SQLITE sql, handle hitem, long nTCnt )
+	{
+	bool	ret = FALSE, idx = 0;
+	bool	bret = FALSE;
+	long 	i;
+	char	sztmp[100];
+	char	szSql[4000];
+	char	szWhere[3000];
+	char 	szType[2] = {0,0};
+	char    *szLog;
+	void    *Col = NULL;
+	long	nCnt = 0;
+	char	szNull[2];
+	long tmpTotCnt = 0;
+	long tmpUpdateCnt = 0;
+	
+		MessageBoxEx(MESSAGE, "데이터를 확인중 입니다.");
+		if (sql == NULL)
+		{			
+			PRINT("sql == NULL", 0, 0 , 0);
+			goto Finally;
+		}
+		
+		// SELECT 쿼리문 생성
+		Mem_Set( (byte*)szSql, 0x00, sizeof(szSql )  );
+		Mem_Set( (byte*)szWhere, 0x00, sizeof(szWhere) );
+		
+		for( idx = 0 ; idx < info->nKeyCnt ; idx++ )
+		{
+			if(idx != 0)
+				Str_Cat( szWhere, " AND ");
+			Str_Cat( szWhere, info->keyinfo[idx].colnm );
+			Str_Cat( szWhere, " = ? ");
+		}
+		
+		SPRINT(szSql, " SELECT COUNT(*) FROM %s WHERE %s", info->szTblnm,  szWhere, 0 );
+		
+		//PRINT("C6101_DAYRCV SetJsonToDB count szSql:[%s]", szSql, 0, 0);
+		
+		sql->CreateStatement(sql, szSql);
+		if( sql->m_hStmt == NULL )
+		{
+			PRINT("::SQL_CreateStatement for SELECT fail [%s]", sql->GetLastError(sql), 0, 0);
+			goto Finally;
+		}
+		
+		// UPDATE 쿼리문 생성
+		Mem_Set((byte*)szSql, 0x00, sizeof(szSql )  );
+		//Mem_Set((byte*)szWhere, 0x00, sizeof(szWhere) );
+		
+		Str_Cpy( szSql, " UPDATE " );
+		Str_Cat( szSql, info->szTblnm );
+		Str_Cat( szSql, " SET LAST_STATUS='U' " );
+		
+		tmpUpdateCnt = info->nUTotCnt - info->nKeyCnt;		
+		PRINT("nITotCnt:[%d], tmpUpdateCnt:[%d]", info->nITotCnt, tmpUpdateCnt , 0);
+		
+		for( idx = 0 ; idx < tmpUpdateCnt ; idx++ )
+		{
+			//if(idx != 0)
+			//{
+				Str_Cat( szSql, ",");
+			//}
+			Str_Cat( szSql, info->Ufldinfo[idx].colnm );
+			//PRINT("colnm for UPDATE:[%s], idx:[%d]", info->Ufldinfo[idx].colnm, idx , 0);
+			Str_Cat( szSql, "=?" );
+		}
+		
+		Str_Cat( szSql, " WHERE ");
+		Str_Cat( szSql, szWhere );
+		PRINT("szSql for UPDATE:[%s]", szSql, 0 , 0);
+		//PRINT("WHERE for UPDATE:[%s]", szWhere, 0 , 0);
+		
+		sql->CreateStatementU(sql, szSql);
+		//PRINT("szTblnm:[%s] CreateStatementU for UPDATE", info->szTblnm, 0 , 0);
+		if( sql->m_hUStmt == NULL )
+		{
+			PRINT("::SQL_CreateStatementU fail [%s]", sql->GetLastError(sql), 0, 0);
+			goto Finally;
+		}
+		
+		// INSERT 쿼리문 생성
+		Mem_Set((byte*)szSql, 0x00, sizeof(szSql )  );
+		Mem_Set((byte*)szWhere, 0x00, sizeof(szWhere) );
+		
+		Str_Cpy( szSql, " INSERT INTO " );
+		Str_Cat( szSql, info->szTblnm );
+		Str_Cat( szSql, "(" );
+		
+		for( idx = 0 ; idx < info->nITotCnt ; idx++ )
+		{
+			if(idx != 0)
+			{
+				Str_Cat( szSql, ",");
+				Str_Cat( szWhere, ",");
+			}
+			Str_Cat( szSql, info->Ifldinfo[idx].colnm );
+			Str_Cat( szWhere, "?" );
+		}
+		
+		Str_Cat( szSql, ", LAST_STATUS");
+		Str_Cat( szWhere, ", 'I'");
+		
+		Str_Cat( szSql, ") VALUES (" );
+		Str_Cat( szSql, szWhere );
+		Str_Cat( szSql, ")" );
+		
+		//PRINT(" INSERT [%d]", Str_Len(szSql), 0 , 0);
+		
+		sql->CreateStatementI(sql, szSql);
+		if( sql->m_hIStmt == NULL )
+		{
+			PRINT("::SQL_CreateStatementI fail [%s]", sql->GetLastError(sql), 0, 0);
+			goto Finally;
+		}
+		
+		//szLog = JSON_toString(hitem);
+		//g_Save_JsonFile(szLog);
+
+		m_nCurr++;
+		PRINT("::data save start, recordCnt:[%d], UpdatefieldCnt:[%d]", nTCnt, tmpUpdateCnt, 0);
+		for( i = 0 ; i < nTCnt ; i++ )
+		{
+			long percent = (i * 100) / nTCnt;
+			SPRINT(sztmp, "%d %% (%d/%d) 저장 중...", percent, m_nCurr, m_nTotal);
+			SetMessageBoxText(sztmp);
+		
+			for(idx = 0; idx < info->nKeyCnt ; idx++)
+			{
+				Col = JSON_GetArrayItem ( hitem, i, info->keyinfo[idx].jsonnm, szType);		
+
+				if(szType[0] == 'C')
+				{
+					sql->Bind(sql, idx, 'C', (long*)Col, Str_Len(Col), info->keyinfo[idx].encrypt );
+					//PRINT("::bind for SELECT jsonnm:[%s], Col:[%s], szType:[%s]", info->keyinfo[idx].jsonnm, Col, szType);
+				}
+				else if(szType[0] == 'X')
+				{
+					sql->Bind(sql, idx, 'X', Col, 4, info->keyinfo[idx].encrypt );
+					//PRINT("::bind for SELECT jsonnm:[%s], Col:[%d], szType:[%s]", info->keyinfo[idx].jsonnm, Col, szType);
+				}
+			}
+			//sql->Begin(sql);
+			bret = sql->Execute(sql);
+			if(bret == FALSE)
+			{
+				PRINT("::sql->Execut [%s]", sql->GetLastError(sql), 0, 0);
+				goto Finally;
+			}
+			
+			while( sql->Next(sql) == TRUE )
+			{
+				nCnt = 0;
+				sql->GetValue( sql, 0, 'X', &nCnt, sizeof(nCnt), DECRYPT );
+				//PRINT("count(*) [%d]", nCnt, 0, 0);
+	
+			}
+			//PRINT("nCnt:[%d]", nCnt, 0 , 0);
+			//자료의 존재여부 확인해서 업데이트.
+			//if( nCnt == 0 )
+			{	
+				if( nCnt == 0 )
+					tmpTotCnt = info->nITotCnt;
+				else
+					tmpTotCnt = info->nUTotCnt;
+					
+				//PRINT("bind col count:[%d]", tmpTotCnt, 0 , 0);
+				for(idx = 0; idx < tmpTotCnt ; idx++)
+				{
+				
+					if( nCnt == 0 )
+						Col = JSON_GetArrayItem ( hitem, i, info->Ifldinfo[idx].jsonnm, szType);
+					else
+						Col = JSON_GetArrayItem ( hitem, i, info->Ufldinfo[idx].jsonnm, szType);
+					
+//PRINT("szType=%s, %s",szType,info->Ifldinfo[idx].jsonnm,0);
+					if(szType[0] == 'C')
+					{
+						if( nCnt == 0 ) {
+							sql->IBind(sql, idx, 'C', (long*)Col, Str_Len(Col), info->Ifldinfo[idx].encrypt );
+						}
+						else {
+							sql->UBind(sql, idx, 'C', (long*)Col, Str_Len(Col), info->Ufldinfo[idx].encrypt );
+							//PRINT("::bind for UPDATE jsonnm:[%s], Col:[%s], szType:[%s]", info->Ufldinfo[idx].jsonnm, Col, szType);
+							//PRINT("::bind for UPDATE idx:[%d], jsonnm:[%s], Col:[%s]", idx, info->Ufldinfo[idx].jsonnm, Col);
+						}
+						
+					}
+					else if(szType[0] == 'X')
+					{
+						if( nCnt == 0 ) {
+							sql->IBind(sql, idx, 'X', Col, 4, info->Ifldinfo[idx].encrypt );
+						}
+						else
+						{
+							sql->UBind(sql, idx, 'X', Col, 4, info->Ufldinfo[idx].encrypt );
+							//if ( Str_Cmp(info->Ufldinfo[idx].jsonnm,"promise_assign_seq") == 0 )
+								//PRINT("::bind for UPDATE jsonnm:[%s], Col:[%d], szType:[%s]", info->Ufldinfo[idx].jsonnm, Col, szType);
+							//PRINT("::bind for UPDATE idx:[%d], jsonnm:[%s], szType:[%s]", idx, info->Ufldinfo[idx].jsonnm, szType);
+						}
+					}
+					else if(szType[0] == 'N') // null
+					{
+						Mem_Set( (byte*)szNull, 0x00, sizeof(szNull) );
+						Str_Cpy(szNull, "");
+						
+						// N 인 경우 자리수가 4 --> ???
+						//PRINT("::col jsonnm:[%s], Col:[%s], szType:[%s]", info->Ifldinfo[idx].jsonnm, (long*)Col, szType);
+						if( nCnt == 0 )
+							sql->IBind(sql, idx, 'C', (long*)&szNull, sizeof(szNull), info->Ifldinfo[idx].encrypt );
+						else
+						{
+							sql->UBind(sql, idx, 'C', (long*)&szNull, sizeof(szNull), info->Ufldinfo[idx].encrypt );
+							//PRINT("::bind for UPDATE idx:[%d], jsonnm:[%s], szType:[%s]", idx, info->Ufldinfo[idx].jsonnm, szType);
+						}
+					}
+					else
+					{
+						//에러처리
+						if( nCnt == 0 )
+							PRINT("::데이터 오류 jsonnm:[%s], Col:[%s], szType:[%s]", info->Ifldinfo[idx].jsonnm, Col, szType);
+						else
+							PRINT("::데이터 오류 jsonnm:[%s], Col:[%s], szType:[%s]", info->Ufldinfo[idx].jsonnm, Col, szType);
+						goto Finally;
+					}
+				} // end for(idx = 0; idx < info->nITotCnt ; idx++)
+				//sql->Begin(sql);
+				if( nCnt == 0 ) 
+				{
+					bret = sql->ExecuteI(sql);
+					//PRINT("ExecuteI", 0, 0 , 0);
+				}
+				else
+				{					
+					bret = sql->ExecuteU(sql);
+					//PRINT("ExecuteU", 0, 0 , 0);
+				}
+				
+				if(bret == FALSE)
+				{
+					if( nCnt == 0 )
+						PRINT("::sql->ExecuteI [%s]", sql->GetLastError(sql), 0, 0);
+					else
+						PRINT("::sql->ExecuteU [%s]", sql->GetLastError(sql), 0, 0);
+					goto Finally;
+				}
+			}
+			
+		}		
+		//PRINT("::data save end Count:[%d]", i, 0, 0);			
+		ret = TRUE;
+		
+Finally:
+		sql->DeleteStatement(sql);
+		//PRINT("::Finally DeleteStatement end", 0, 0, 0);
+
+		ON_DRAW();
+		GrDev_Refresh();
+		
+		//PRINT("::Finally ret", 0, 0, 0);
+		return ret;
+	}
+	
+	bool DeleteOldData(void)
+	{	
+		bool	ret = FALSE;		
+		handle hdb = NULL;
+		long sret = -1;
+		char szSql[200];
+		
+		SQLITE sql = NewSqLite();
+				
+		hdb = sql->Open(sql);
+		if( hdb == NULL )
+		{
+			//DelSqLite(sql);
+			MessageBoxEx(ERROR_OK, "데이터베이스 연결 오류.. \n리셋후 재시도 해 보시기 바랍니다.");
+			goto Finally;
+		}
+		
+		sql->Begin(sql);
+		
+		//g_Sql_DirectExecute2(sql, " DELETE FROM C6101_CARD_INFO "); // IC칩 사용카드 결재를 반영할 때 사용할 예정임
+		
+		Mem_Set( (byte*)szSql, 0x00, sizeof(szSql) );		
+		SPRINT( szSql ," DELETE FROM C6101_PROMISE_ASSIGN WHERE PROMISE_ASSIGN_SEQ = '%s' AND LAST_STATUS = '' ", stMw.szPromise_assign_seq, 0, 0   );		
+		sret = g_Sql_DirectExecute2(sql, szSql );
+		if (sret < 0) {
+			PRINT("ERROR : DeleteOldData C6101_PROMISE_ASSIGN", 0, 0 , 0);
+			goto Finally;
+		} else {
+			//PRINT("DeleteOldData C6101_PROMISE_ASSIGN", 0, 0 , 0);
+		}
+		
+		Mem_Set( (byte*)szSql, 0x00, sizeof(szSql) );		
+		SPRINT( szSql ," DELETE FROM C6101_NONPAY WHERE PROMISE_ASSIGN_SEQ = '%s' AND LAST_STATUS = '' ", stMw.szPromise_assign_seq, 0, 0   );		
+		sret = g_Sql_DirectExecute2(sql, szSql );
+		if (sret < 0) {
+			PRINT("ERROR : DeleteOldData C6101_NONPAY", 0, 0 , 0);
+			goto Finally;
+		} else {
+			//PRINT("DeleteOldData C6101_NONPAY", 0, 0 , 0);
+		}
+		
+		Mem_Set( (byte*)szSql, 0x00, sizeof(szSql) );		
+		SPRINT( szSql ," DELETE FROM C6101_PRE_CUST_INFO WHERE PROMISE_ASSIGN_SEQ = '%s' AND LAST_STATUS = '' ", stMw.szPromise_assign_seq, 0, 0   );		
+		sret = g_Sql_DirectExecute2(sql, szSql );
+		if (sret < 0) {
+			PRINT("ERROR : DeleteOldData C6101_PRE_CUST_INFO", 0, 0 , 0);
+			goto Finally;
+		} else {
+			//PRINT("DeleteOldData C6101_PRE_CUST_INFO", 0, 0 , 0);
+		}
+		
+		Mem_Set( (byte*)szSql, 0x00, sizeof(szSql) );		
+		SPRINT( szSql ," DELETE FROM C6101_PROMISE_MTR WHERE PROMISE_ASSIGN_SEQ = '%s' AND LAST_STATUS = '' ", stMw.szPromise_assign_seq, 0, 0   );		
+		sret = g_Sql_DirectExecute2(sql, szSql );
+		if (sret < 0) {
+			PRINT("ERROR : DeleteOldData C6101_PROMISE_MTR", 0, 0 , 0);
+			goto Finally;
+		} else {
+			//PRINT("DeleteOldData C6101_PROMISE_MTR", 0, 0 , 0);
+		}
+		
+		Mem_Set( (byte*)szSql, 0x00, sizeof(szSql) );		
+		SPRINT( szSql ," DELETE FROM C6101_PROMISE_BUR WHERE PROMISE_ASSIGN_SEQ = '%s' AND LAST_STATUS = '' ", stMw.szPromise_assign_seq, 0, 0   );		
+		sret = g_Sql_DirectExecute2(sql, szSql );
+		if (sret < 0) {
+			PRINT("ERROR : DeleteOldData C6101_PROMISE_BUR", 0, 0 , 0);
+			goto Finally;
+		} else {
+			//PRINT("DeleteOldData C6101_PROMISE_BUR", 0, 0 , 0);
+		}		
+		/*
+		sret = g_Sql_DirectExecute2(sql, " DELETE FROM C6101_AUTO_TRANS WHERE PROMISE_ASSIGN_SEQ NOT IN (SELECT PROMISE_ASSIGN_SEQ FROM C6101_PROMISE_ASSIGN) " );
+		if (sret < 0) {
+			PRINT("ERROR : DeleteOldData C6101_AUTO_TRANS", 0, 0 , 0);
+			goto Finally;
+		} else {
+			//PRINT("DeleteOldData C6101_AUTO_TRANS", 0, 0 , 0);
+		}
+		
+		sret = g_Sql_DirectExecute2(sql, " DELETE FROM C6101_CARDASSIGN_INFO WHERE PROMISE_ASSIGN_SEQ NOT IN (SELECT PROMISE_ASSIGN_SEQ FROM C6101_PROMISE_ASSIGN) " );
+		if (sret < 0) {
+			PRINT("ERROR : DeleteOldData C6101_CARDASSIGN_INFO", 0, 0 , 0);
+			goto Finally;
+		} else {
+			//PRINT("DeleteOldData C6101_CARDASSIGN_INFO", 0, 0 , 0);
+		}
+		
+		sret = g_Sql_DirectExecute2(sql, " DELETE FROM C6101_ONCE_INFO WHERE PROMISE_ASSIGN_SEQ NOT IN (SELECT PROMISE_ASSIGN_SEQ FROM C6101_PROMISE_ASSIGN) " );
+		if (sret < 0) {
+			PRINT("ERROR : DeleteOldData C6101_ONCE_INFO", 0, 0 , 0);
+			goto Finally;
+		} else {
+			//PRINT("DeleteOldData C6101_ONCE_INFO", 0, 0 , 0);
+		}
+		
+		sret = g_Sql_DirectExecute2(sql, " DELETE FROM C6101_CHG_MTR_INFO WHERE PROMISE_ASSIGN_SEQ NOT IN (SELECT PROMISE_ASSIGN_SEQ FROM C6101_PROMISE_ASSIGN) " );
+		if (sret < 0) {
+			PRINT("ERROR : DeleteOldData C6101_CHG_MTR_INFO", 0, 0 , 0);
+			goto Finally;
+		} else {
+			//PRINT("DeleteOldData C6101_CHG_MTR_INFO", 0, 0 , 0);
+		}
+		
+		sret = g_Sql_DirectExecute2(sql, " DELETE FROM C6101_PROMISE_CARD WHERE PROMISE_ASSIGN_SEQ NOT IN (SELECT PROMISE_ASSIGN_SEQ FROM C6101_PROMISE_ASSIGN) " );
+		if (sret < 0) {
+			PRINT("ERROR : DeleteOldData C6101_PROMISE_CARD", 0, 0 , 0);
+			goto Finally;
+		} else {
+			//PRINT("DeleteOldData C6101_PROMISE_CARD", 0, 0 , 0);
+		}
+		*/
+
+		// 특이사항 : 기기에서 오류(sql logic error or missing database)발생하는 현상이 있음(에뮬에서는 발생하지 않음)
+		// DB 를 한 번 닫았다가 열어서 실행하면 오류가 발생하지 않음
+		DelSqLite(sql);
+		//PRINT("DelSqLite", 0, 0 , 0);
+		
+		sql = NewSqLite();
+				
+		hdb = sql->Open(sql);
+		if( hdb == NULL )
+		{
+			//DelSqLite(sql);
+			MessageBoxEx(ERROR_OK, "데이터베이스 연결 오류.. \n리셋후 재시도 해 보시기 바랍니다.");
+			goto Finally;
+		}
+		//PRINT("sql->Open", 0, 0 , 0);
+
+		sret = g_Sql_DirectExecute2(sql, " UPDATE C6101_PROMISE_ASSIGN SET LAST_STATUS = '' " );
+		if (sret < 0) {
+			PRINT("ERROR : DeleteOldData UPDATE LAST_STATUS='' C6101_PROMISE_ASSIGN", 0, 0 , 0);
+			goto Finally;
+		} else {
+			//PRINT("DeleteOldData UPDATE LAST_STATUS='' C6101_PROMISE_ASSIGN", 0, 0 , 0);
+		}
+		sret = g_Sql_DirectExecute2(sql, " UPDATE C6101_NONPAY SET LAST_STATUS = '' " );
+		if (sret < 0) {
+			PRINT("ERROR : DeleteOldData UPDATE LAST_STATUS='' C6101_NONPAY", 0, 0 , 0);
+			goto Finally;
+		} else {
+			//PRINT("DeleteOldData UPDATE LAST_STATUS='' C6101_NONPAY", 0, 0 , 0);
+		}
+		sret = g_Sql_DirectExecute2(sql, " UPDATE C6101_PRE_CUST_INFO SET LAST_STATUS = '' " );
+		if (sret < 0) {
+			PRINT("ERROR : DeleteOldData UPDATE LAST_STATUS='' C6101_PRE_CUST_INFO", 0, 0 , 0);
+			goto Finally;
+		} else {
+			//PRINT("DeleteOldData UPDATE LAST_STATUS='' C6101_PRE_CUST_INFO", 0, 0 , 0);
+		}
+		sret = g_Sql_DirectExecute2(sql, " UPDATE C6101_PROMISE_MTR SET LAST_STATUS = '' " );
+		if (sret < 0) {
+			PRINT("ERROR : DeleteOldData UPDATE LAST_STATUS='' C6101_PROMISE_MTR", 0, 0 , 0);
+			goto Finally;
+		} else {
+			//PRINT("DeleteOldData UPDATE LAST_STATUS='' C6101_PROMISE_MTR", 0, 0 , 0);
+		}
+		sret = g_Sql_DirectExecute2(sql, " UPDATE C6101_PROMISE_BUR SET LAST_STATUS = '' " );
+		if (sret < 0) {
+			PRINT("ERROR : DeleteOldData UPDATE LAST_STATUS='' C6101_PROMISE_BUR", 0, 0 , 0);
+			goto Finally;
+		} else {
+			//PRINT("DeleteOldData UPDATE LAST_STATUS='' C6101_PROMISE_BUR", 0, 0 , 0);
+		}
+		
+		ret = TRUE;
+		
+Finally:		
+
+		DelSqLite(sql);
+		
+		return ret;
+	}
+	
+	//----------------------------------------------------------------------------------
+	long SND68404(void)
+	{
+	long ret = 0;
+	char sztmp[100];
+	char szUrl[200];
+	char szbuf[200];
+	char szDbpath[128];
+	char* sndbuf;
+	
+		//송신
+		if( g_pjcomm != NULL)
+		{
+			JSON_Finalize( g_pjcomm );
+			g_pjcomm = NULL;
+		}		
+		g_pjcomm = g_CreateJsonHead(g_pjcomm, szUrl, 68404, TRUE);
+		
+		Add_Item(g_pjcomm);
+		
+		sndbuf = JSON_toString(g_pjcomm);
+		//g_Save_JsonFile(sndbuf);
+		
+		g_SeverConnection();
+		
+		Mem_Set( (byte*)szbuf, 0x00, sizeof(szbuf) );
+		Str_Cpy(szbuf, "FR68404.JSON");
+		
+		callBackfunc = TR68404;
+		HTTP_Url2File("POST", szUrl, sndbuf, szbuf);
+		return ret;
+	}
+	
+	long Add_Item(handle pj)
+	{
+	char sztmp[20];
+	long ret = -1;
+	long fd, i, tot = 0;	
+	handle js = NULL;
+	char szPromise_assign_seq[11];		
+		
+		js = JSON_Create(JSON_Array);
+		if( js == NULL  )
+		{
+			goto Finally;
+		}
+		tot = FFS_GetSize( RcvAssignseq );
+		tot = tot /RcvAssignseq_Len;
+				
+		fd = FFS_Open (  RcvAssignseq, FS_READ_MODE , FS_NORMAL_FLAG );
+		
+		for( i = 0 ; i < tot ; i++ )
+		{	
+			Mem_Set( (byte*)szPromise_assign_seq, 0x00, sizeof(szPromise_assign_seq )  );
+			FFS_Read(fd, (byte*)szPromise_assign_seq, RcvAssignseq_Len   );
+			JSON_AddArrayItem(js);
+			JSON_SetArrayItem(js, 'C', "promise_assign_seq", szPromise_assign_seq );
+			ret =1;
+		}
+		
+		FFS_Close(fd);
+		
+		JSON_Attach(pj, "item", js);
+		
+Finally:
+
+		if(js != NULL)
+		{
+			JSON_Finalize(js);
+			js = NULL;
+		}
+		return ret;
+	}
+	
+	//----------------------------------------------------------------------------------
+	long TR68404(void)
+	{
+		
+	char szMsg[200];
+	
+				//PRINT("callback TR68404 success", 0, 0, 0);
+		g_Sock_Close();
+		
+		if(g_Chk_Json(68404) >= 0)
+		{
+			if(  m_mincnt > 0  )
+			{
+				Mem_Set((byte*) szMsg, 0x00, sizeof( szMsg) );
+				SPRINT(szMsg, "재수신이 완료되었습니다.",  m_mincnt, 0, 0 );
+				MessageBoxEx (CONFIRM_OK, szMsg);
+			}
+			CloseMessageBox();
+
+			
+			ON_EXIT();
+			OnInit(INIT_MAIN);
+			ON_DRAW();
+			
+				//PRINT("callback TR68404 success", 0, 0, 0);
+			return 1;
+		}
+		
+		ON_DRAW();
+				PRINT("callback TR68404 fail", 0, 0, 0);
+		return -1;
+	}
+	
+	// 상담이력 가져오기
+	//------------------------------------------------------------------
+	long Rcv_History(void)
+	{
+		char sztmp[32];
+		char szUrl[256];
+		char* sndbuf;
+		long ret;
+	
+		g_Sql_DirectExecute("DELETE FROM RCV_TMP");
+		
+		if( g_pjcomm != NULL)
+		{
+			JSON_Finalize( g_pjcomm );
+			g_pjcomm = NULL;
+		}		
+		g_pjcomm = g_CreateJsonHead(g_pjcomm, szUrl, 24265, FALSE);
+		
+		JSON_SetValue( g_pjcomm, 'C', "inst_place_num",        	g_szINST_PLACE_NUM );
+		
+		sndbuf = JSON_toString(g_pjcomm);
+		
+		//g_Save_JsonFile(sndbuf);
+		
+		Mem_Set((byte*)sztmp, 0x00, sizeof(sztmp));	
+		GET_FILENM(sztmp, SQLITE_DB);
+		
+		callBackfunc = TR24265; //통신완료 후에 호출 함수
+		ret = HTTP_DownloadData(szUrl, "FR24265_IN",  "FR24265" , sndbuf, sztmp );
+		return 0 ;
+	}
+	
+	//------------------------------------------------------------------
+	long TR24265(void)
+	{
+		long ntotcnt = 0;
+	
+		if( g_Chk_Json(24265) >= 0)
+		{
+		
+			g_Sql_RetInt( "SELECT COUNT(*) FROM RCV_TMP", &ntotcnt );
+			
+			if( ntotcnt > 0 )
+			{
+				Card_Move("GM_HISTORY");
+			}
+			else
+			{
+				MessageBoxEx (CONFIRM_OK, "상담이력이 없습니다.");
+			}
+			
+		}
+		else
+		{
+			MessageBoxEx (CONFIRM_OK, "상담이력 조회에 실패하였습니다.");
+		}
+		
+		return 0;
+	}
+	
+	// 20171101 신기호, 모바일사용계약서 값 검증
+	long Chk_chgUserInfo(void)
+	{
+		char szBefore_SocNum[7];
+		char szAfter_SocNUm[7];
+		
+		Mem_Set((byte*)szBefore_SocNum, 0x00, sizeof(szBefore_SocNum));
+		Mem_Cpy((byte *)szBefore_SocNum, (byte *)m_stUsedata.SOC_NUM + 0, 6);
+		
+		Mem_Set((byte*)szAfter_SocNUm, 0x00, sizeof(szAfter_SocNUm));
+		Mem_Cpy((byte *)szAfter_SocNUm, (byte *)m_stOzData.SOC_NUM + 0, 6);
+	
+		// 고객명
+		if( Str_Cmp(m_stUsedata.CUST_NM, m_stOzData.CUST_NM) != 0 )
+		{
+			return 1;
+		}
+		// 성별
+		else if( Str_Cmp(m_stUsedata.GENDER, m_stOzData.GENDER) != 0 )
+		{
+			return 1;
+		}
+		// 생년월일
+		else if( Str_Cmp(szBefore_SocNum , szAfter_SocNUm) != 0 )
+		{
+			return 1;
+		}
+
+		return 0;
+	}
+
+	void Chk_UseCont(void)
+	{
+		char szUrl[200];
+		char szbuf[128];
+		char* sndbuf;
+		long ret = 0;
+
+		Mem_Set( (byte*)szUrl, 0x00, sizeof(szUrl) );
+		
+		if( g_pjcomm != NULL)
+		{
+			JSON_Finalize( g_pjcomm );
+			g_pjcomm = NULL;
+		}		
+		g_pjcomm = g_CreateJsonHead(g_pjcomm, szUrl, 62902, FALSE);
+
+		JSON_SetValue( g_pjcomm, 'C', "use_cont_num", stMw.szUse_cont_num );
+
+		sndbuf = JSON_toString(g_pjcomm);
+		
+		g_SeverConnection();
+				
+		Mem_Set((byte*)szbuf, 0x00, sizeof(szbuf));	
+		GET_FILENM(szbuf, SQLITE_DB);
+		
+		callBackfunc = Rcv_UseContChk; //통신완료 후에 호출 함수
+		ret = HTTP_DownloadData(szUrl, "FR62902_IN",  "FR62902" , sndbuf, szbuf );
+		
+
+
+	}
+
+	long Rcv_UseContChk(void)
+	{
+		long ret = 0;
+		char szSql[300];
+		ret = Chk_Json_62902();
+		
+		g_Sock_Close();
+		
+		// if( ret >= 0)
+		// {	
+			Card_Move("C6101_WCUST");
+			ON_DRAW();
+			return 1;
+		// }
+		// else
+		// {	
+		// 	OnInit(INIT_MAIN);
+		// 	ON_DRAW();	
+		// 	DlgCtrl_SetEnable(this->m_hDlg, Get_iDlgCtrlByID(BID_JOBSTART), FALSE );
+		// 	DlgCtrl_SetGray( this->m_hDlg, Get_iDlgCtrlByID(BID_JOBSTART), TRUE );
+			
+			
+		// 	return -1;
+
+		// }
+
+	}
+
+	long Chk_Json_62902(void)
+	{
+		char szJsonpath[500];
+		char szMsg[500];
+		long fd, i;
+		long chkmsg = 0;
+		long chkcode = 0;
+		long fsize = 0;
+		char *pStr = NULL;
+		char *szCode = NULL;
+		char *szMessage = NULL;
+		long *nCol = NULL;
+		long nCnt = 0;
+		char szType[2] = {0,0};
+		long ret = 11;
+		char szSql[300];
+		
+		char szTmp[100];
+		handle hitem = NULL;
+		handle hcnt = NULL;
+		
+		
+		char *szRslt= NULL;
+		
+		// PRINT("111111111111111111",0,0,0);
+		Mem_Set((byte*) szJsonpath, 0x00, sizeof( szJsonpath) );
+		SPRINT(szJsonpath, "%sFR%d_Res.JSON",  SYSTEM_COMM, 62902, 0 );
+		
+		if(FFS_Exist(szJsonpath) != TRUE )
+		{
+			Mem_Set((byte*) szJsonpath, 0x00, sizeof( szJsonpath) );
+			SPRINT(szJsonpath, "%sFR%d.JSON",  SYSTEM_COMM, 62902, 0 );
+		}
+
+		fsize = FFS_GetSize(szJsonpath);
+
+		if(fsize <= 15)
+		{
+			// PRINT("222222222222",0,0,0);
+			ret = -1;
+			goto Finally;
+		}
+		
+		pStr = Mem_Alloc(fsize);
+		
+		fd = FFS_Open(szJsonpath, FS_READ_MODE, FS_NORMAL_FLAG);
+		
+		if(fd == -1)
+		{
+			ret = -1;
+			goto Finally;
+		}
+
+		FFS_Read(fd, (byte*)pStr, fsize);
+		
+		for(i = 0; i < fsize - 9; i++ )
+		{
+			if( Mem_Cmp((byte*)pStr+i,(byte*) "\"code\"", 6) == 0  )
+			{
+				chkcode++;
+			}
+			
+			if( Mem_Cmp((byte*)pStr+i,(byte*) "\"message\"", 9) == 0  )
+			{
+				chkmsg++;
+			}
+			
+			if(chkmsg > 0 &&  chkcode > 0)
+			{
+				break;
+			}
+		}
+
+		FFS_Close(fd);
+		
+		Mem_Free((byte*)pStr);
+		
+		if(chkmsg == 0 || chkcode == 0)
+		{
+			ret = -1;
+			goto Finally;
+		}
+		
+		if(g_pjcomm != NULL)
+		{
+			JSON_Finalize(g_pjcomm);
+			g_pjcomm = NULL;
+		}
+		
+		g_pjcomm = JSON_Create( JSON_Object );
+		
+		if(g_pjcomm == NULL)
+		{
+			ret = -1;
+			goto Finally;
+		}
+		
+		/********************************/
+		/* 정상 Callback                */
+		/********************************/
+		if( JSON_LoadFile(g_pjcomm, szJsonpath) > 0)
+		{
+			szCode = JSON_GetValue (g_pjcomm, "code", szType);
+			szMessage = JSON_GetValue (g_pjcomm, "message", szType);
+			szRslt		= JSON_GetValue (g_pjcomm, "rslt", szType);
+			
+			/********************************/
+			/* 비정상 Callback              */
+			/********************************/
+			if( Str_Cmp(szCode, "0000") == 0)
+			{
+			  	char* pMsg = NULL;
+				
+				Mem_Set((byte*) szJsonpath, 0x00, sizeof( szJsonpath) );
+				if(Str_Len(szMessage) < 500 )
+				{
+					SQL_ConvMbStr( szMsg, szMessage);
+				}
+				
+				//SPRINT(szJsonpath, "[%s] %s", szCode, szMsg, 0 );
+				pMsg = g_Chk_Code(szJsonpath, szCode, szMsg);
+			
+				// MessageBoxEx (WARNING_OK, pMsg);
+
+				Str_Cpy( stMw.szCont_sts_cd, "30" );
+			
+				Mem_Set( (byte*)szSql, 0x00, sizeof(szSql) );
+				SPRINT(szSql, "UPDATE C6101_PROMISE_ASSIGN SET CONT_STS_CD = '30' WHERE PROMISE_ASSIGN_SEQ = '%s'", g_szCHK_EXEC_NUM, 0, 0);
+				g_Sql_DirectExecute(szSql);
+
+				EvtDraw();
+
+				
+			}
+			else if(Str_Cmp(szCode, "0001") == 0)
+			{
+
+				Str_Cpy( stMw.szCont_sts_cd, "20" );
+
+				Mem_Set( (byte*)szSql, 0x00, sizeof(szSql) );
+				SPRINT(szSql, "UPDATE C6101_PROMISE_ASSIGN SET CONT_STS_CD = '20' WHERE PROMISE_ASSIGN_SEQ = '%s'", g_szCHK_EXEC_NUM, 0, 0);
+				g_Sql_DirectExecute(szSql);
+
+				Mem_Set((byte*)szTmp, 0x00, sizeof(szTmp));
+				SQL_ConvMbStr( szTmp, szRslt);
+				
+				Mem_Set((byte*) m_szTrans_info_rslt, 0x00, sizeof( m_szTrans_info_rslt) );
+				Str_Cpy( m_szTrans_info_rslt, szTmp );
+
+			}
+			else
+			{
+				Str_Cpy( stMw.szCont_sts_cd, "10" );
+
+				Mem_Set( (byte*)szSql, 0x00, sizeof(szSql) );
+				SPRINT(szSql, "UPDATE C6101_PROMISE_ASSIGN SET CONT_STS_CD = '10' WHERE PROMISE_ASSIGN_SEQ = '%s'", g_szCHK_EXEC_NUM, 0, 0);
+				g_Sql_DirectExecute(szSql);
+
+				Mem_Set((byte*)szTmp, 0x00, sizeof(szTmp));
+				SQL_ConvMbStr( szTmp, szRslt);
+				
+				Mem_Set((byte*) m_szTrans_info_rslt, 0x00, sizeof( m_szTrans_info_rslt) );
+				Str_Cpy( m_szTrans_info_rslt, szTmp );
+				
+			}
+		}
+		/********************************/
+		/* 비정상 Callback              */
+		/********************************/
+		else
+		{
+			ret = 0;
+		}
+		
+Finally:
+		if(g_pjcomm != NULL)
+		{
+			JSON_Finalize(g_pjcomm);
+			g_pjcomm = NULL;
+		}
+		
+		g_Close_SubDlg();
+		ON_DRAW();
+		
+		return ret;
+
+
+	}
+
+
+}
+
+
+

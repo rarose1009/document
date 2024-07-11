@@ -1,0 +1,4439 @@
+/*----------------------------------------------------------------------------------
+	Project Name: Smart Common middle ware
+	Compiler & Virtual Machine : SMART 2.x.x
+	Copyright(c) 2014 Value CMD Co., Ltd
+	----------	------		------------------------------------------------------
+	2014.10.01	dkjung		v 3.0.1		: Create 스마트폰 포팅
+	2017.04.03	dkjung		v 3.1.0		: grid control 구현
+	2017.04.25				v 3.2.0		: MessageBox loading 프로그레스 기능 추가.
+	2017.05.01				v 3.3.0		: tightly coupled modules 정리.
+	2017.05.01				v 3.4.0		: MessageBox 변수 재 정리.
+	2017.05.02				v 3.5.0		: 그리드 컨트롤 처리 완료.
+	2017.05.02				v 3.5.1		: 메시지박스 프로그레스 버그 수정.
+	2017.05.04				v 3.5.2		: 그리드컨트롤 컬럼 인자 자동 계산 처리.
+										: 스타일 객체 지정 추가
+	2017.05.05				v 3.5.3		: 그리드컨트롤 페이지 업/다운 이벤트 처리.
+	2017.05.08				v 3.5.4		: 그리드컨트롤 관련 GridCtrl_SetIndex 함수 추가.
+	2017.05.12				v 3.5.5		: 그리드컨트롤 관련 GridCtrl_SetTitleBkColor 함수 추가.
+	2017.05.13				v 3.5.6		: 텍스트컨트롤 텍스트 EDITALIGN_MIDDLE 디폴트 설정.
+	2017.05.13				v 3.5.7		: 메시지박스 텍스트 처리 함수 추가.
+	2017.05.14				v 3.5.8		: 메시지박스 잔상 오류 수정.
+	2017.05.14				v 3.5.9		: 진행 메시지박스 깜빡이는 오류 수정.
+	2017.05.15				v 3.6.0		: 진행 메시지박스 깜빡이지 않도록 oneshot 기능 추가.
+	2017.05.16				v 3.6.1		: 모달 메시지 기능 추가.
+	2017.05.16				v 3.6.2		: PUSH 모달 메시지 구현.
+	2017.05.17				v 3.6.3		: PUSH 모달 메시지 메시지팝업과 연동 처리.
+	2017.05.17				v 3.6.4		: UART 이벤트 연결 처리(블루투스 프린터 관련).
+	2017.05.18				v 3.6.5		: 모달 메시지 닫히고 잔상남던 현상 수정.
+	2017.05.22				v 3.6.7		: 모달 메시지 버퍼크기: 256 -> 1024 변경.
+	2017.05.22				v 3.6.8		: 모달 메시지 타이머 초기값 오류 수정.
+	2017.05.26				v 3.6.9		: 시스템 버튼 포인팅 영역 아닌경우도 드로우처리.
+										  (g_SysBut_PointProcess)
+	2017.06.07				v 3.6.11	: 그리드컨트롤 스트라이프 기능 및 색상 변경 추가.
+	2017.07.23				v 3.6.13	: 그리드컨트롤 인덱스 백업 기능 추가.
+	2017.08.14				v 3.6.14	: 테이블컨트롤 선택커서 포커스 이동시 사라짐 버그 수정.
+	2017.08.17				v 3.6.15	: 테이블컨트롤 페이지 및 인덱스 관리 api 추가.
+----------------------------------------------------------------------------------*/
+
+#ifndef __CARDGUI_LIB__
+#define __CARDGUI_LIB__
+
+#include "CardGui.h"
+
+	//-------------------------------------------------------------------------
+	//	global variables and buffers
+	//-------------------------------------------------------------------------
+	bool	g_bGlobalFlag = FALSE;
+
+	//---------------------------------------------------------------
+	// 글로벌에서 처음 한번만 초기화.
+	//---------------------------------------------------------------
+	void LoadCardGui(void)
+	{
+		if (!g_bGlobalFlag)
+		{
+
+			Print("**********************************",0,0,0);
+			
+#ifdef VER_DEBUG
+
+			Print("Loaded %s %s (debug build)",(quad)CG_NAME,(quad)CG_VERSION,0);
+
+#else
+
+			Print("Loaded %s v%s",(quad)CG_NAME,(quad)CG_VERSION,0);
+	
+#endif
+
+			Print("**********************************",0,0,0);
+			
+			g_pEvtTask = NULL;
+		
+			Mem_Set ((byte*)&theApp, 0, sizeof(theApp));
+			
+			//디바이스별 기본 정보
+			g_nTimerId = Timer_Set( 1800 * TIMERPERIOD, 0);
+			g_nTimerCnt = 0;
+			
+			g_GetDeviceInfo();
+			
+			//사용자설정 로드
+			g_GetSysInfo();
+			this = &theApp;
+			this->m_hChildDlg = 0;
+			this->m_nMsgboxTimerId = -1;
+			g_bGlobalFlag = TRUE;
+			
+			//그리드 컨트롤 제어변수 초기화.
+			this->m_hGrid = NULL;
+			this->m_pCurPage = NULL;
+			this->m_pTotalPage = NULL;
+			this->m_pCallback = NULL;
+			
+			//최초에 실행되는 외부모듈 초기화
+			if (g_pExtLoadModule != NULL)
+			{
+				g_pExtLoadModule();
+			}
+			
+			//업그레이드 상태 초기화
+			this->m_bUpgradeFlag = FALSE;
+		}
+	}
+
+	//-----------------------------------------------------------------------------
+	//		BIG -> LITTLE and LITTLE -> BIG endian
+	//-----------------------------------------------------------------------------
+	void g_Reverse ( char* s, int n )
+	{
+		char*	i;
+		char	c;
+	
+		i = s + n - 1;
+	
+		while(s < i)
+		{
+			c = *s;
+			*s++ = *i;
+			*i-- = c;
+		}
+	}
+
+	//---------------------------------------------------------------
+	// elipse 연산자 사용된 Sprintf (표준 sprintf와 호환됨)
+	//---------------------------------------------------------------
+	void g_Sprintf ( char* d, char* fmt, ... )
+	{
+		long	i, n;
+		long	Val;
+		char	ch;
+		char*	s;
+		char*	pVal;
+		char*	pArg;
+		char 	numBuf[12];
+		const char* kDigits = "0123456789ABCDEF";
+			
+		s = fmt;
+		
+		n = 1;	// Smart 에서는 가변인자 초기값 1
+		pArg = (char*)&fmt;
+		
+		while ((ch = *s++) != '\0')
+		{
+			if (ch != '%')
+			{
+				*d++ = ch; 
+			}
+			else
+			{
+				ch = *s++;
+				pVal = (char*)&Val;
+					
+				pVal[3] = *(pArg-(n++));
+				pVal[2] = *(pArg-(n++));
+				pVal[1] = *(pArg-(n++));
+				pVal[0] = *(pArg-(n++));
+					
+				switch (ch)
+				{
+					case 'c':
+						*d++ = (char)Val;
+						break;
+					case 'd':
+						Str_ItoA (Val, numBuf, 10);
+						Str_Cpy (d, numBuf);
+						d += Str_Len(numBuf);
+						break;
+					case 's':
+						Str_Cpy (d, (char*)Val);
+						d += Str_Len((char*)Val);
+						break;
+					case 'x':
+						for(i=0; i<8; i++)
+						{
+							unsigned nybble = ((long)Val>>(28-i*4))&0x0F;	
+							*d++ = kDigits[nybble];
+						}
+						break;
+					case '%':
+						*d++ = '%';
+						break;
+					default:
+						Print ("Cannot support '%s'.", (quad)ch, 0, 0);
+				}
+			}
+		}
+			
+		*d = '\0';
+	}
+	
+	//---------------------------------------------------------------
+	void g_PostMessage (long msg, long wp, long lp)
+	{
+		HandlerMsg m;
+		
+		m.MsgType	= msg;
+		m.wParam 	= wp;
+		m.lParam 	= lp;
+		Handler_PostMessage(&m);
+	}
+	
+	//---------------------------------------------------------------
+	void g_SetProgressIcoPath (char* pszImgPath)
+	{
+		if (pszImgPath != NULL && pszImgPath[0] != '\0')
+		{
+			strcpy(theApp.m_szMsgboxImgPath, pszImgPath);
+		}
+		else
+		{
+			theApp.m_szMsgboxImgPath[0] = '\0';
+		}
+	}
+
+	//---------------------------------------------------------------
+	void g_GetDeviceInfo (void)
+	{
+		VM_PROFILE 	stProfile;
+		long 	nSize;
+		VM_Info   stVersion;
+		VM_AppInfo stAppif;
+		char szphonenum[20];
+		char szTmp[20];
+		
+		Mem_Set ((byte*)&stVersion, 0, sizeof(stVersion));
+		Mem_Set ((byte*)&stAppif, 0, sizeof(stAppif));
+		Mem_Set((byte*)&stUserinfo, 0x00, sizeof(stUserinfo));
+	
+		VM_GetVersion( &stVersion );
+		VM_GetAppInfo( &stAppif );
+		
+		//버젼정보
+		Str_Cpy(  stUserinfo.szver_num,  stVersion.szSVersion);
+		Str_Cpy(  g_szDEVICE_NAME,       stVersion.szDeviceType);
+		SPRINT( stUserinfo.szappversion, "%d", stAppif.wAppVersion, 0, 0);
+		
+		//전화번호를 사용자 정보에 넣는다.
+		Mem_Set ((byte*)szphonenum, 0, sizeof(szphonenum));
+		Mem_Set ((byte*)szTmp, 0, sizeof(szTmp));
+		
+		Tapi_GetPhoneNum( (byte*)szTmp, 0);
+		
+		if( Str_Cmp(szTmp, "01099991111") == 0 )
+		{
+			Str_Cpy(szphonenum, "00000000000");
+		}
+		else
+		{
+			Str_Cpy(szphonenum, szTmp);
+		}
+		
+		Mem_Cpy( (byte*)stUserinfo.szpda_ip, (byte*)szphonenum, 3 );
+		stUserinfo.szpda_ip[3] = '-';
+		Mem_Cpy( (byte*)stUserinfo.szpda_ip+4, (byte*)szphonenum+3, 4 );
+		stUserinfo.szpda_ip[8] = '-';
+		Mem_Cpy( (byte*)stUserinfo.szpda_ip+9, (byte*)szphonenum+7, 4 );
+		
+		Mem_Set ((byte*)&theDevInfo, 0, sizeof(theDevInfo));
+		// 디바이스에 대한 profile을 가져온다.
+		VM_GetProfile(&stProfile);
+	
+		theDevInfo.m_nMx = stProfile.LCD_WIDTH; 
+		theDevInfo.m_nMy = stProfile.LCD_HEIGHT; 
+		//theDevInfo.m_nFontType = stProfile.DEFAULT_FONT;		
+		theDevInfo.m_nLix = stProfile.LARGE_ICON_WIDTH;
+		theDevInfo.m_nLiy = stProfile.LARGE_ICON_HEIGHT;
+		theDevInfo.m_nSix = stProfile.SMALL_ICON_WIDTH;
+		theDevInfo.m_nSiy = stProfile.SMALL_ICON_HEIGHT;
+		
+		Str_Cpy( g_szDEVICE_NAME, stProfile.DEVICE_NAME);
+	
+		nSize = theDevInfo.m_nMx*theDevInfo.m_nMy;
+	
+		if ( nSize <= SIZE_PDA )
+		{
+			theDevInfo.m_nType = FAMILY_PDA;
+			theDevInfo.m_nMy =294; 
+		}
+		else if ( nSize >= SIZE_PDA && nSize < SIZE_SMART )
+		{
+			theDevInfo.m_nType = FAMILY_SMART;
+		}
+		else if ( nSize >= SIZE_SMALL && nSize < SIZE_MIDDLE )
+		{
+			theDevInfo.m_nType = FAMILY_SMALL;
+		}
+		else if ( nSize >= SIZE_MIDDLE && nSize < SIZE_LARGE )
+		{
+			theDevInfo.m_nType = FAMILY_MIDDLE;
+		}
+		else if ( nSize >= SIZE_LARGE && nSize < SIZE_SUPER )
+		{
+			theDevInfo.m_nType = FAMILY_LARGE;
+		}
+		else if ( nSize >= SIZE_SUPER )
+		{
+			theDevInfo.m_nType = FAMILY_SUPER;
+		}
+		switch (theDevInfo.m_nType)
+		{
+			case FAMILY_PDA:
+				theDevInfo.m_nFontSmallType= FONT_8;
+				theDevInfo.m_nFontType     = FONT_10;	//FONT_12
+				theDevInfo.m_nFontLageType = FONT_18;
+				theDevInfo.m_nFontLageType2 = FONT_16;
+				break;
+			case FAMILY_SMART:
+			
+				theDevInfo.m_nFontSmallType= FONT_12;
+				theDevInfo.m_nFontType     = FONT_24;
+				theDevInfo.m_nFontLageType = FONT_36;
+				theDevInfo.m_nFontLageType2 = FONT_32;
+				break;
+			case FAMILY_SMALL:
+			    //기본 텍스트 글자크기 -> theDevInfo.m_nFontType 수정
+				theDevInfo.m_nFontSmallType= FONT_28;
+				theDevInfo.m_nFontType     = FONT_36;
+				theDevInfo.m_nFontLageType = FONT_64;
+				theDevInfo.m_nFontLageType2 = FONT_52;
+				break;
+			case FAMILY_MIDDLE:
+				theDevInfo.m_nFontSmallType= FONT_42;
+				theDevInfo.m_nFontType     = FONT_56;
+				theDevInfo.m_nFontLageType = FONT_92;
+				theDevInfo.m_nFontLageType2 = FONT_72;
+				break;
+			case FAMILY_LARGE:
+				theDevInfo.m_nFontSmallType= FONT_54;
+				theDevInfo.m_nFontType     = FONT_72;
+				theDevInfo.m_nFontLageType = FONT_120;
+				theDevInfo.m_nFontLageType2 = FONT_92;
+				break;
+			case FAMILY_SUPER:
+				theDevInfo.m_nFontSmallType= FONT_54;
+				theDevInfo.m_nFontType     = FONT_72;
+				theDevInfo.m_nFontLageType = FONT_120;
+				theDevInfo.m_nFontLageType2 = FONT_92;
+				break;
+			default:
+				theDevInfo.m_nFontSmallType= FONT_10;
+				theDevInfo.m_nFontType     = FONT_12;
+				theDevInfo.m_nFontLageType = FONT_18;
+				theDevInfo.m_nFontLageType2 = FONT_14;
+				break;
+		}
+	}
+	
+	//---------------------------------------------------------------
+	void g_GetSysInfo(void)
+	{
+	}
+	
+	// dkjung 2003-06-20
+	// 시스템 버튼의 핸들을 얻어 온다.
+	//---------------------------------------------------------------
+	handle	GetSysButHandle (long nId)
+	{
+		long i;
+		SysButCtrl* pBut;
+		
+		for (i=0; i<theSysButNum; i++)
+		{
+			pBut = (SysButCtrl*)theSysBut[i];
+			if (pBut->m_nId == nId)
+			{
+				return pBut->m_h;
+			}
+		}
+		
+		return NULL;
+	}
+
+	//---------------------------------------------------------------
+	long	SysButCreate (long nButNum, SysButCtrl* pBut)
+	{
+		long i;
+		
+		if (nButNum > MAX_SYS_BUT)
+		{
+			return -1;
+		}
+		
+		for (i=0, theSysButNum=0; i<nButNum; i++, theSysButNum++)
+		{
+			g_SysBut_Create (&pBut[i]);
+			theSysBut[i] = (handle)&pBut[i];
+		}
+		
+		return 0;	
+	}	
+
+	//---------------------------------------------------------------
+	void	g_SysBut_Create (SysButCtrl* pBut)
+	{
+		
+		if (pBut->m_stCtrl.m_nVal == OBJ_BUT)
+		{
+			pBut->m_h = ButCtrl_CreateObject (DMS_X(pBut->m_stCtrl.m_Range.x), DMS_Y(pBut->m_stCtrl.m_Range.y), 
+											DMS_X(pBut->m_stCtrl.m_Range.x+pBut->m_stCtrl.m_Range.width),
+											DMS_Y(pBut->m_stCtrl.m_Range.y+pBut->m_stCtrl.m_Range.height),
+											pBut->m_nId, (char*)pBut->m_stCtrl.m_pBuf[0]);
+											
+			ButCtrl_SetForeColorEx(pBut->m_h, pBut->m_stCtrl.m_nFrColor);
+			ButCtrl_SetBkColorEx(pBut->m_h, pBut->m_stCtrl.m_nBkColor);
+			
+		}
+		else
+		{
+			pBut->m_h = ButCtrl_CreateObject (DMS_X(pBut->m_stCtrl.m_Range.x), DMS_Y(pBut->m_stCtrl.m_Range.y), 
+											DMS_X(pBut->m_stCtrl.m_Range.x+pBut->m_stCtrl.m_Range.width),
+											DMS_Y(pBut->m_stCtrl.m_Range.y+pBut->m_stCtrl.m_Range.height),
+											pBut->m_nId, "");
+			ButCtrl_SetForeColorEx(pBut->m_h, pBut->m_stCtrl.m_nFrColor);
+			ButCtrl_SetBkColorEx(pBut->m_h, pBut->m_stCtrl.m_nBkColor);
+		}
+									
+		ButCtrl_ModifyStyle(pBut->m_h, pBut->m_stCtrl.m_nRemStyle|BUTSTY_BORDER, pBut->m_stCtrl.m_nAddStyle	);
+		ButCtrl_SetDelta(pBut->m_h, pBut->m_stCtrl.m_Range.dx, pBut->m_stCtrl.m_Range.dy);
+		
+		switch (pBut->m_nType & 0x00FFFFFF)
+		{
+			case BUT_PREV:
+				//pBut->m_pImgBuf = PREV;
+				break;
+			case BUT_EXIT:
+				//pBut->m_pImgBuf = EXIT;
+				break;
+		}
+		
+		if (pBut->m_stCtrl.m_nVal == OBJ_IBT)
+		{
+			ButCtrl_SetImage(pBut->m_h, (byte*)pBut->m_stCtrl.m_pBuf[0]);
+			ButCtrl_SetActiveImage(pBut->m_h, (byte*)pBut->m_stCtrl.m_pBuf[0]);
+		}
+		
+		
+		//2차 개발, 라운드 제거
+		if( theDevInfo.m_nType > FAMILY_PDA)
+		{
+			ButCtrl_SetRoundRadius(pBut->m_h, DMS_X(0));
+			ButCtrl_SetRoundThickness(pBut->m_h, DMS_X(2));
+			//ButCtrl_SetRoundBoarderColor(h, BTNCTRLBKCOLOR, BTNCTRLBKCOLOR);
+			ButCtrl_SetRoundBoarderColor(pBut->m_h, BTNCTRLSIDECOLOR, BTNCTRLSIDECOLOR);
+		}
+	}
+	    
+	//---------------------------------------------------------------
+	void	g_SysBut_Draw (void)
+	{
+		long i;
+		SysButCtrl* pBut;
+		
+		for (i=0; i<theSysButNum; i++)
+		{
+			pBut = (SysButCtrl*)theSysBut[i];
+			
+			if (pBut->m_nType & BUT_OFF)
+				continue;
+			
+			ButCtrl_Draw (pBut->m_h, FALSE);
+		}
+	}
+
+	//---------------------------------------------------------------
+	long	g_SysBut_PointProcess (long nAction, long X, long Y)
+	{
+		long i;
+		long bflag;
+		SysButCtrl* pBut;
+		
+		for (i=0; i<theSysButNum; i++)
+		{
+			pBut = (SysButCtrl*)theSysBut[i];
+			
+			if (pBut->m_nType & BUT_OFF)
+				continue;
+				
+			bflag = ButCtrl_PointingProcess (pBut->m_h, nAction, X, Y);
+			if( bflag > 0 )
+			{
+				if(nAction == 1)
+					ButCtrl_Draw (pBut->m_h, FALSE);
+				else
+					ButCtrl_Draw (pBut->m_h, TRUE);
+			}
+			else
+			{
+				//dkjung 2017-05-25
+				//시스템 버튼은 자신의 포인팅이 아니라도 그려주는게 좋음.
+				ButCtrl_Draw (pBut->m_h, FALSE);
+			}
+		}
+		
+		return 0;
+	}
+	
+	//---------------------------------------------------------------
+	void	g_SysBut_Delete (void)
+	{
+		long i;
+		SysButCtrl* pBut;
+		
+		for (i=0; i<theSysButNum; i++)
+		{
+			pBut = (SysButCtrl*)theSysBut[i];
+			ButCtrl_DeleteObject (pBut->m_h);
+		}
+		
+		theSysButNum = 0;
+	}
+
+	// <Example>
+	// g_MessageBox(MESSAGE,       "서버와 접속중입니다.\n잠시만 기다려 주세요.", 0, 0, 0, 0);
+	// g_MessageBox(CONFIRM_YESNO, "서버와 연결이 끊겼습니다.\n다시 시도하시겠습니까?", "예", "아니오", MB_OK, MB_EXIT);
+	// g_MessageBox(CONFIRM_OK,    "검침자료 전송이 완료되었습니다.", 0, "확인", 0, ID_OK);
+	// g_MessageBox(WARNING_YESNO, "검침자료 전송이 완료되었습니다.", 0, "확인", 0, ID_OK);
+	// g_MessageBox(WARNING_OK,    "검침자료 전송이 완료되었습니다.", 0, "확인", 0, ID_OK);
+	// g_MessageBox(ERROR_YESNO,   "사용자 인증에 실패했습니다.\n다시 시도하시겠습니까?", "예", "아니오", MB_OK, MB_EXIT);
+	// g_MessageBox(ERROR_OK,      "사용자 비밀번호가 틀렸습니다.\n다시 입력해 주세요.", 0, "확인", 0, MB_OK);
+
+	//-----------------------------------------------------------------------------
+	//	modal and message box related functions
+	//-----------------------------------------------------------------------------
+	//long	theApp.m_nMsgboxInActiveFlag = 0;
+	//long	g_nMbDy = 0;
+	//char	g_szMbMsgBuf[128];
+
+	//---------------------------------------------------------------
+	long DMS_X( long x )
+	{
+		long dms_x = 0;
+		dms_x = (x*theDevInfo.m_nMx)/1000;
+		return dms_x;
+	}
+		
+	//---------------------------------------------------------------
+	long DMS_Y( long y )
+	{
+		long dms_y = 0;
+		dms_y = (y*theDevInfo.m_nMy)/1000;
+		return dms_y;		
+	}
+	
+	//---------------------------------------------------------------
+	//화면 크기에 자동으로 처리되도록 수정 (이미지 자동 처리).
+	void g_MessageBoxEx(long Type, char* Title ,char* TextStr, char* LBottomStr, char* RBottomStr, long LBottomID, long RBottomID)
+	{
+		handle	hTC;
+		handle	hBC;
+		int index = 0;
+		
+		g_Close_SubDlg();
+
+		if (theApp.m_nMsgboxInActiveFlag == 0)
+		{
+			GrDev_Inactive ();
+			theApp.m_nMsgboxInActiveFlag = 1;
+		}		
+		
+		//메시지
+		Mem_Set((byte *)theApp.m_szTxtMsg, 0x00, sizeof(theApp.m_szTxtMsg));
+		Str_Cpy(theApp.m_szTxtMsg, TextStr);
+		
+		if( theDevInfo.m_nType >= FAMILY_SMALL )
+		{
+			//메시지 다이얼로그 생성(400*400 size)
+			theApp.m_hMsgboxDlg = Dialog_CreateObject();	
+			Dialog_ModifyStyle(theApp.m_hMsgboxDlg, DLGSTY_VSCROLLBAR|DLGSTY_HSCROLLBAR|DLGSTY_TITLE, DLGSTY_BORDER|DLGSTY_THICKBORDER|DLGSTY_ROUNDBORDER );
+			Dialog_SetRange(theApp.m_hMsgboxDlg, DMS_X(90), DMS_Y(100), DMS_X(925), DMS_Y(570) );
+	
+			Dialog_SetDefaultFont(theApp.m_hMsgboxDlg, theDevInfo.m_nFontType);
+			Dialog_SetBkColorEx( theApp.m_hMsgboxDlg, WHITE );			
+			Dialog_SetRoundRadius(theApp.m_hMsgboxDlg, DMS_X(50));
+			Dialog_SetRoundThickness(theApp.m_hMsgboxDlg, DMS_X(10));
+			Dialog_SetRoundBoarderColor(theApp.m_hMsgboxDlg, ROYALBLUE, ROYALBLUE);
+			
+			theApp.m_hTxtMsg = DLG_NTEXT(theApp.m_hMsgboxDlg, index++,  0,  0,  835,  90, BLACK, EDITALIGN_MIDDLE|EDITALIGN_CENTER, theDevInfo.m_nFontType, Title);
+			//라운드 적용, PDA제외
+			EditCtrl_SetRoundRadius(theApp.m_hTxtMsg, DMS_X(50));
+			EditCtrl_SetRoundThickness(theApp.m_hTxtMsg, DMS_X(10));
+			EditCtrl_SetRoundBoarderColor(theApp.m_hTxtMsg, WHITE, WHITE);
+			if( Type &  ( CONFIRM_YESNO| CONFIRM_OK | MESSAGE) )
+			{
+				EditCtrl_SetBkColorEx( theApp.m_hTxtMsg, MEGBKCOLOR_CONFIRM );
+			}
+			else if( Type & (WARNING_YESNO| WARNING_OK) )
+			{
+				EditCtrl_SetBkColorEx( theApp.m_hTxtMsg, MEGBKCOLOR_WARNING );
+			}
+			else if(Type & (ERROR_OK | ERROR_YESNO))
+			{
+				EditCtrl_SetBkColorEx( theApp.m_hTxtMsg, MEGBKCOLOR_ERROR );
+			}
+			
+			//메시지 텍스트
+			theApp.m_hTxtMsg = DLG_NTEXT(theApp.m_hMsgboxDlg, index++,  20,  100,  800,  250, BLACK, EDITALIGN_MIDDLE|EDITALIGN_CENTER, theDevInfo.m_nFontType, theApp.m_szTxtMsg);
+			EditCtrl_SetMultiLine(theApp.m_hTxtMsg, TRUE, DMS_Y(10), EDITSEP_NONE);
+			EditCtrl_SetRoundRadius(theApp.m_hTxtMsg, DMS_X(20));
+			EditCtrl_SetRoundThickness(theApp.m_hTxtMsg, DMS_X(5));
+			EditCtrl_SetRoundBoarderColor(theApp.m_hTxtMsg, WHITE, WHITE);
+			
+			//기능 버튼
+			if(Type & (CONFIRM_YESNO | WARNING_YESNO | ERROR_YESNO  ))
+			{
+				//yes 
+				hBC = DLG_NBUTTON(theApp.m_hMsgboxDlg, index++,  50, 380, 233, 70, 0, 0, LBottomID,LBottomStr);
+				ButCtrl_SetFont(hBC, theDevInfo.m_nFontType);
+				//no
+				hBC = DLG_NBUTTON(theApp.m_hMsgboxDlg, index++, 540, 380, 233, 70, 0, 0, RBottomID, RBottomStr);
+				ButCtrl_SetFont(hBC, theDevInfo.m_nFontType);
+			}
+			else if(Type & (CONFIRM_OK | WARNING_OK | ERROR_OK ))
+			{
+				//ok
+				hBC = DLG_NBUTTON(theApp.m_hMsgboxDlg, index++, 540, 380, 233, 70, 0, 0, RBottomID, RBottomStr);
+				ButCtrl_SetFont(hBC, theDevInfo.m_nFontType);
+			}
+		}
+		else
+		{
+			//메시지 다이얼로그 생성(400*400 size)
+			theApp.m_hMsgboxDlg = Dialog_CreateObject();	
+			Dialog_ModifyStyle(theApp.m_hMsgboxDlg, DLGSTY_VSCROLLBAR|DLGSTY_HSCROLLBAR|DLGSTY_TITLE, DLGSTY_BORDER|DLGSTY_ROUNDBORDER );
+			Dialog_SetRange(theApp.m_hMsgboxDlg, DMS_X(20), DMS_Y(100), DMS_X(970), DMS_Y(700) );
+			Dialog_SetDefaultFont(theApp.m_hMsgboxDlg, theDevInfo.m_nFontType);
+			Dialog_SetBkColorEx( theApp.m_hMsgboxDlg, WHITE );
+			Dialog_SetRoundThickness(theApp.m_hMsgboxDlg, PDA_BORDERTHICKNESS);
+			Dialog_SetRoundBoarderColor(theApp.m_hMsgboxDlg, ROYALBLUE, ROYALBLUE);
+			
+			theApp.m_hTxtMsg = DLG_NTEXT(theApp.m_hMsgboxDlg, index++,  0,  0,  950,  100, BLACK, EDITALIGN_MIDDLE|EDITALIGN_CENTER, theDevInfo.m_nFontType, Title);
+			//라운드 적용, PDA제외
+			if( Type &  ( CONFIRM_YESNO| CONFIRM_OK | MESSAGE) )
+			{
+				EditCtrl_SetBkColorEx( theApp.m_hTxtMsg, MEGBKCOLOR_CONFIRM );
+			}
+			else if( Type & (WARNING_YESNO| WARNING_OK) )
+			{
+				EditCtrl_SetBkColorEx( theApp.m_hTxtMsg, MEGBKCOLOR_WARNING );
+			}
+			else if(Type & (ERROR_OK | ERROR_YESNO))
+			{
+				EditCtrl_SetBkColorEx( theApp.m_hTxtMsg, MEGBKCOLOR_ERROR );
+			}
+			
+			//메시지 텍스트
+			theApp.m_hTxtMsg = DLG_NTEXT(theApp.m_hMsgboxDlg, index++,  20,  90,  900,  400, BLACK, EDITALIGN_MIDDLE|EDITALIGN_CENTER, theDevInfo.m_nFontType, theApp.m_szTxtMsg);
+			EditCtrl_SetMultiLine(theApp.m_hTxtMsg, TRUE, DMS_Y(10), EDITSEP_NONE);
+			
+			//기능 버튼
+			if(Type & (CONFIRM_YESNO | WARNING_YESNO | ERROR_YESNO  ))
+			{
+				//yes 
+				hBC = DLG_NBUTTON(theApp.m_hMsgboxDlg, index++,  50, 500, 250, 70, 0, 0, LBottomID,LBottomStr);
+				ButCtrl_SetFont(hBC, theDevInfo.m_nFontType);
+				//no
+				hBC = DLG_NBUTTON(theApp.m_hMsgboxDlg, index++, 650, 500, 250, 70, 0, 0, RBottomID, RBottomStr);
+				ButCtrl_SetFont(hBC, theDevInfo.m_nFontType);
+			}
+			else if(Type & (CONFIRM_OK | WARNING_OK | ERROR_OK ))
+			{
+				//ok
+				hBC = DLG_NBUTTON(theApp.m_hMsgboxDlg, index++, 650, 500, 250, 70, 0, 0, RBottomID, RBottomStr);
+				ButCtrl_SetFont(hBC, theDevInfo.m_nFontType);
+			}
+		}
+		
+		Dialog_SetActiveCtrl(theApp.m_hMsgboxDlg, --index);
+		Dialog_Draw(theApp.m_hMsgboxDlg, TRUE);
+		GrDev_Refresh();
+	}
+
+	//---------------------------------------------------------------
+	//화면 크기에 자동으로 처리되도록 수정 (이미지 자동 처리).
+	void g_MessageBox(long Type, char* TextStr, char* LBottomStr, char* RBottomStr, long LBottomID, long RBottomID)
+	{
+		handle	hTC;
+		handle	hBC;
+		long index = 0;
+		char sztitle[20];
+		long X1,X2,Y1,Y2;
+
+		g_Close_SubDlg();
+		
+		if (theApp.m_nMsgboxInActiveFlag == 0)
+		{
+			GrDev_Inactive ();
+			theApp.m_nMsgboxInActiveFlag = 1;
+		}		
+
+		//메시지
+		Mem_Set((byte *)theApp.m_szTxtMsg, 0x00, sizeof(theApp.m_szTxtMsg));
+		Str_Cpy(theApp.m_szTxtMsg, TextStr);
+
+		if( theDevInfo.m_nType >= FAMILY_SMALL )
+		{
+			X1 = 50;
+			Y1 = 100;
+			X2 = 950;
+			Y2 = 570;
+		
+			//메시지 다이얼로그 생성(400*400 size)
+			theApp.m_hMsgboxDlg = Dialog_CreateObject();	
+			Dialog_ModifyStyle(theApp.m_hMsgboxDlg, DLGSTY_VSCROLLBAR|DLGSTY_HSCROLLBAR|DLGSTY_TITLE, DLGSTY_THICKBORDER|DLGSTY_ROUNDBORDER );
+			Dialog_SetRange(theApp.m_hMsgboxDlg, DMS_X(X1), DMS_Y(Y1), DMS_X(X2), DMS_Y(Y2) );
+
+			Dialog_SetDefaultFont(theApp.m_hMsgboxDlg, theDevInfo.m_nFontType);
+			Dialog_SetBkColorEx( theApp.m_hMsgboxDlg, WHITE );
+			//라운드 적용
+			Dialog_SetRoundRadius(theApp.m_hMsgboxDlg, DMS_X(5));
+			Dialog_SetRoundThickness(theApp.m_hMsgboxDlg, DMS_X(2));
+			//Dialog_SetRoundBoarderColor(theApp.m_hMsgboxDlg, ROYALBLUE, ROYALBLUE);
+			Dialog_SetRoundBoarderColor(theApp.m_hMsgboxDlg, SILVER, SILVER);
+
+			Mem_Set((byte *)sztitle, 0x00, sizeof(sztitle));
+			//타입에 따른 아이콘 설정
+			if( Type &  ( CONFIRM_YESNO| CONFIRM_OK | MESSAGE) )
+			{
+				Str_Cpy(sztitle, "알 림");
+			}
+			else if( Type & (WARNING_YESNO| WARNING_OK) )
+			{
+				Str_Cpy(sztitle, "경 고");
+			}
+			else if(Type & (ERROR_OK | ERROR_YESNO))
+			{
+				Str_Cpy(sztitle, "에 러");
+			}
+
+			theApp.m_hTxtMsg = DLG_NTEXT(theApp.m_hMsgboxDlg, index++,  0,  0,  X2-X1,  90, BLACK, EDITALIGN_MIDDLE|EDITALIGN_CENTER, theDevInfo.m_nFontType, sztitle);
+			//EditCtrl_SetRoundRadius(theApp.m_hTxtMsg, DMS_X(50));
+			//EditCtrl_SetRoundThickness(theApp.m_hTxtMsg, DMS_X(10));
+			EditCtrl_SetRoundRadius(theApp.m_hTxtMsg, DMS_X(5));
+			EditCtrl_SetRoundThickness(theApp.m_hTxtMsg, DMS_X(2));
+			EditCtrl_SetRoundBoarderColor(theApp.m_hTxtMsg, SILVER, SILVER);
+			EditCtrl_SetForeColorEx( theApp.m_hTxtMsg, WHITE );
+			
+			if( Type &  ( CONFIRM_YESNO| CONFIRM_OK | MESSAGE) )
+			{
+				EditCtrl_SetBkColorEx( theApp.m_hTxtMsg, MEGBKCOLOR_CONFIRM );
+			}
+			else if( Type & (WARNING_YESNO| WARNING_OK) )
+			{
+				EditCtrl_SetBkColorEx( theApp.m_hTxtMsg, MEGBKCOLOR_WARNING );
+			}
+			else if(Type & (ERROR_OK | ERROR_YESNO))
+			{
+				EditCtrl_SetBkColorEx( theApp.m_hTxtMsg, MEGBKCOLOR_ERROR );
+			}
+
+			//메시지 텍스트
+			theApp.m_hTxtMsg = DLG_NTEXT(theApp.m_hMsgboxDlg, index++,  20,  120,  X2-X1-20,  200, BLACK, EDITALIGN_MIDDLE|EDITALIGN_CENTER, theDevInfo.m_nFontType, theApp.m_szTxtMsg);
+			EditCtrl_SetMultiLine(theApp.m_hTxtMsg, TRUE, DMS_Y(10), EDITSEP_NONE);		
+			//EditCtrl_SetRoundRadius(theApp.m_hTxtMsg, DMS_X(50));
+			//EditCtrl_SetRoundThickness(theApp.m_hTxtMsg, DMS_X(5));
+			EditCtrl_SetRoundBoarderColor(theApp.m_hTxtMsg, WHITE, WHITE);
+
+			//기능 버튼
+			if(Type & (CONFIRM_YESNO | WARNING_YESNO | ERROR_YESNO  ))
+			{
+				//yes 
+				hBC = DLG_NBUTTON(theApp.m_hMsgboxDlg, index++,  100, 380, 300, 60, 0, 0, LBottomID,LBottomStr);
+				ButCtrl_SetFont(hBC, theDevInfo.m_nFontType);
+				//FrmCtrl_SetRoundRadius(hBC, DMS_X(10));
+				
+				//no
+				hBC = DLG_NBUTTON(theApp.m_hMsgboxDlg, index++, 500, 380, 300, 60, 0, 0, RBottomID, RBottomStr);
+				ButCtrl_SetFont(hBC, theDevInfo.m_nFontType);
+				//FrmCtrl_SetRoundRadius(hBC, DMS_X(10));
+				
+			}
+			else if(Type & (CONFIRM_OK | WARNING_OK | ERROR_OK ))
+			{
+				//ok
+				hBC = DLG_NBUTTON(theApp.m_hMsgboxDlg, index++, 300, 380, 300, 60, 0, 0, RBottomID, RBottomStr);
+				ButCtrl_SetFont(hBC, theDevInfo.m_nFontType);
+				//FrmCtrl_SetRoundRadius(hBC, DMS_X(10));
+			}
+		}
+		else
+		{
+			X1 = 20;
+			Y1 = 100;
+			X2 = 970;
+			Y2 = 700;
+
+			//메시지 다이얼로그 생성(400*400 size)
+			theApp.m_hMsgboxDlg = Dialog_CreateObject();	
+			Dialog_ModifyStyle(theApp.m_hMsgboxDlg, DLGSTY_VSCROLLBAR|DLGSTY_HSCROLLBAR|DLGSTY_TITLE, DLGSTY_ROUNDBORDER );
+			Dialog_SetRange(theApp.m_hMsgboxDlg, DMS_X(X1), DMS_Y(Y1), DMS_X(X2), DMS_Y(Y2) );
+			Dialog_SetDefaultFont(theApp.m_hMsgboxDlg, theDevInfo.m_nFontType);
+			Dialog_SetBkColorEx( theApp.m_hMsgboxDlg, WHITE );
+			
+			Mem_Set((byte *)sztitle, 0x00, sizeof(sztitle));
+			//타입에 따른 아이콘 설정
+			if( Type &  ( CONFIRM_YESNO| CONFIRM_OK | MESSAGE) )
+			{
+				Str_Cpy( sztitle, "알 림");
+			}
+			else if( Type & (WARNING_YESNO| WARNING_OK) )
+			{
+				Str_Cpy( sztitle, "경 고");
+			}
+			else if(Type & (ERROR_OK | ERROR_YESNO))
+			{
+				Str_Cpy( sztitle, "에 러");
+			}
+			
+			theApp.m_hTxtMsg = DLG_NTEXT(theApp.m_hMsgboxDlg, index++,  0,  0,  X2-X1,  100, BLACK, EDITALIGN_MIDDLE|EDITALIGN_CENTER, theDevInfo.m_nFontType, sztitle);
+			if( Type &  ( CONFIRM_YESNO| CONFIRM_OK | MESSAGE) )
+			{
+				EditCtrl_SetBkColorEx( theApp.m_hTxtMsg, MEGBKCOLOR_CONFIRM );
+			}
+			else if( Type & (WARNING_YESNO| WARNING_OK) )
+			{
+				EditCtrl_SetBkColorEx( theApp.m_hTxtMsg, MEGBKCOLOR_WARNING );
+			}
+			else if(Type & (ERROR_OK | ERROR_YESNO))
+			{
+				EditCtrl_SetBkColorEx( theApp.m_hTxtMsg, MEGBKCOLOR_ERROR );
+			}
+			
+			//메시지 텍스트
+			theApp.m_hTxtMsg = DLG_NTEXT(theApp.m_hMsgboxDlg, index++,   20,  90,  X2-X1-20,  400, BLACK, EDITALIGN_MIDDLE|EDITALIGN_CENTER, theDevInfo.m_nFontType, theApp.m_szTxtMsg);
+			EditCtrl_SetMultiLine(theApp.m_hTxtMsg, TRUE, DMS_Y(10), EDITSEP_NONE);		
+		
+			//기능 버튼
+			if(Type & (CONFIRM_YESNO | WARNING_YESNO | ERROR_YESNO  ))
+			{
+				//yes 
+				hBC = DLG_NBUTTON(theApp.m_hMsgboxDlg, index++,  50, 500, 250, 70, 0, 0, LBottomID,LBottomStr);
+				ButCtrl_SetFont(hBC, theDevInfo.m_nFontType);
+				//no
+				hBC = DLG_NBUTTON(theApp.m_hMsgboxDlg, index++, 650, 500, 250, 70, 0, 0, RBottomID, RBottomStr);
+				ButCtrl_SetFont(hBC, theDevInfo.m_nFontType);
+				
+			}
+			else if(Type & (CONFIRM_OK | WARNING_OK | ERROR_OK ))
+			{
+				//ok
+				hBC = DLG_NBUTTON(theApp.m_hMsgboxDlg, index++, 650, 500, 250, 70, 0, 0, RBottomID, RBottomStr);
+				ButCtrl_SetFont(hBC, theDevInfo.m_nFontType);
+				
+				if (theApp.m_bPushMsgFlag == TRUE)
+				{
+					theApp.m_hBtnPush = hBC;
+				}
+			}
+		}
+		
+		if( Type == MESSAGE )
+		{
+		
+			IMAGE* pImg;
+			word w, h, x, y, dx, dy;
+			char buf[32];
+			
+			//프로그레스바 표현
+			theApp.m_nMsboxIcoCount = 0;
+			Str_Printf(buf, theApp.m_szMsgboxImgPath, theApp.m_nMsgboxIcoIndex,0,0);
+			theApp.m_hImgBuf[theApp.m_nMsboxIcoCount] = GrDev_LoadPngImage(PNG_COLOR_ALPHA,  buf );
+			
+			//이미지 핸들에서 가로/세로 크기를 추출한다.
+			pImg = (IMAGE*)theApp.m_hImgBuf[theApp.m_nMsboxIcoCount];
+			
+			//PRINT("image >>> w = 0x%x, h = 0x%x", VM_WORD_TO_WORD(pImg->width), VM_WORD_TO_WORD(pImg->height), 0);
+			
+			//엔디언을 맞춘다.
+			w = VM_WORD_TO_WORD(pImg->width);
+			h = VM_WORD_TO_WORD(pImg->height);
+			
+			dx = (X2 - X1) / 2;
+			dy = (Y2 - Y1) / 2;
+			
+			x = DMS_X(dx) - w / 2;
+			y = DMS_Y(dy + dy / 2) - h / 2;	//4등분 위치
+			
+			theApp.m_hMsgboxIco = Dialog_CreateIconCtrl(theApp.m_hMsgboxDlg, index++, x, y, theApp.m_hImgBuf[theApp.m_nMsboxIcoCount++]);
+			
+			theApp.m_nMsgboxTimerId = Timer_Set(300, 0);
+			
+		//	PRINT("타이머 아이디 생성 ==> (%d)", theApp.m_nMsgboxTimerId,0,0);
+			
+			//theApp.m_hImgBuf[theApp.m_nMsboxIcoCount] = GrDev_LoadPngImage(PNG_COLOR_NORMAL,  "img/loading/loading2.png" );
+			//IconCtrl_AddImage(theApp.m_hMsgboxIco, theApp.m_hImgBuf[theApp.m_nMsboxIcoCount++]);
+			//theApp.m_hImgBuf[theApp.m_nMsboxIcoCount] = GrDev_LoadPngImage(PNG_COLOR_NORMAL,  "img/loading/loading3.png" );
+			//IconCtrl_AddImage(theApp.m_hMsgboxIco, theApp.m_hImgBuf[theApp.m_nMsboxIcoCount++]);
+			//theApp.m_hImgBuf[theApp.m_nMsboxIcoCount] = GrDev_LoadPngImage(PNG_COLOR_NORMAL,  "img/loading/loading4.png" );
+			//IconCtrl_AddImage(theApp.m_hMsgboxIco, theApp.m_hImgBuf[theApp.m_nMsboxIcoCount++]);
+			//theApp.m_hImgBuf[theApp.m_nMsboxIcoCount] = GrDev_LoadPngImage(PNG_COLOR_NORMAL,  "img/loading/loading5.png" );
+			//IconCtrl_AddImage(theApp.m_hMsgboxIco, theApp.m_hImgBuf[theApp.m_nMsboxIcoCount++]);
+			
+			theApp.m_nMsgboxIcoIndex = 0;
+			IconCtrl_SetSelIndex(theApp.m_hMsgboxIco, theApp.m_nMsgboxIcoIndex);
+			theApp.m_hImgBuf[1] = 0;
+		}
+		
+		//theApp.m_hSubDlg = theApp.m_hMsgboxDlg;
+
+		Dialog_SetActiveCtrl(theApp.m_hMsgboxDlg, --index);
+		Dialog_Draw(theApp.m_hMsgboxDlg, TRUE);
+		GrDev_Refresh();
+	}
+	
+	//---------------------------------------------------------------
+	//화면 크기에 자동으로 처리되도록 수정 (이미지 자동 처리).
+	void g_Progress (long Type, char* Title, char* TextStr)
+	{
+		if (theApp.m_nMsgboxInActiveFlag == 0)
+		{
+			GrDev_Inactive ();
+			theApp.m_nMsgboxInActiveFlag = 1;
+		}
+		else
+		{
+			//메시지박스가 실행되어 있을때,
+			//그냥 컨텐츠만 변경하도록
+			SetMessageBoxText(TextStr);
+			return;
+		}		
+		
+		{
+			handle	hTC;
+			handle	hBC;
+			long index = 0;
+			long X1,X2,Y1,Y2;
+			long th;	//타이틀 높이
+			long mh;	//메시지 영역 높이
+			long msg_sx;
+			long r, d, img_sx;
+			long line_y, msg_ofsx;
+			long time_val;
+			IMAGE* pImg;
+			word w, h, x, y, dx, dy;
+			char buf[32];
+			
+			theApp.m_nMsboxIcoCount = 0;
+			Str_Printf(buf, theApp.m_szMsgboxImgPath, theApp.m_nMsgboxIcoIndex,0,0);
+			theApp.m_hImgBuf[theApp.m_nMsboxIcoCount] = GrDev_LoadPngImage(PNG_COLOR_ALPHA, buf);
+			
+			//이미지 핸들에서 가로/세로 크기를 추출한다.
+			pImg = (IMAGE*)theApp.m_hImgBuf[theApp.m_nMsboxIcoCount];
+			
+			//엔디언을 맞춘다.
+			w = VM_WORD_TO_WORD(pImg->width);
+			h = VM_WORD_TO_WORD(pImg->height);
+			
+			//메시지
+			Mem_Set((byte *)theApp.m_szTxtMsg, 0x00, sizeof(theApp.m_szTxtMsg));
+			Str_Cpy(theApp.m_szTxtMsg, TextStr);
+			
+			if( theDevInfo.m_nType >= FAMILY_SMALL )
+			{
+				X1 = 50;
+				Y1 = 100;
+				X2 = 950;
+				Y2 = 400;
+				th = 90;				//타이틀 높이
+				mh = 80;				//메시지 영역 표시 y축 글자표시 영역
+				msg_sx = 10 + w + 10;   //아이콘폭을 제외한 텍스트 x 시작 위치
+				img_sx = 40;			//아이콘 x 시작 위치
+				r = 5;					//다이얼로그 라운드 처리
+				d = 2;					//라운드 두께
+				line_y = 10;			//메시지 멀티라인 높이 설정
+				msg_ofsx = 20;			//메시지 x축 오프셋 보정
+				time_val = 300;			//이미지 타이머 간격(msec)
+			}
+			else if( theDevInfo.m_nType == FAMILY_PDA)
+			{
+				//2017-09-06 Sanghyun Lee
+				//PDA의 경우 스마트폰 이미지 프로그레스바 사용 X
+				//DRAW_PROGRESS <-- 사용!
+				return;
+			}
+			else
+			{
+				//해상도가 다른 디바이스 정의. 
+			}
+			
+			dx = (X2 - X1) / 2;
+			dy = (Y2 - Y1 - th) / 2;
+			
+			x = DMS_X(dx) - w / 2;
+			y = DMS_Y(dy + th) - h / 2;
+		
+			//메시지 다이얼로그 생성(400*400 size)
+			theApp.m_hMsgboxDlg = Dialog_CreateObject();	
+			Dialog_ModifyStyle(theApp.m_hMsgboxDlg, DLGSTY_VSCROLLBAR|DLGSTY_HSCROLLBAR|DLGSTY_TITLE, DLGSTY_THICKBORDER|DLGSTY_ROUNDBORDER );
+			Dialog_SetRange(theApp.m_hMsgboxDlg, DMS_X(X1), DMS_Y(Y1), DMS_X(X2), DMS_Y(Y2) );
+	
+			Dialog_SetDefaultFont(theApp.m_hMsgboxDlg, theDevInfo.m_nFontType);
+			Dialog_SetBkColorEx( theApp.m_hMsgboxDlg, WHITE );
+			//라운드 적용
+			Dialog_SetRoundRadius(theApp.m_hMsgboxDlg, DMS_X(r));
+			Dialog_SetRoundThickness(theApp.m_hMsgboxDlg, DMS_X(d));
+			Dialog_SetRoundBoarderColor(theApp.m_hMsgboxDlg, SILVER, SILVER);
+			
+			theApp.m_hTxtMsg = DLG_NTEXT(theApp.m_hMsgboxDlg, index++,  0,  0,  X2-X1, th, BLACK, EDITALIGN_MIDDLE|EDITALIGN_CENTER, theDevInfo.m_nFontType, Title);
+			EditCtrl_SetRoundRadius(theApp.m_hTxtMsg, DMS_X(r));
+			EditCtrl_SetRoundThickness(theApp.m_hTxtMsg, DMS_X(d));
+			EditCtrl_SetRoundBoarderColor(theApp.m_hTxtMsg, SILVER, SILVER);
+			EditCtrl_SetForeColorEx( theApp.m_hTxtMsg, WHITE );
+			EditCtrl_SetBkColorEx( theApp.m_hTxtMsg, MEGBKCOLOR_CONFIRM );
+			
+			//메시지 텍스트
+			theApp.m_hTxtMsg = DLG_NTEXT(theApp.m_hMsgboxDlg, index++,  msg_sx,  dy + th - mh / 2,  X2-X1-msg_ofsx,  mh, BLACK, EDITALIGN_MIDDLE|EDITALIGN_CENTER, theDevInfo.m_nFontType, theApp.m_szTxtMsg);
+			EditCtrl_SetMultiLine(theApp.m_hTxtMsg, TRUE, DMS_Y(line_y), EDITSEP_NONE);		
+			EditCtrl_ModifyStyle(theApp.m_hTxtMsg, DLGSTY_VSCROLLBAR|DLGSTY_HSCROLLBAR|EDITSTY_BORDER, 0);
+			
+			//아이콘 생성
+			theApp.m_hMsgboxIco = Dialog_CreateIconCtrl(theApp.m_hMsgboxDlg, index++, img_sx, y, theApp.m_hImgBuf[theApp.m_nMsboxIcoCount++]);
+			
+			theApp.m_nMsgboxTimerId = Timer_Set(time_val, 0);
+			
+			theApp.m_nMsgboxIcoIndex = 0;
+			IconCtrl_SetSelIndex(theApp.m_hMsgboxIco, theApp.m_nMsgboxIcoIndex);
+			theApp.m_hImgBuf[1] = 0;
+			
+			Dialog_SetActiveCtrl(theApp.m_hMsgboxDlg, --index);
+			Dialog_Draw(theApp.m_hMsgboxDlg, TRUE);
+			GrDev_Refresh();
+		}
+	}
+		
+	//---------------------------------------------------------------
+	void g_SetMessgeText (char* TextStr)
+	{
+		if ( IsMessageBox() )
+		{
+			EditCtrl_SetStr(theApp.m_hTxtMsg, TextStr);
+			Dialog_Draw(theApp.m_hMsgboxDlg, TRUE);
+			GrDev_Refresh();
+		}
+	}
+		
+	//---------------------------------------------------------------
+	void g_Close_SubDlg(void)
+	{
+		//M(call >>> g_Close_SubDlg);
+
+		if ( theApp.m_hMsgboxDlg )
+		{
+			Dialog_Draw(theApp.m_hMsgboxDlg, TRUE);
+			GrDev_Refresh();
+			
+			Dialog_DeleteObject(theApp.m_hMsgboxDlg);
+			theApp.m_hMsgboxDlg = 0;
+			theApp.m_hMsgboxIco = 0;
+			theApp.m_nMsgboxInActiveFlag = 0;
+			theApp.m_bPushMsgFlag = FALSE;
+			theApp.m_bNormalMsgFlag = FALSE;
+			
+			if( theApp.m_nMsgboxTimerId >= 0 )
+			{
+				Timer_Kill(theApp.m_nMsgboxTimerId);
+				theApp.m_nMsgboxTimerId = -1;
+				theApp.m_nMsgboxIcoIndex = 0;
+			}
+		}
+	}
+	
+	//---------------------------------------------------------------
+	// 모달 메시지 박스
+	long MsgBoxEx (long nDy, long Type, char* Title, char* Msg)
+	{
+		HandlerMsg msg;
+
+		//서브 다이얼 로그를 그린다.
+		switch (Type)
+		{
+			case TITLE_MESSAGE:
+				g_MessageBoxEx (Type, Title, Msg, 0, 0, 0, 0);
+				return 0;
+			case TITLE_CONFIRM_YESNO:
+			case TITLE_WARNING_YESNO:
+			case TITLE_ERROR_YESNO:
+				VmSleep(MSG_SLEEP);
+				g_MessageBoxEx (Type, Title,Msg, "예", "아니오", MB_OK, MB_EXIT);
+				VM_PlaySound(MSGSOUND);
+				break;
+			case TITLE_CONFIRM_OK:
+			case TITLE_WARNING_OK:
+			case TITLE_ERROR_OK:
+				VmSleep(MSG_SLEEP);
+				g_MessageBoxEx (Type, Title,Msg, 0, "확인", 0, MB_OK);
+				VM_PlaySound(MSGSOUND);
+				break;
+		}
+		
+		Dialog_Draw(theApp.m_hMsgboxDlg, TRUE);
+		g_SysBut_Draw ();
+		GrDev_Refresh();
+
+		//while ( Handler_PeekMessage(&msg) == 0 )
+		while ( 1 )
+		{
+			Handler_PeekMessage(&msg);
+
+			if ( msg.MsgType == MSG_EXIT )
+			{
+				Dialog_Draw(theApp.m_hMsgboxDlg, TRUE);
+				GrDev_Refresh();
+			
+				g_Close_SubDlg();
+				EvtDraw();
+				return MB_EXIT;		
+			}
+
+			Handler_GetMessage(&msg);
+
+			switch ( msg.MsgType )
+			{
+				case MSG_POINTING:
+					Dialog_PointingProcess (theApp.m_hMsgboxDlg, msg.wParam, 
+						(long)(msg.lParam & 0xFFFF), (long)(msg.lParam >> 16));
+					break;			
+				case MSG_BUTTON:
+				{
+					Dialog_Draw(theApp.m_hMsgboxDlg, TRUE);
+					GrDev_Refresh();
+			
+					g_Close_SubDlg();
+					g_SysBut_Draw ();
+					VM_PlaySound(CLICKSOUND);
+					EvtDraw();
+					return msg.wParam;
+				}
+				case MSG_DRAW:
+					g_SysBut_Draw ();
+					break;
+			}//end of switch
+
+			Dialog_Draw(theApp.m_hMsgboxDlg, TRUE);
+			GrDev_Refresh();
+		}// end of while
+
+		g_Close_SubDlg();
+		EvtDraw();
+		
+		return MB_EXIT;
+	}
+	
+	//---------------------------------------------------------------
+	// 모달 메시지 박스
+	long MsgBox (long nDy, long Type, char* Msg)
+	{
+		HandlerMsg msg;
+		
+		//서브 다이얼 로그를 그린다.
+		switch (Type)
+		{
+			case PUSH_OK:
+			
+				//메시지가 팝업된 상태에서는 푸시메시지는
+				//notification 매니저만 처리되어야 한다.
+				if ( !IsPopup() )
+				{
+					g_MessageBox (CONFIRM_OK, Msg, 0, "확인", 0, MB_OK);
+					theApp.m_bPushMsgFlag = TRUE;
+					theApp.m_bNormalMsgFlag = FALSE;
+				}
+				return 0;
+				
+			case PROGRESS_TEXT:
+			case PROGRESS_BAR:
+			case PROGRESS_LOADING:
+				g_Progress(Type, "진행상태", Msg);
+				theApp.m_bNormalMsgFlag = TRUE;
+				return 0;
+			case MESSAGE:
+				//g_MessageBox (Type, Msg, 0, 0, 0, 0);
+				g_Progress(Type, "진행상태", Msg);
+				theApp.m_bNormalMsgFlag = TRUE;
+				return 0;
+			case CONFIRM_YESNO:
+			case WARNING_YESNO:
+			case ERROR_YESNO:
+				VmSleep(MSG_SLEEP);
+				//VM_PlaySound(MSGSOUND);
+				g_MessageBox (Type, Msg, "예", "아니오", MB_OK, MB_EXIT);
+				VM_PlaySound(MSGSOUND);
+				theApp.m_bNormalMsgFlag = TRUE;
+				break;
+			case CONFIRM_OK:
+			case WARNING_OK:
+			case ERROR_OK:
+				VmSleep(MSG_SLEEP);
+				//VM_PlaySound(MSGSOUND);
+				g_MessageBox (Type, Msg, 0, "확인", 0, MB_OK);
+				VM_PlaySound(MSGSOUND);
+				theApp.m_bNormalMsgFlag = TRUE;
+				break;
+		}
+
+		Dialog_Draw(theApp.m_hMsgboxDlg, TRUE);
+		GrDev_Refresh();
+		
+		//타이머 작동
+		//g_nTimerId = Timer_Set(1000, 0);
+
+		while ( 1 )
+		{
+			//Handler_PeekMessage(&msg);
+		
+			//if ( msg.MsgType == MSG_EXIT )
+			//{
+			//	Dialog_Draw ( theApp.m_hMsgboxDlg, TRUE );
+			//	GrDev_Refresh();
+				
+			//	g_Close_SubDlg();
+			//	return MB_EXIT;		
+			//}
+			
+			Handler_GetMessage(&msg);
+
+			switch ( msg.MsgType )
+			{
+				case MSG_EXIT:
+					Dialog_Draw ( theApp.m_hMsgboxDlg, TRUE );
+					GrDev_Refresh();
+					
+					g_Close_SubDlg();
+					EvtDraw();
+					return MB_EXIT;
+						
+				case MSG_POINTING:
+					Dialog_PointingProcess (theApp.m_hMsgboxDlg, msg.wParam, 
+						(long)(msg.lParam & 0xFFFF), (long)(msg.lParam >> 16));
+					break;			
+				case MSG_BUTTON:
+				{
+					Dialog_Draw ( theApp.m_hMsgboxDlg, TRUE );
+					g_SysBut_Draw ();
+					GrDev_Refresh();
+					
+					g_Close_SubDlg();
+					VM_PlaySound(CLICKSOUND);
+					EvtDraw();
+					return msg.wParam;
+				}
+				case MSG_DRAW:
+					g_SysBut_Draw ();
+					break;
+			}//end of switch
+			
+			Dialog_Draw(theApp.m_hMsgboxDlg, TRUE);
+			GrDev_Refresh();
+		}// end of while
+		
+		g_Close_SubDlg();
+		EvtDraw();
+		return MB_EXIT;
+	}
+	
+	//-----------------------------------------------------------------------------------
+	//함수명: DLG_TEXT
+	//기  능: 기본 텍스트를 생성
+	//Param :
+	//Return:
+	//-----------------------------------------------------------------------------------
+	handle DLG_NTEXT(handle hDlg, long nIndex, long X, long Y, long nWidth, long nHeight, quad foreClr, quad align, quad font, char *szStr)
+	{
+		handle h;
+		
+		h = Dialog_CreateTextCtrl(hDlg, nIndex, DMS_X(X), DMS_Y(Y), DMS_X(X+nWidth), DMS_Y(Y+nHeight), szStr);
+		if( theDevInfo.m_nType > FAMILY_PDA )
+			EditCtrl_ModifyStyle(h, 0, EDITSTY_BORDER|EDITSTY_THICKBORDER|EDITSTY_ROUNDBORDER);
+		else
+			EditCtrl_ModifyStyle(h, EDITSTY_BORDER, 0);
+		
+		EditCtrl_SetBkColorEx(h, TRANSPARENT);
+		EditCtrl_SetForeColorEx(h, foreClr);
+		EditCtrl_SetAlign(h, align);
+		EditCtrl_SetFont(h, font);
+		EditCtrl_SetDelta(h, 1, 1);
+		return h;
+	}
+	
+	//----------------------------------------------------------------------------------
+	//함수명: DLG_BUTTON
+	//기  능: 기본 버튼을 생성
+	//Param :
+	//Return:
+	//----------------------------------------------------------------------------------
+	handle DLG_NBUTTON(handle hDlg, long nIndex, long X, long Y, long nWidth, long nHeight, void *pImg, void * pActImg, long nBtnId, char* szStr)
+	{
+		handle h;
+		
+		h = Dialog_CreateButCtrl(hDlg, nIndex, DMS_X(X), DMS_Y(Y), DMS_X(X+nWidth), DMS_Y(Y+nHeight), nBtnId, szStr);
+/*
+		//라운드적용
+		if( theDevInfo.m_nType > FAMILY_PDA)
+			ButCtrl_ModifyStyle(h, 0, BUTSTY_BORDER|BUTSTY_THICKBORDER|BUTSTY_ROUNDBORDER );
+		else
+			ButCtrl_ModifyStyle(h, 0, BUTSTY_BORDER|BUTSTY_ROUNDBORDER );
+			
+		ButCtrl_SetBkColorEx ( h, BTN_BKCOLOR);
+		ButCtrl_SetForeColorEx(h, BTN_FRCOLOR);
+		ButCtrl_SetDelta(h, 0, 0);
+		ButCtrl_SetText(h, szStr);
+		if( theDevInfo.m_nType >= FAMILY_PDA)
+		{
+			ButCtrl_SetRoundRadius(h, DMS_X(20));
+			ButCtrl_SetRoundThickness(h, DMS_X(10));
+			ButCtrl_SetRoundBoarderColor(h, BTN_BKCOLOR, BTN_BKCOLOR);
+		}
+*/		
+		//라운드 미적용. 2차개발
+		if( theDevInfo.m_nType > FAMILY_PDA)
+			ButCtrl_ModifyStyle(h, 0, BUTSTY_BORDER );
+		else
+			ButCtrl_ModifyStyle(h, 0, BUTSTY_BORDER );
+			
+		ButCtrl_SetBkColorEx ( h, BTN_BKCOLOR);
+		ButCtrl_SetForeColorEx(h, BTN_FRCOLOR);
+		ButCtrl_SetDelta(h, 0, 0);
+		ButCtrl_SetText(h, szStr);
+		if( theDevInfo.m_nType >= FAMILY_PDA)
+		{
+			ButCtrl_SetRoundRadius(h, DMS_X(0));
+			ButCtrl_SetRoundThickness(h, DMS_X(2));
+			ButCtrl_SetRoundBoarderColor(h, BTN_BKCOLOR, BTN_BKCOLOR);
+		}
+		
+		//if(pImg)
+		//{
+		//	ButCtrl_SetImage(h, pImg);
+		//}
+		//if(pActImg)
+		//{
+		//	ButCtrl_SetActiveImage(h, pActImg);
+		//}
+		return h;
+	}
+
+	//----------------------------------------------------------------------------------
+	//함수명: DLG_BUTTON_STR
+	//기  능: 기본 버튼을 생성
+	//Param :
+	//Return:
+	//----------------------------------------------------------------------------------
+	handle DLG_NBUTTON_STR(handle hDlg, long nIndex, long X, long Y, long nWidth, long nHeight, void *pImg, void * pActImg, long nBtnId, quad foreClr, quad font, char *szText)
+	{
+		handle h;
+		
+		h = Dialog_CreateButCtrl(hDlg, nIndex, DMS_X(X), DMS_Y(Y), DMS_X(X+nWidth), DMS_Y(Y+nHeight), nBtnId, "");
+		ButCtrl_ModifyStyle(h, BUTSTY_BORDER, 0);
+		ButCtrl_SetBkColorEx ( h, BTN_BKCOLOR);
+		ButCtrl_SetDelta(h, 0, 0);
+		if(pImg)
+		{
+			ButCtrl_SetImage(h, pImg);
+		}
+			
+		if(pActImg)
+		{
+			ButCtrl_SetActiveImage(h, pActImg);
+		}
+		
+		ButCtrl_SetForeColorEx(h, foreClr);
+		ButCtrl_SetFont(h, font);
+		ButCtrl_SetText(h, szText);
+	
+		return h;
+	}
+	
+	//---------------------------------------------------------------
+	handle DLG_NICON(handle hDlg, long nIndex, long X, long Y, void *pImg)
+	{
+		handle h;
+		h = Dialog_CreateIconCtrl(hDlg, nIndex, DMS_X(X), DMS_Y(Y), pImg);
+		return h;
+	}
+	
+	//---------------------------------------------------------------
+	handle DlgBut_Create( DlgObject* pObj )
+	{
+		handle h;
+		handle hImage = NULL;
+		handle hActImage = NULL;
+		
+		if (pObj->m_nType == OBJ_ABT)
+		{
+			long nId, nActId;
+			
+			//Image_Id, ActImage_Id
+			nId = (long)pObj->m_stCtrl.m_pBuf[1];
+			hImage = Get_hSlfCtrlFromID(nId);
+			
+			nActId = (long)pObj->m_stCtrl.m_pBuf[2];
+			hActImage = Get_hSlfCtrlFromID(nActId);
+		}
+		
+		if ( (pObj->m_nType & 0xF0000000) == DLG_CTRL)
+		{
+			h = Dialog_CreateButCtrl( hCurDlg, GetCtrlIndex(pObj->m_nId), 
+									DMS_X(pObj->m_stCtrl.m_Range.x), DMS_Y(pObj->m_stCtrl.m_Range.y), 
+									DMS_X(pObj->m_stCtrl.m_Range.x+pObj->m_stCtrl.m_Range.width),
+									DMS_Y(pObj->m_stCtrl.m_Range.y+pObj->m_stCtrl.m_Range.height),
+									// 버튼 아이디
+									pObj->m_stCtrl.m_nVal,
+									(char*)pObj->m_stCtrl.m_pBuf[0] );
+			
+		}
+		else
+		{
+			h = ButCtrl_CreateObject(
+									DMS_X(pObj->m_stCtrl.m_Range.x), DMS_Y(pObj->m_stCtrl.m_Range.y), 
+									DMS_X(pObj->m_stCtrl.m_Range.x+pObj->m_stCtrl.m_Range.width),
+									DMS_Y(pObj->m_stCtrl.m_Range.y+pObj->m_stCtrl.m_Range.height),
+									// 버튼 아이디
+									pObj->m_stCtrl.m_nVal, 
+									(char*)pObj->m_stCtrl.m_pBuf[0] ); 
+			
+		}
+		
+/*		
+		//라운드 적용
+		if( theDevInfo.m_nType > FAMILY_PDA)
+			ButCtrl_ModifyStyle(h, pObj->m_stCtrl.m_nRemStyle, pObj->m_stCtrl.m_nAddStyle|BUTSTY_THICKBORDER);
+		else
+			ButCtrl_ModifyStyle(h, 0, pObj->m_stCtrl.m_nAddStyle);
+		//라운드 적용 테스트, PDA제외
+		if( theDevInfo.m_nType > FAMILY_PDA)
+		{
+			ButCtrl_SetRoundRadius(h, DMS_X(10));
+			ButCtrl_SetRoundThickness(h, DMS_X(3));
+			//ButCtrl_SetRoundBoarderColor(h, BTNCTRLBKCOLOR, BTNCTRLBKCOLOR);
+			ButCtrl_SetRoundBoarderColor(h, BTNCTRLSIDECOLOR, BTNCTRLSIDECOLOR);
+			
+		}
+*/
+		//라운드 미적용. 2차개발
+		if( theDevInfo.m_nType > FAMILY_PDA)
+			ButCtrl_ModifyStyle(h, pObj->m_stCtrl.m_nRemStyle, pObj->m_stCtrl.m_nAddStyle);
+		else
+		{
+			//2017-09-05 Sanghyun Lee
+			//원본사용시 border 등 제거 코드가 먹지 않음.
+			//ButCtrl_ModifyStyle(h, 0, pObj->m_stCtrl.m_nAddStyle);
+			ButCtrl_ModifyStyle(h, pObj->m_stCtrl.m_nRemStyle, pObj->m_stCtrl.m_nAddStyle);
+		}
+
+		
+		ButCtrl_SetForeColorEx(h, pObj->m_stCtrl.m_nFrColor);							//1
+		ButCtrl_SetBkColorEx(h, pObj->m_stCtrl.m_nBkColor);								//215
+		//ButCtrl_SetDeltas(h, 0, 0);
+		ButCtrl_SetDelta(h, DMS_X(pObj->m_stCtrl.m_Range.dx), DMS_Y(pObj->m_stCtrl.m_Range.dy));	//2, 2
+		if( theDevInfo.m_nType > FAMILY_PDA)
+		{
+			ButCtrl_SetRoundRadius(h, DMS_X(0));
+			ButCtrl_SetRoundThickness(h, DMS_X(2));
+			//ButCtrl_SetRoundBoarderColor(h, BTNCTRLBKCOLOR, BTNCTRLBKCOLOR);
+			ButCtrl_SetRoundBoarderColor(h, BTNCTRLSIDECOLOR, BTNCTRLSIDECOLOR);
+			
+		}
+		
+		//ButCtrl_SetDelta(h, pObj->m_stCtrl.m_Range.dx, pObj->m_stCtrl.m_Range.dy);		//2, 2
+		//if (hImage && hActImage)
+		//{
+		//	ButCtrl_SetImage		(h, hImage);
+		//	ButCtrl_SetActiveImage	(h, hActImage);
+		//}
+		
+		return h;
+	}
+
+	//---------------------------------------------------------------
+	handle DlgText_Create( DlgObject* pObj )
+	{
+		handle h;
+		
+		if ( (pObj->m_nType & 0xF0000000) == DLG_CTRL)
+		{
+			h = Dialog_CreateTextCtrl( hCurDlg, GetCtrlIndex(pObj->m_nId), 
+									DMS_X(pObj->m_stCtrl.m_Range.x), DMS_Y(pObj->m_stCtrl.m_Range.y), 
+									DMS_X(pObj->m_stCtrl.m_Range.x+pObj->m_stCtrl.m_Range.width),
+									DMS_Y(pObj->m_stCtrl.m_Range.y+pObj->m_stCtrl.m_Range.height),
+									(char*)pObj->m_stCtrl.m_pBuf[0] );
+		}
+		else
+		{
+			long dh = pObj->m_stCtrl.m_nVal;
+	
+			h = Dialog_CreateTextCtrl( hCurDlg, GetCtrlIndex(pObj->m_nId), 
+									DMS_X(pObj->m_stCtrl.m_Range.x), DMS_Y(pObj->m_stCtrl.m_Range.y-dh), 
+									DMS_X(pObj->m_stCtrl.m_Range.x+pObj->m_stCtrl.m_Range.width),
+									DMS_Y(pObj->m_stCtrl.m_Range.y-dh+pObj->m_stCtrl.m_Range.height),
+									(char*)pObj->m_stCtrl.m_pBuf[0] );
+		}
+		EditCtrl_SetDelta( h, DMS_X(5),  0);
+
+		//라운드 적용
+		if( theDevInfo.m_nType > FAMILY_PDA) 
+			EditCtrl_ModifyStyle(h, pObj->m_stCtrl.m_nRemStyle, pObj->m_stCtrl.m_nAddStyle|EDITSTY_THICKBORDER);
+		else
+			EditCtrl_ModifyStyle(h, pObj->m_stCtrl.m_nRemStyle, pObj->m_stCtrl.m_nAddStyle);
+			
+		EditCtrl_SetForeColorEx(h, pObj->m_stCtrl.m_nFrColor);
+		EditCtrl_SetBkColorEx(h, pObj->m_stCtrl.m_nBkColor);
+		EditCtrl_SetAlign(h, EDITALIGN_MIDDLE);
+		
+		if( theDevInfo.m_nType > FAMILY_PDA)
+		{
+			EditCtrl_SetRoundRadius(h, DMS_X(10));
+			EditCtrl_SetRoundThickness(h, DMS_X(3));
+		}
+		
+		return h;
+	}
+
+	//---------------------------------------------------------------
+	handle DlgEdit_Create( DlgObject* pObj )
+	{
+		handle 	h;
+
+		if ( (pObj->m_nType & 0xF0000000) == DLG_CTRL)
+		{
+			h = Dialog_CreateEditCtrl( hCurDlg, GetCtrlIndex(pObj->m_nId), 
+									DMS_X(pObj->m_stCtrl.m_Range.x), DMS_Y(pObj->m_stCtrl.m_Range.y), 
+									DMS_X(pObj->m_stCtrl.m_Range.x+pObj->m_stCtrl.m_Range.width),
+									DMS_Y(pObj->m_stCtrl.m_Range.y+pObj->m_stCtrl.m_Range.height),
+									pObj->m_stCtrl.m_nVal );
+		}
+		else
+		{
+			h = EditCtrl_CreateObject(
+									DMS_X(pObj->m_stCtrl.m_Range.x), DMS_Y(pObj->m_stCtrl.m_Range.y), 
+									DMS_X(pObj->m_stCtrl.m_Range.x+pObj->m_stCtrl.m_Range.width),
+									DMS_Y(pObj->m_stCtrl.m_Range.y+pObj->m_stCtrl.m_Range.height),
+									pObj->m_stCtrl.m_nVal );
+		}
+		EditCtrl_SetDelta( h, DMS_X(5),  0); 
+
+		EditCtrl_ModifyStyle(h, pObj->m_stCtrl.m_nRemStyle, pObj->m_stCtrl.m_nAddStyle);
+		EditCtrl_SetMultiLine(h, 0, DMS_X(4), 0);
+		EditCtrl_SetForeColorEx(h, pObj->m_stCtrl.m_nFrColor);
+		EditCtrl_SetBkColorEx(h, pObj->m_stCtrl.m_nBkColor);
+		EditCtrl_SetStr(h, (char*)pObj->m_stCtrl.m_pBuf[0]);
+		EditCtrl_SetAlign(h, EDITALIGN_MIDDLE);
+		EditCtrl_SetMaxChar(h, pObj->m_stCtrl.m_nVal);
+		
+		return h;
+	}
+
+	//---------------------------------------------------------------
+	handle DlgList_Create( DlgObject* pObj )
+	{
+		handle h;
+		
+		if ( (pObj->m_nType & 0xF0000000) == DLG_CTRL)
+		{
+			h = Dialog_CreateListCtrl( hCurDlg, GetCtrlIndex(pObj->m_nId), 
+									DMS_X(pObj->m_stCtrl.m_Range.x), DMS_Y(pObj->m_stCtrl.m_Range.y), 
+									DMS_X(pObj->m_stCtrl.m_Range.x+pObj->m_stCtrl.m_Range.width),
+									DMS_Y(pObj->m_stCtrl.m_Range.y+pObj->m_stCtrl.m_Range.height)
+									);
+		}
+		else
+		{
+			h = ListCtrl_CreateObject(
+									DMS_X(pObj->m_stCtrl.m_Range.x), DMS_Y(pObj->m_stCtrl.m_Range.y), 
+									DMS_X(pObj->m_stCtrl.m_Range.x+pObj->m_stCtrl.m_Range.width),
+									DMS_Y(pObj->m_stCtrl.m_Range.y+pObj->m_stCtrl.m_Range.height)
+									);
+		}
+		
+		//ListCtrl_ModifyStyle(h, 0, LISTSTY_BORDER |LISTSTY_WIDESCRLBAR| LISTSTY_VSCROLLBAR );
+/*
+		//라운드적용
+		ListCtrl_ModifyStyle(h, pObj->m_stCtrl.m_nRemStyle, pObj->m_stCtrl.m_nAddStyle|LISTSTY_THICKBORDER );
+		ListCtrl_SetForeColorEx(h, pObj->m_stCtrl.m_nFrColor);	//3
+		ListCtrl_SetBkColorEx(h, pObj->m_stCtrl.m_nBkColor);		//215
+		ListCtrl_SetDelta(h, pObj->m_stCtrl.m_Range.dx, pObj->m_stCtrl.m_Range.dy);	//2, 2
+		ListCtrl_SetFont(h, theDevInfo.m_nFontLageType);
+		if( theDevInfo.m_nType > FAMILY_PDA)
+		{
+			ListCtrl_SetRoundRadius(h, DMS_X(10));
+			ListCtrl_SetRoundThickness(h, DMS_X(3));
+			ListCtrl_SetRoundBoarderColor(h, BTNCTRLBKCOLOR, BTNCTRLBKCOLOR);
+		}
+*/
+		//라운드 미적용.2차개발
+		//라운드적용
+		ListCtrl_ModifyStyle(h, pObj->m_stCtrl.m_nRemStyle, pObj->m_stCtrl.m_nAddStyle );
+		ListCtrl_SetForeColorEx(h, pObj->m_stCtrl.m_nFrColor);	//3
+		ListCtrl_SetBkColorEx(h, pObj->m_stCtrl.m_nBkColor);		//215
+		ListCtrl_SetDelta(h, pObj->m_stCtrl.m_Range.dx, pObj->m_stCtrl.m_Range.dy);	//2, 2
+		ListCtrl_SetFont(h, theDevInfo.m_nFontLageType);
+
+		return h;
+	}
+
+	//---------------------------------------------------------------
+	handle DlgSel_Create ( DlgObject* pObj )
+	{
+		handle h;
+		
+		if ( (pObj->m_nType & 0xF0000000) == DLG_CTRL)
+		{
+			h = Dialog_CreateSelCtrl( hCurDlg, GetCtrlIndex(pObj->m_nId), 
+									DMS_X(pObj->m_stCtrl.m_Range.x), DMS_Y(pObj->m_stCtrl.m_Range.y), 
+									DMS_X(pObj->m_stCtrl.m_Range.x+pObj->m_stCtrl.m_Range.width),
+									DMS_Y(pObj->m_stCtrl.m_Range.y+pObj->m_stCtrl.m_Range.height)
+									);
+		}
+		else
+		{
+			h = SelCtrl_CreateObject(
+									DMS_X(pObj->m_stCtrl.m_Range.x), DMS_Y(pObj->m_stCtrl.m_Range.y), 
+									DMS_X(pObj->m_stCtrl.m_Range.x+pObj->m_stCtrl.m_Range.width),
+									DMS_Y(pObj->m_stCtrl.m_Range.y+pObj->m_stCtrl.m_Range.height)
+									);
+		}
+		
+		//SelCtrl_ModifyStyle(h, SELSTY_INVERSE , SELSTY_BORDER|SELSTY_CENTERALIGN|SELSTY_CIRCULAR |SELSTY_ARROW );
+		SelCtrl_ModifyStyle(h, pObj->m_stCtrl.m_nRemStyle, pObj->m_stCtrl.m_nAddStyle );
+		SelCtrl_SetForeColorEx(h, pObj->m_stCtrl.m_nFrColor);		//3
+		SelCtrl_SetBkColorEx(h, pObj->m_stCtrl.m_nBkColor);		//255
+		SelCtrl_SetDelta(h, pObj->m_stCtrl.m_Range.dx, pObj->m_stCtrl.m_Range.dy);	//2, 2
+		return h;
+	}
+
+	//---------------------------------------------------------------
+	handle DlgChk_Create ( DlgObject* pObj )
+	{
+		handle h;
+
+		if ( (pObj->m_nType & 0xF0000000) == DLG_CTRL)
+		{
+			h = Dialog_CreateChkCtrl( hCurDlg, GetCtrlIndex(pObj->m_nId), 
+									DMS_X(pObj->m_stCtrl.m_Range.x), DMS_Y(pObj->m_stCtrl.m_Range.y),	
+									(char*)pObj->m_stCtrl.m_pBuf[0]);
+		}
+		else
+		{
+			h = ChkCtrl_CreateObject(
+									DMS_X(pObj->m_stCtrl.m_Range.x), DMS_Y(pObj->m_stCtrl.m_Range.y),	
+									(char*)pObj->m_stCtrl.m_pBuf[0]);
+		}
+		
+		//ChkCtrl_SetImage( h, g_pImgChkI, g_pImgChkA);
+		
+		if (pObj->m_stCtrl.m_nVal)
+		{
+			ChkCtrl_SetCheck( h, TRUE );	
+		}
+		else
+		{
+			ChkCtrl_SetCheck( h, FALSE );	
+		}
+
+		ChkCtrl_SetRange (h, DMS_X(pObj->m_stCtrl.m_Range.x), DMS_Y(pObj->m_stCtrl.m_Range.y),
+						  DMS_X(pObj->m_stCtrl.m_Range.x+pObj->m_stCtrl.m_Range.width), 
+						  DMS_Y(pObj->m_stCtrl.m_Range.y+pObj->m_stCtrl.m_Range.height));
+						  
+		//CHKSTY_ACTIVEBORDER 0x40000000 영역에 점선으로 테두리를 그림
+		//CHKSTY_RIGHTICON 0x80000000 체크박스를 오른쪽에 그림 
+		ChkCtrl_ModifyStyle (h, pObj->m_stCtrl.m_nRemStyle, pObj->m_stCtrl.m_nAddStyle);
+		ChkCtrl_SetForeColorEx(h, pObj->m_stCtrl.m_nFrColor);
+		ChkCtrl_SetBkColorEx(h, pObj->m_stCtrl.m_nBkColor);
+		return h;
+	}
+	
+	//---------------------------------------------------------------
+	handle DlgIcon_Create ( DlgObject* pObj )
+	{
+		handle h;
+		
+		if ( (pObj->m_nType & 0xF0000000) == DLG_CTRL)
+		{
+			h = Dialog_CreateIconCtrl(hCurDlg, GetCtrlIndex(pObj->m_nId),
+									DMS_X(pObj->m_stCtrl.m_Range.x), DMS_Y(pObj->m_stCtrl.m_Range.y),
+									(byte*)pObj->m_stCtrl.m_pBuf[0]);
+		}
+		else
+		{
+			h = IconCtrl_CreateObject(
+									DMS_X(pObj->m_stCtrl.m_Range.x), DMS_Y(pObj->m_stCtrl.m_Range.y),
+									(byte*)pObj->m_stCtrl.m_pBuf[0]);
+			
+		}
+		
+		return h;
+	}
+	
+	//---------------------------------------------------------------
+	handle DlgLine_Create ( DlgObject* pObj )
+	{
+		handle h;
+		
+		if ( (pObj->m_nType & 0xF0000000) == DLG_CTRL)
+		{
+			h = Dialog_CreateLineCtrl(hCurDlg, GetCtrlIndex(pObj->m_nId),
+									DMS_X(pObj->m_stCtrl.m_Range.x), DMS_Y(pObj->m_stCtrl.m_Range.y),
+									DMS_X(pObj->m_stCtrl.m_Range.width), DMS_Y(pObj->m_stCtrl.m_Range.height));
+		}
+		else
+		{
+			h = LineCtrl_CreateObject(
+									DMS_X(pObj->m_stCtrl.m_Range.x), DMS_Y(pObj->m_stCtrl.m_Range.y),
+									DMS_X(pObj->m_stCtrl.m_Range.width), DMS_Y(pObj->m_stCtrl.m_Range.height));
+			
+		}
+		
+		LineCtrl_SetColorEx (h, pObj->m_stCtrl.m_nFrColor);
+		LineCtrl_SetThickness (h, DMS_Y(pObj->m_stCtrl.m_nVal));
+		return h;
+	}
+
+	//---------------------------------------------------------------
+	handle DlgPng_Create ( DlgObject* pObj )
+	{
+		handle h;
+		char szpath[256];
+		
+		if (pObj)
+		{
+			Mem_Set( (byte*)szpath, 0x00, sizeof(szpath) );
+			Get_ImgPath( szpath , "", (char*)pObj->m_stCtrl.m_pBuf[0]);		
+			h = (handle)GrDev_LoadPngImage(pObj->m_stCtrl.m_nVal, szpath  );
+		}
+		
+		return h;
+	}
+	
+	//---------------------------------------------------------------
+	handle DlgGrid_Create( DlgObject* pObj )
+	{
+		handle h;
+		Column* pCol;
+		long i;
+		
+		long nRow =	pObj->m_stCtrl.m_Range.dx;
+		long nCol =	pObj->m_stCtrl.m_Range.dy;
+		
+		
+		if ( (pObj->m_nType & 0xF0000000) == DLG_CTRL)
+		{
+			h = Dialog_CreateGridCtrl( hCurDlg,
+									GetCtrlIndex(pObj->m_nId), 
+									DMS_X(pObj->m_stCtrl.m_Range.x),
+									DMS_Y(pObj->m_stCtrl.m_Range.y), 
+									DMS_X(pObj->m_stCtrl.m_Range.x)+DMS_X(pObj->m_stCtrl.m_Range.width),
+									DMS_Y(pObj->m_stCtrl.m_Range.y)+DMS_Y(pObj->m_stCtrl.m_Range.height),
+									nRow,
+									nCol
+									);
+		}
+		else
+		{
+			h = GridCtrl_CreateObject(
+									DMS_X(pObj->m_stCtrl.m_Range.x),
+									DMS_Y(pObj->m_stCtrl.m_Range.y), 
+									DMS_X(pObj->m_stCtrl.m_Range.x)+DMS_X(pObj->m_stCtrl.m_Range.width),
+									DMS_Y(pObj->m_stCtrl.m_Range.y)+DMS_Y(pObj->m_stCtrl.m_Range.height),
+									nRow,
+									nCol
+									);
+		}
+		
+		GridCtrl_SetScrollDelta(h, pObj->m_stCtrl.m_nVal);
+		FrmCtrl_SetVarScrollThickness(h, (long)pObj->m_stCtrl.m_pBuf[0]);
+		
+		FrmCtrl_ModifyStyle(h, pObj->m_stCtrl.m_nRemStyle, pObj->m_stCtrl.m_nAddStyle);	
+		FrmCtrl_SetRoundRadius(h, DMS_X(0));	
+		FrmCtrl_SetRoundThickness(h, DMS_X(2));
+		FrmCtrl_SetRoundBoarderColor(h, 0x52aa, 0x52aa);
+		
+		if( theDevInfo.m_nType == FAMILY_PDA )
+		{
+			FrmCtrl_SetFont(h, theDevInfo.m_nFontType);
+		}
+		else
+		{
+			FrmCtrl_SetFont(h, theDevInfo.m_nFontType);
+		}
+
+		GridCtrl_SetHeaderHeight(h, DMS_Y(pObj->m_stCtrl.m_nFrColor));
+		GridCtrl_SetBodyHeight  (h, DMS_Y(pObj->m_stCtrl.m_nBkColor));
+		
+		//selected_color
+		//GridCtrl_SetSelectedColor	(handle pGC, long y, COLOR color);
+		//y가 0인 경우는 색상을 저장한다.
+		GridCtrl_SetSelectedColor(h, 0, (COLOR)pObj->m_stCtrl.m_pBuf[1]);
+		
+		//스트라이프 색상
+		GridCtrl_SetStripedColor(h, theApp.m_style.m_nGridStripedColor);
+		
+		//grid_title
+		pCol = (Column*)pObj->m_stCtrl.m_pBuf[2];
+		if (pCol)
+		{
+			for(i=0; i<nCol; i++)
+			{
+				GridCtrl_SetColumn(h, i, pCol[i].title, DMS_X(pCol[i].width), pCol[i].mode, pCol[i].ctrltype, pCol[i].maxchar);
+			}
+			
+			GridCtrl_CreateTable(h);
+			
+			//그리드 디폴트 배경색 설정.
+			for(i=0; i<nCol; i++)
+			{
+				EditCtrl_SetBkColorEx( GridCtrl_GetCellHandle(h, i, 0), theApp.m_style.m_nGridTitleColor );
+			}
+		}
+		
+		return h;
+	}
+
+	//---------------------------------------------------------------
+	void SetDlgRes (DlgObject* pObj, long nType,long x, long y,long w,long h,long dx,long dy,
+					quad Rem, quad Add, byte FrColor, byte BkColor, long nVal,
+					void* pBuf0, void* pBuf1, void* pBuf2)
+	{
+		pObj->m_nType = nType;
+		pObj->m_nId = ((quad)nVal & 0x0000FFFF);
+		
+		pObj->m_stCtrl.m_Range.x = DMS_X(x);
+		pObj->m_stCtrl.m_Range.y = DMS_Y(y);
+		pObj->m_stCtrl.m_Range.width = DMS_X(w);
+		pObj->m_stCtrl.m_Range.height = DMS_Y(h);
+		pObj->m_stCtrl.m_Range.dx = DMS_X(dx);
+		pObj->m_stCtrl.m_Range.dy = DMS_Y(dy);
+		pObj->m_stCtrl.m_nRemStyle = Rem;
+		pObj->m_stCtrl.m_nAddStyle = Add;
+		pObj->m_stCtrl.m_nFrColor = FrColor;
+		pObj->m_stCtrl.m_nBkColor = BkColor;
+		pObj->m_stCtrl.m_nVal = (((quad)nVal>>16) & 0x0000FFFF);
+		pObj->m_stCtrl.m_pBuf[0] = pBuf0;
+		pObj->m_stCtrl.m_pBuf[1] = pBuf1;
+		pObj->m_stCtrl.m_pBuf[2] = pBuf2;
+	}
+
+	//---------------------------------------------------------------
+	DlgObject*	MemRealloc (DlgObject* pObj, quad nOldSize, quad nNewSize)
+	{
+		DlgObject* pNewObj;
+		
+		if (nNewSize == 0) return NULL;
+
+		if( DLGOBJ_NEW_MEM (pNewObj, nNewSize) < 0)
+		{
+			pNewObj = NULL;
+			return NULL;
+		}
+
+		memset ((byte*)pNewObj, 0, nNewSize);
+		if (pObj)
+		{
+			memcpy ((byte*)pNewObj, (byte*)pObj, nOldSize*sizeof(DlgObject));
+			DLGOBJ_DEL_MEM (pObj);
+		}
+		
+		return pNewObj;
+	}
+
+	quad g_nDlgResNum = 0;
+	DlgObject* g_pDlgRes = NULL;
+	//---------------------------------------------------------------
+	handle DlgDynObj_Create (DlgObject* pObj, long gx,long gy,long nDispCnt, long nNum, long nTextLen, char** pText)
+	{
+		long 	i, j, k, index, nStartResId;
+		long 	sx,sy,wd,ht,sid,wsx;
+		long	nMemSize;
+		char* 	pStr;
+		long	nRet;
+		
+		nMemSize = nNum;
+		
+		if (g_nDlgResNum > 0)
+		{
+			g_pDlgRes = MemRealloc (&g_pDlgRes[0], g_nDlgResNum, g_nDlgResNum+nNum);
+			if (!g_pDlgRes)
+			{
+				g_nDlgResNum = 0;
+				return NULL;
+			}
+			
+			nDlgCtrlNum -= g_nDlgResNum;
+			for (i=0; i<(long)g_nDlgResNum; i++)
+			{
+				nRet = PushDlgCtrl (&g_pDlgRes[i]);
+				if (nRet < 0)
+				{
+					char szMsg[80];
+					
+					SPRINT (szMsg, 
+					"오브젝트 생성 실패.\n최대개수(MAX_OBJ_NUM)=%d\nDlgCtrlNum : %d, SlfCtrlNum : %d", 
+					MAX_OBJ_NUM, nDlgCtrlNum, nSlfCtrlNum );
+					MessageBoxEx (ERROR_OK, szMsg);
+					return NULL;
+				}
+			}
+		}
+		else
+		{
+			if( DLGOBJ_NEW_MEM (g_pDlgRes, nNum) < 0)
+			{
+				g_nDlgResNum = 0;
+				g_pDlgRes = NULL;
+				return NULL;
+			}
+		}
+		
+		sx = pObj->m_stCtrl.m_Range.x;
+		sy = pObj->m_stCtrl.m_Range.y;
+		wd = pObj->m_stCtrl.m_Range.width;
+		ht = pObj->m_stCtrl.m_Range.height;
+		sid = pObj->m_stCtrl.m_nVal;
+		
+		pObj->m_nType |= DLG_CTRL;
+		
+		// 이것은 시작 인덱스를 리턴하기 위함.
+		index = GetObjIndex();
+		
+		// 시작 리소스아이디를 백업해 둔다.
+		nStartResId = pObj->m_nId;
+		//Print ("nStartResId=0x%x", nStartResId, 0, 0);
+		
+		pStr = (char*)&pText[0];
+		
+		wsx = sx;
+		for (i=0, j=0, k=g_nDlgResNum; i<nNum; i++, k++, nDlgCtrlSeq++)
+		{
+			//if (i >= nMaxNum) break;
+			
+			memcpy ((byte*)&g_pDlgRes[k], (byte*)pObj, sizeof(DlgObject));
+			
+			// 시작 리소스 아이디를 증가 한다.
+			// 설정된 각 리소스 아이디에 접근하여, 핸들을 얻어오기 위함.
+			g_pDlgRes[k].m_nId = nStartResId + i;
+			//Print ("Before g_pDlgRes[%d].m_nId=0x%x", i, (quad)g_pDlgRes[i].m_nId, 0);
+			SetCtrlIndex (g_pDlgRes[k].m_nId);
+			//Print ("After g_pDlgRes[%d].m_nId=0x%x", i, (quad)g_pDlgRes[i].m_nId, 0);
+		
+//			g_pDlgRes[k].m_stCtrl.m_Range.x = (i<nDispCnt)? sx:(sx+wd+gx);
+			// nDispCnt의 수를 넘어가면 다음 줄에 동적으로 생성하기 위한 코드 추가
+			if (i%nDispCnt == 0 && i>=nDispCnt)
+				wsx += sx + wd + gx;
+			g_pDlgRes[k].m_stCtrl.m_Range.x = wsx;
+			g_pDlgRes[k].m_stCtrl.m_Range.y = sy + j * gy;
+			//Print ("[%d] = %s, sx=%d", i, (quad)g_pDlgRes[i].m_stCtrl.m_pBuf[0], g_pDlgRes[i].m_stCtrl.m_Range.x);
+			//Print ("sy=%d, bid=%d, j=%d", g_pDlgRes[i].m_stCtrl.m_Range.y, g_pDlgRes[i].m_stCtrl.m_nVal, j);
+		
+			switch (g_pDlgRes[k].m_nType & 0x0000FFFF)
+			{
+				case OBJ_IBT:
+				case OBJ_BUT:
+					g_pDlgRes[k].m_stCtrl.m_nVal = sid + i;
+					g_pDlgRes[k].m_stCtrl.m_pBuf[0] = &pStr[i*nTextLen];
+					g_pDlgRes[k].m_h = DlgBut_Create( &g_pDlgRes[k] );
+					break;
+				case OBJ_TXT:
+					g_pDlgRes[k].m_stCtrl.m_pBuf[0] = &pStr[i*nTextLen];
+					g_pDlgRes[k].m_h = DlgText_Create( &g_pDlgRes[k] );
+					break;
+				case OBJ_EDT:
+					g_pDlgRes[k].m_h = DlgEdit_Create( &g_pDlgRes[k] );
+					break;
+				case OBJ_CHK:
+					g_pDlgRes[k].m_stCtrl.m_pBuf[0] = &pStr[i*nTextLen];
+					g_pDlgRes[k].m_h = DlgChk_Create( &g_pDlgRes[k] );
+					break;
+			}
+			
+			if (!g_pDlgRes[k].m_h)
+			{
+				// 생성되었던 핸들 개수만큼 뺀다.
+				nDlgCtrlNum -= i;
+				return NULL;
+			}
+			
+			nRet = PushDlgCtrl (&g_pDlgRes[k]);
+			if (nRet < 0)
+			{
+				// 에러 처리.
+				char szMsg[80];
+				
+				SPRINT (szMsg, 
+				"오브젝트 생성 실패.\n최대개수(MAX_OBJ_NUM)=%d\nDlgCtrlNum : %d, SlfCtrlNum : %d", 
+				MAX_OBJ_NUM, nDlgCtrlNum, nSlfCtrlNum );
+				if(MessageBoxEx (ERROR_OK, szMsg) == MB_OK)
+				{
+					EvtExit ();
+					VM_AmEnd ();
+				}
+				return NULL;
+			}
+			
+			j = (j+1)%nDispCnt;
+		}
+
+		g_nDlgResNum += nMemSize;
+				
+		return ((handle)index);
+	}
+
+	//---------------------------------------------------------------
+	long DlgDynObj_Delete (void)
+	{
+		if (g_pDlgRes)
+		{
+			DLGOBJ_DEL_MEM (g_pDlgRes);
+			g_pDlgRes = NULL;
+			g_nDlgResNum = 0;
+		}
+
+		return 0;	
+	}
+	
+	//---------------------------------------------------------------
+	handle Dialog_Create ( DlgObject* pObj )
+	{
+		handle hDlg;
+		long i;
+		
+		i = 1;
+		
+		hDlg = Dialog_CreateObject();
+
+		//Dialog_SetTitle( hDlg, (char*)pObj->m_stCtrl.m_pBuf[0] );
+		//10~100값을 반드시 가져야한다.그이외의 값이면 VM이 죽음.
+		//타이틀을 쓰지 않는다. 임의로 설정해놓음.
+		Dialog_SetTitleHeight( hDlg, TITLE_HEIGHT );
+		//Dialog_SetTitleForeColorEx(hDlg, pObj->m_stCtrl.m_nFrColor);	//타이틀 글자색
+		//Dialog_SetTitleBkColorEx(hDlg, pObj->m_stCtrl.m_nBkColor);		//타이틀 바탕색
+		//오류처리발생
+		if( theDevInfo.m_nType > FAMILY_PDA )
+			Dialog_SetSize(hDlg, theDevInfo.m_nMx, theDevInfo.m_nMy);
+
+		Dialog_SetRange(hDlg, 0, 0, theDevInfo.m_nMx, theDevInfo.m_nMy);
+		Dialog_ModifyStyle( hDlg, pObj->m_stCtrl.m_nRemStyle|DLGSTY_BORDER|DLGSTY_THICKBORDER|DLGSTY_ROUNDBORDER, pObj->m_stCtrl.m_nAddStyle );		
+		if (pObj->m_nId) Dialog_SetBkColorEx( hDlg, pObj->m_nId );		
+		//BaseCtrl_SetFont( hDlg, theDevInfo.m_nFontType );
+		//DlgCtrl_SetFont (hDlg, theDevInfo.m_nFontType);
+		Dialog_SetDefaultFont(hDlg, theDevInfo.m_nFontType);		
+
+		return hDlg;
+	}
+
+	// 이건 그냥 하나의 콘트롤로 간주한다.
+	//-------------------------------------------------------------------------
+	//	테이블 콘트롤
+	//-------------------------------------------------------------------------
+	typedef struct _Table
+	{
+		long nId;		// 테이블의 아이디
+						// 생성시 정해 주는 아이디	
+		bool selected;
+		bool rowflag;		
+		long key;
+		
+		long startX;
+		long endX;
+		long startY;
+		long endY;
+		char **pValue;
+		long row;
+		long col;
+		long r_height;
+		handle *ptd;
+		Column *pColumn;
+		long actIndex;	
+		long actPage;	
+		long startIndex;
+		long maxLen;
+		long title_height;
+
+	}	TABLE;
+	
+	#define MAX_TBLNUM	5	
+	TABLE	g_Table[MAX_TBLNUM];
+	
+	long	g_nTblCursor[MAX_TBLNUM];
+	long	g_nTblMaxNum = 0;
+	
+	//---------------------------------------------------------------
+	long	DlgTbl_GetActivePage (long nId)
+	{
+		long i;
+		
+		for (i=0; i<g_nTblMaxNum; i++)
+		{
+			if ( nId == (g_Table[i].nId >> 16) )
+			{
+				return g_Table[i].actPage;
+			}
+		}
+		
+		return -1;
+	}	
+
+	//---------------------------------------------------------------
+	long	DlgTbl_SetActivePage (long nId, long ActivePage)
+	{
+		long i;
+		
+		for (i=0; i<g_nTblMaxNum; i++)
+		{
+			if ( nId == (g_Table[i].nId >> 16) )
+			{
+				g_Table[i].actPage = ActivePage;
+			}
+		}
+		
+		return 0;
+	}	
+
+	/*========================================================================================
+	함수명 : DlgTbl_GetActiveRow
+	기  능 : 현재 선택된 칸의 행 번호(타이틀 포함)를 리턴한다.
+	Parameter :	
+			 index : 칸의 인덱스( 표의 제목을 포함한 인덱스 )
+	return : 해당 칸의 포인터
+	========================================================================================*/
+	long DlgTbl_GetActiveRow ( long nId )
+	{
+		long i;
+
+		for (i=0; i<g_nTblMaxNum; i++)
+		{
+			if ( nId == (g_Table[i].nId >> 16) )
+			{
+				if (g_Table[i].selected)
+				{
+					return g_Table[i].actIndex;
+				}
+				else 
+					break;
+			}
+		}
+		
+		return -1;
+	}
+
+	/*========================================================================================
+	함수명 : DlgTbl_SetActiveRow
+	기  능 : 항목을 활성화 한다. 단순히 g_Table 변수에 접근하기 위한 함수 이다.
+			 테이블 생성시 활성화 할 인덱스와 실제 인덱스가 일치하지 않음으로 
+			 일치 시켜주고자 만듬.
+	Parameter :	
+		 ActiveIndex :  활성화할 인덱스
+	========================================================================================*/
+	void	DlgTbl_SetActiveRow ( long nId, long ActiveIndex )
+	{
+		long i;
+		long nCol;
+		
+		for (i=0; i<g_nTblMaxNum; i++)
+		{
+			if ( nId == (g_Table[i].nId >> 16) )
+			{
+				g_Table[i].selected = TRUE;
+				g_Table[i].actIndex = ActiveIndex;
+				return;
+			}
+		}
+	}
+		
+	//---------------------------------------------------------------
+	long	DlgTbl_IsSelect (long nId)
+	{
+		long i;
+		
+		for (i=0; i<g_nTblMaxNum; i++)
+		{
+			if ( nId == (g_Table[i].nId >> 16) )
+			{
+				if (g_Table[i].selected)
+				{
+					return 1;
+				}
+			}
+		}
+		
+		return 0;	
+	}
+	
+	//---------------------------------------------------------------
+	void	DlgTbl_UnSelect (long nId)
+	{
+		long i;
+		
+		for (i=0; i<g_nTblMaxNum; i++)
+		{
+	
+			if ( nId == (g_Table[i].nId >> 16) )
+			{
+				if (g_Table[i].selected)
+				{
+					g_Table[i].selected = FALSE;
+				}
+			}
+		}	
+	}
+	//---------------------------------------------------------------
+	long	DlgTbl_Delete (void)
+	{
+		long i;
+		
+		if (g_nTblMaxNum == 0)
+			return -1;
+			
+		//PRINT ("DlgTbl_Delete: before g_nTblMaxNum=%d", g_nTblMaxNum, 0, 0);
+			
+		for (i=0; i<g_nTblMaxNum; i++)
+		{
+			if (g_Table[i].pValue)
+			{
+				free ((void*)g_Table[i].pValue);
+				g_Table[i].pValue = NULL;
+				
+				free ((void*)g_Table[i].ptd);
+				
+				// 반드시 클리어 할 것.
+				memset ( (byte*)&g_Table[i], 0, sizeof( TABLE ) );
+				
+				//M ("테이블 클리어!");
+			}
+		}
+		
+		g_nTblMaxNum = 0;
+		
+		//PRINT ("DlgTbl_Delete: after g_nTblMaxNum=%d", g_nTblMaxNum, 0, 0);
+		
+		return 0;
+	}
+
+	/*========================================================================================
+	기  능 : 테이블 생성
+	설  명 : 표를 그려준다.
+	Parameter :
+		hDlg :	다이얼로그 핸들
+		index : 컨트롤의 인덱스 포인터 -> 오브젝트 인덱스
+		X : 	표의 X 시작위치
+		Y : 	표의 Y 시작위치
+		col:	구조체 Column의 배열의 포인터 ( 칼럼의 제목과 크기, 속성 값을 가짐)
+		colnum:	칼럼 수
+		rownum: 행 수 ( 타이틀을 제외한 행수 )
+		height:	행의 두께
+		t_hd:	각 컨트롤의 핸들 배열의 포인터	-> 불필요 (내부에 가지고 있는다.)
+		szBuf:	String 버퍼의 포인터
+		maxChar:입력가능한 문자열의 가장큰 길이
+		szStr:	컨트롤의 String 포인터 배열		-> 불필요 (내부에 가지고 있는다.)
+	========================================================================================*/
+/*	long DlgTbl_CreateCusor ( TABLE* pTbl, DlgObject* pObj )
+	{
+		long idx,idy;
+		long id, pos;
+		long grStart;
+		long grX;
+	
+		// 내부 변수.
+		long X, Y, colnum, rownum, maxChar;
+		long multi_gap, height, ntitle_height, index;
+		char* szBuf;
+		char** szStr;
+		handle* t_hd;
+		Column* col;
+		
+		memset ( (byte*)pTbl, 0, sizeof( TABLE ) );
+
+		X 				= pObj->m_stCtrl.m_Range.x;
+		Y 				= pObj->m_stCtrl.m_Range.y;
+		colnum 			= pObj->m_stCtrl.m_Range.width;
+		rownum 			= pObj->m_stCtrl.m_Range.height;
+		maxChar 		= pObj->m_stCtrl.m_nVal;
+		multi_gap 		= pObj->m_stCtrl.m_Range.dx;
+		height			= pObj->m_stCtrl.m_Range.dy;
+		ntitle_height 	= pObj->m_stCtrl.m_nFrColor;
+		pTbl->rowflag	= pObj->m_stCtrl.m_nBkColor;
+		pTbl->key 		= pObj->m_stCtrl.m_nRemStyle;
+		col				= pObj->m_stCtrl.m_pBuf[0];
+		szBuf 			= pObj->m_stCtrl.m_pBuf[1];
+		
+		//PRINT ("rowflag=%d, key=%d", pTbl->rowflag, pTbl->key, 0);
+
+		pTbl->pValue = malloc (colnum*(rownum+1)*4);
+		if (!pTbl->pValue) return -1;
+		
+		pTbl->ptd = malloc (colnum*(rownum+1)*4);
+		if (!pTbl->ptd)
+		{
+			free ((void*)pTbl->pValue);
+			pTbl->pValue = NULL;
+			return -1;
+		}
+
+		t_hd    = pTbl->ptd;
+		szStr 	= pTbl->pValue;
+		
+		// dkjung 2004-02-09
+		// bit masking이 제대로 되지 않아서
+		// 테이블에서 메모리 오류 발생했음.
+		index 	= (pObj->m_nId & 0x0000FFFF);
+		
+		// 테이블의 아이디를 저장.
+		pTbl->nId = (pObj->m_nId & 0xFFFF0000);
+		
+		//TRACE("DlgTbl_Create : table start index=%d", index, 0, 0);
+		//PRINT ("DlgTbl_Create : table start index=%d, pTbl->nId=0x%x", index, pTbl->nId, 0);
+	
+		for( id=0; id<( colnum*(rownum+1)); id++ )
+		{
+			pos = id*maxChar;			
+			szStr[id] = szBuf+pos;
+		}
+
+		//TABLE 변수 초기화
+		pTbl->row = rownum;
+		pTbl->col = colnum;
+		pTbl->r_height = DMS_Y(height);
+		pTbl->pColumn = col;
+		pTbl->actIndex = 0;
+		pTbl->startX = DMS_X(X);
+		pTbl->startY = DMS_Y(Y);
+		pTbl->endY = DMS_Y(Y)+rownum*DMS_Y(height) + DMS_Y(ntitle_height);
+		pTbl->maxLen = maxChar;
+		pTbl->title_height = DMS_Y(ntitle_height);
+	
+		grStart = DMS_Y( Y+ntitle_height );
+		grX = DMS_X(X);
+		id = 0;
+		pTbl->startIndex = index;
+		for(idx=0; idx<colnum; idx++)
+		{
+			t_hd[id] = Dialog_CreateTextCtrl( hCurDlg, index++, grX, DMS_Y(Y), grX+DMS_X(col[idx].width), DMS_Y(Y+ntitle_height), szStr[id]);
+			
+			Str_Cpy( szStr[id], col[idx].title );
+			if( theDevInfo.m_nType > FAMILY_PDA)
+				EditCtrl_ModifyStyle(t_hd[id],0,EDITSTY_BORDER|EDITSTY_THICKBORDER);
+			else
+				EditCtrl_ModifyStyle(t_hd[id],0,EDITSTY_BORDER);
+			EditCtrl_SetForeColorEx(t_hd[id], BLACK);		
+			EditCtrl_SetAlign(t_hd[id],EDITALIGN_CENTER|EDITALIGN_MIDDLE);
+			EditCtrl_SetBkColorEx(t_hd[id], TABLETITLE_COLOR);
+			EditCtrl_SetMultiLine(t_hd[id], TRUE, DMS_X(4), EDITSEP_NONE);
+			if( theDevInfo.m_nType > FAMILY_PDA)
+			{
+				EditCtrl_SetRoundThickness(t_hd[id], DMS_X(3));	
+			}
+	
+			id++;
+			grX += DMS_X(col[idx].width);
+		}
+	
+		pTbl->endX = grX;
+		
+		for(idy=0;  idy< rownum; idy++)		
+		{
+			grX = DMS_X(X);
+			for(idx=0; idx < colnum; idx++)
+			{
+				if(col[idx].ctrltype == TABLE_EDIT )
+				{
+					t_hd[id] = Dialog_CreateEditCtrl( hCurDlg, index++, grX, grStart+DMS_Y(height)*idy ,
+									grX+DMS_X(col[idx].width), grStart+DMS_Y(height)*(idy+1), col[idx].maxchar );
+				}
+				else if( col[idx].ctrltype == TABLE_TEXT )
+				{
+					t_hd[id] = Dialog_CreateTextCtrl( hCurDlg, index++, grX, grStart+DMS_Y(height)*idy,
+									grX+DMS_X(col[idx].width), grStart+DMS_Y(height)*(idy+1), szStr[id]);
+				}
+				if( theDevInfo.m_nType > FAMILY_PDA)
+					EditCtrl_ModifyStyle(t_hd[id], 0, EDITSTY_BORDER|EDITSTY_THICKBORDER);
+				else
+					EditCtrl_ModifyStyle(t_hd[id], 0, EDITSTY_BORDER);
+				
+	
+				if(multi_gap != 0)
+					EditCtrl_SetMultiLine(t_hd[id], TRUE, DMS_X(multi_gap), EDITSEP_NONE);
+	
+				EditCtrl_SetForeColorEx(t_hd[id], BLACK);
+				EditCtrl_SetAlign(t_hd[id],col[idx].mode|EDITALIGN_MIDDLE);
+				EditCtrl_SetBkColorEx(t_hd[id], WHITE);
+				EditCtrl_SetDelta(t_hd[id], 2, 0);
+				EditCtrl_SetMultiLine(t_hd[id], TRUE, DMS_X(4), EDITSEP_NONE);
+				
+				if( theDevInfo.m_nType > FAMILY_PDA)
+				{
+					EditCtrl_SetRoundThickness(t_hd[id], DMS_X(3));
+				}
+				
+				id++;
+				//grX += col[idx].width;
+				grX += DMS_X(col[idx].width);
+				
+			}
+		}
+		
+		//변경된 인덱스를 다시 저장해야 한다.
+		pObj->m_nIdNum = index - (pObj->m_nId & 0x0000FFFF);
+		
+		return 0;
+	}
+*/
+	//2차 시안 적용
+	long DlgTbl_CreateCusor ( TABLE* pTbl, DlgObject* pObj )
+	{
+		long idx,idy;
+		long id, pos;
+		long grStart;
+		long grX;
+	
+		// 내부 변수.
+		long X, Y, colnum, rownum, maxChar;
+		long multi_gap, height, ntitle_height, index;
+		char* szBuf;
+		char** szStr;
+		handle* t_hd;
+		Column* col;
+		
+		memset ( (byte*)pTbl, 0, sizeof( TABLE ) );
+
+		X 				= pObj->m_stCtrl.m_Range.x;
+		Y 				= pObj->m_stCtrl.m_Range.y;
+		colnum 			= pObj->m_stCtrl.m_Range.width;
+		rownum 			= pObj->m_stCtrl.m_Range.height;
+		maxChar 		= pObj->m_stCtrl.m_nVal;
+		multi_gap 		= pObj->m_stCtrl.m_Range.dx;
+		height			= pObj->m_stCtrl.m_Range.dy;
+		ntitle_height 	= pObj->m_stCtrl.m_nFrColor;
+		pTbl->rowflag	= pObj->m_stCtrl.m_nBkColor;
+		pTbl->key 		= pObj->m_stCtrl.m_nRemStyle;
+		col				= pObj->m_stCtrl.m_pBuf[0];
+		szBuf 			= pObj->m_stCtrl.m_pBuf[1];
+		
+		//PRINT ("rowflag=%d, key=%d", pTbl->rowflag, pTbl->key, 0);
+
+		pTbl->pValue = malloc (colnum*(rownum+1)*4);
+		if (!pTbl->pValue) return -1;
+		
+		pTbl->ptd = malloc (colnum*(rownum+1)*4);
+		if (!pTbl->ptd)
+		{
+			free ((void*)pTbl->pValue);
+			pTbl->pValue = NULL;
+			return -1;
+		}
+
+		t_hd    = pTbl->ptd;
+		szStr 	= pTbl->pValue;
+		
+		// dkjung 2004-02-09
+		// bit masking이 제대로 되지 않아서
+		// 테이블에서 메모리 오류 발생했음.
+		index 	= (pObj->m_nId & 0x0000FFFF);
+		
+		// 테이블의 아이디를 저장.
+		pTbl->nId = (pObj->m_nId & 0xFFFF0000);
+		
+		//TRACE("DlgTbl_Create : table start index=%d", index, 0, 0);
+		//PRINT ("DlgTbl_Create : table start index=%d, pTbl->nId=0x%x", index, pTbl->nId, 0);
+	
+		for( id=0; id<( colnum*(rownum+1)); id++ )
+		{
+			pos = id*maxChar;			
+			szStr[id] = szBuf+pos;
+		}
+
+		//TABLE 변수 초기화
+		pTbl->row = rownum;
+		pTbl->col = colnum;
+		pTbl->r_height = DMS_Y(height);
+		pTbl->pColumn = col;
+		pTbl->actIndex = 0;
+		pTbl->startX = DMS_X(X);
+		pTbl->startY = DMS_Y(Y);
+		pTbl->endY = DMS_Y(Y)+rownum*DMS_Y(height) + DMS_Y(ntitle_height);
+		pTbl->maxLen = maxChar;
+		pTbl->title_height = DMS_Y(ntitle_height);
+	
+		grStart = DMS_Y( Y+ntitle_height );
+		grX = DMS_X(X);
+		id = 0;
+		pTbl->startIndex = index;
+		for(idx=0; idx<colnum; idx++)
+		{
+			t_hd[id] = Dialog_CreateTextCtrl( hCurDlg, index++, grX, DMS_Y(Y), grX+DMS_X(col[idx].width), DMS_Y(Y+ntitle_height), szStr[id]);
+			
+			Str_Cpy( szStr[id], col[idx].title );
+			if( theDevInfo.m_nType > FAMILY_PDA)
+				EditCtrl_ModifyStyle(t_hd[id],0,EDITSTY_BORDER);
+			else
+				EditCtrl_ModifyStyle(t_hd[id],0,EDITSTY_BORDER);
+			EditCtrl_SetForeColorEx(t_hd[id], TXTCTRLFRCOLOR);		
+			EditCtrl_SetAlign(t_hd[id],EDITALIGN_CENTER|EDITALIGN_MIDDLE);
+			
+			EditCtrl_SetBkColorEx(t_hd[id], theApp.m_style.m_nGridSelectedColor);
+			
+			EditCtrl_SetMultiLine(t_hd[id], TRUE, DMS_X(4), EDITSEP_NONE);
+			if( theDevInfo.m_nType > FAMILY_PDA)
+			{
+				EditCtrl_SetRoundThickness(t_hd[id], DMS_X(3));	
+			}
+	
+			id++;
+			grX += DMS_X(col[idx].width);
+		}
+	
+		pTbl->endX = grX;
+		
+		for(idy=0;  idy< rownum; idy++)		
+		{
+			grX = DMS_X(X);
+			for(idx=0; idx < colnum; idx++)
+			{
+				if(col[idx].ctrltype == TABLE_EDIT )
+				{
+					t_hd[id] = Dialog_CreateEditCtrl( hCurDlg, index++, grX, grStart+DMS_Y(height)*idy ,
+									grX+DMS_X(col[idx].width), grStart+DMS_Y(height)*(idy+1), col[idx].maxchar );
+				}
+				else if( col[idx].ctrltype == TABLE_TEXT )
+				{
+					t_hd[id] = Dialog_CreateTextCtrl( hCurDlg, index++, grX, grStart+DMS_Y(height)*idy,
+									grX+DMS_X(col[idx].width), grStart+DMS_Y(height)*(idy+1), szStr[id]);
+				}
+				if( theDevInfo.m_nType > FAMILY_PDA)
+					EditCtrl_ModifyStyle(t_hd[id], 0, EDITSTY_BORDER);
+				else
+					EditCtrl_ModifyStyle(t_hd[id], 0, EDITSTY_BORDER);
+				
+	
+				if(multi_gap != 0)
+					EditCtrl_SetMultiLine(t_hd[id], TRUE, DMS_X(multi_gap), EDITSEP_NONE);
+	
+				EditCtrl_SetForeColorEx(t_hd[id], TXTCTRLFRCOLOR);
+				EditCtrl_SetAlign(t_hd[id],col[idx].mode|EDITALIGN_MIDDLE);
+				EditCtrl_SetBkColorEx(t_hd[id], WHITE);
+				EditCtrl_SetDelta(t_hd[id], 2, 0);
+				EditCtrl_SetMultiLine(t_hd[id], TRUE, DMS_X(4), EDITSEP_NONE);
+				
+				if( theDevInfo.m_nType > FAMILY_PDA)
+				{
+					EditCtrl_SetRoundThickness(t_hd[id], DMS_X(3));
+				}
+				
+				id++;
+				//grX += col[idx].width;
+				grX += DMS_X(col[idx].width);
+				
+			}
+		}
+		
+		//변경된 인덱스를 다시 저장해야 한다.
+		pObj->m_nIdNum = index - (pObj->m_nId & 0x0000FFFF);
+		
+		return 0;
+	}
+
+	
+	/*========================================================================================
+	함수명 : DlgTbl_RowValueClear
+	기  능 : 그리드의 Row 값을 지운다.
+		 Row는 1부터 시작한다. ( 0 은 그리드의 타이틀 )
+	Parameter : row
+	========================================================================================*/
+	void DlgTbl_RowValueClear( long nId, long row )
+	{
+		long i, j, idx;
+		
+		for (i=0; i<g_nTblMaxNum; i++)
+		{
+			if ( nId == (g_Table[i].nId >> 16) )
+			{
+				idx = row*g_Table[i].col;
+				for( j = 0; j < g_Table[i].col; j++)
+				{
+					g_Table[i].pValue[idx][0] = 0;
+					idx++;
+				}
+			}
+		}
+	}
+	
+	/*========================================================================================
+	함수명 : DlgTbl_SetRowColor2
+	기  능 : 그리드의 Row 색을 지정한다.
+		 Row는 1부터 시작한다. ( 0 은 그리드의 타이틀 )
+	Parameter : row
+	========================================================================================*/
+	void DlgTbl_SetRowColor2( long nId, long row, quad color, quad color2)
+	{
+		long i, j, idx;
+
+		for (i=0; i<g_nTblMaxNum; i++)
+		{
+			if ( nId == (g_Table[i].nId >> 16) )
+			{
+				idx = row * g_Table[i].col;
+				for( j =0; j< g_Table[i].col; j++)
+				{
+					EditCtrl_SetBkColorEx(g_Table[i].ptd[idx], color);
+					EditCtrl_SetForeColorEx(g_Table[i].ptd[idx], color2);
+					idx++;
+				}
+			}
+		}
+
+	}
+	
+	/*========================================================================================
+	함수명 : DlgTbl_SetRowColor
+	기  능 : 그리드의 Row 색을 지정한다.
+		 Row는 1부터 시작한다. ( 0 은 그리드의 타이틀 )
+	Parameter : row
+	========================================================================================*/
+	void DlgTbl_SetRowColor( long nId, long row, quad color)
+	{
+		long i, j, idx;
+		
+		for (i=0; i<g_nTblMaxNum; i++)
+		{
+			if ( nId == (g_Table[i].nId >> 16) )
+			{
+				idx = row * g_Table[i].col;
+				for( j =0; j< g_Table[i].col; j++)
+				{
+					EditCtrl_SetBkColorEx(g_Table[i].ptd[idx], color);
+					idx++;
+				}
+			}
+		}
+	}
+	
+	/*========================================================================================
+	함수명 : DlgTbl_SetCellColor
+	기  능 : 그리드의 특정 셀(nRow, nCol)의 색을 지정한다.
+		 Row는 0부터 시작한다.
+		 Col은 0부터 시작한다.		 
+	Parameter : nMode - 전경색(TBL_FRCOLOR), 배경색(TBL_BKCOLOR) 모드
+				nId - 테이블 아이디
+				nRow - 행
+				nCol - 열
+				color - 색깔
+	========================================================================================*/
+	//#define TBL_FRCOLOR
+	//#define TBL_BKCOLOR
+	void DlgTbl_SetCellColor(long nMode, long nId, long nRow, long nCol, quad color)
+	{
+		long i;
+		long index;
+
+		for (i=0; i<g_nTblMaxNum; i++)
+		{
+			if ( nId == (g_Table[i].nId >> 16) )
+			{
+				// 셀의 인덱스를 계산
+				index = TBL_CELL (g_Table[i].col, nRow, nCol);
+				if (nMode == TBL_BKCOLOR)
+					EditCtrl_SetBkColorEx(g_Table[i].ptd[index], color);
+				else
+					EditCtrl_SetForeColorEx(g_Table[i].ptd[index], color);
+			}
+		}
+	}
+	
+	/*========================================================================================
+	함수명 : DlgTbl_PointingCursor
+	기  능 : 그리드를 선택할 경우 선택된 칸의 색을 변경시켜 활성화됨을 보여준다.
+		 Row는 1부터 시작한다. ( 0 은 그리드의 타이틀 )
+	Parameter :
+		 hDlg : 다이얼로그의 핸들
+		 nAction, X, Y: 포인팅 관련 인자
+		 bRow : TRUE 이면 ROW 단위로 선택되고, FALSE 이면 칸단위로 선택된다.
+				 key  : key 필드 값이 있는 필드만 포인팅이됨. ( bRow 가 TRUE일 경우만..)
+				 		좌측부터 1부터 시작한다. 0 인 경우는 선택 가능
+	return : 선택된 칸의 인덱스를 리턴한다. ( 그리드의 제목을 포함한 인덱스 )
+		 bRow 가 TRUE 이면 ROW 단위로 인덱스가 리턴된다.
+		 bRow 가 FALSE 이면 칸 단위로 인덱스가 리턴된다.
+		 선택되지 않으면 0을 리턴한다.
+	========================================================================================*/
+	long	DlgTbl_PointingCursor ( handle hDlg, long nAction, long X, long Y, TABLE* pTbl)
+	{
+		long DlgY, PosX;
+		long i, j, ActIndex;
+		long chki;
+		
+		if (!pTbl->ptd)
+			return -1;	
+
+		if( nAction != 0 )	// POINTING_DOWN
+			return pTbl->actIndex;
+	
+		X -= DLGBORDER_WIDTH;
+		DlgY = Y;
+	
+		if( X > pTbl->startX && X < pTbl->endX && DlgY > (pTbl->startY+pTbl->title_height) && DlgY < pTbl->endY )
+		{
+			for ( j = 1; j <= pTbl->row; j++ )
+			{
+				if ( DlgY > (pTbl->startY+(j-1)*pTbl->r_height + pTbl->title_height) &&  DlgY <= (pTbl->startY+j*pTbl->r_height + pTbl->title_height) )
+				{
+					if ( pTbl->rowflag == SEL_ROW)
+					{
+						ActIndex = j;
+						//이전에 활성화된 컨트롤의 색을 지움.
+//2005-07-27 LSH		
+						if( pTbl->actIndex != 0 )
+						{
+							DlgTbl_SetRowColor((pTbl->nId>>16), pTbl->actIndex, TRANSPARENT);
+						}
+//2005-07-27 LSH				
+						for(chki = 0 ; chki <pTbl->col; chki++)
+						{
+							if( pTbl->key != 0 && pTbl->pValue[(ActIndex*pTbl->col)+pTbl->key-1+chki][0] == '\0' )
+								pTbl->actIndex = 0;
+							else
+							{
+								DlgTbl_SetRowColor((pTbl->nId>>16), ActIndex, TABLEACTIVE_COLOR);
+								pTbl->actIndex = ActIndex;
+								break;
+							}
+						}
+						
+						Dialog_Draw(hDlg, TRUE);
+						
+						g_SysBut_Draw ();
+						
+						return pTbl->actIndex;
+					}
+					else if ( pTbl->rowflag == SEL_COL )
+					{
+						PosX = pTbl->startX;
+						for ( i =0; i< pTbl->col; i++ )
+						{		
+							if( X >= PosX  && X < (PosX+DMS_X(pTbl->pColumn[i].width)) )
+							{
+								ActIndex = j*pTbl->col+i;
+								//이전에 활성화된 컨트롤의 색을 지움.
+								//PRINT("000 pTbl->actIndex != 0  ,, pTbl->actIndex : %d ",pTbl->actIndex,0,0);
+								if( pTbl->actIndex != 0 )
+								{
+								//PRINT("111 pTbl->actIndex != 0  ,, pTbl->actIndex : %d ",pTbl->actIndex,0,0);
+									EditCtrl_SetBkColorEx ( DlgCtrl_GetHandle(hDlg, pTbl->startIndex+pTbl->actIndex ), TRANSPARENT );
+								}
+								
+								if( pTbl->key != 0 && pTbl->pValue[ActIndex][0] == '\0' )
+									pTbl->actIndex = 0;
+								else
+								{
+									EditCtrl_SetBkColorEx ( DlgCtrl_GetHandle(hDlg, pTbl->startIndex+ActIndex ), TABLEACTIVE_COLOR);
+									pTbl->actIndex = ActIndex;
+								}
+								
+								Dialog_Draw(hDlg, TRUE);
+								g_SysBut_Draw ();
+								return pTbl->actIndex;
+							}	
+							PosX += DMS_X(pTbl->pColumn[i].width);
+						}
+					}
+				}		
+			}
+		}
+		else
+		{
+			//선택된상태를 유지 색상을 유지시키기위해
+			if ( pTbl->rowflag == SEL_ROW)
+			{
+				if( pTbl->actIndex != 0 )
+				{
+					//dkjung 2017-08-14 다른 컨트롤로 포커스 이동될 경우 커서 사라지는 이유로 막음.
+					//=======================================================================
+					if( pTbl->rowflag )
+						DlgTbl_SetRowColor((pTbl->nId>>16), pTbl->actIndex, TRANSPARENT);
+					else
+						EditCtrl_SetBkColorEx ( DlgCtrl_GetHandle(hDlg, pTbl->startIndex+pTbl->actIndex ), TRANSPARENT);
+						
+					pTbl->actIndex = 0;
+					//=======================================================================
+					
+					g_SysBut_Draw ();
+					
+					return 0;
+				}
+			}
+			else if ( pTbl->rowflag == SEL_COL )
+			{
+				if( pTbl->actIndex != 0 )
+					EditCtrl_SetBkColorEx ( DlgCtrl_GetHandle(hDlg, pTbl->startIndex+pTbl->actIndex ), TRANSPARENT );
+								
+				pTbl->actIndex = 0;
+			}			
+		}
+		
+		//PRINT("pTbl->actIndex = %d", pTbl->actIndex,0,0);		
+		return pTbl->actIndex;
+	}
+
+	/*========================================================================================
+	함수명 : DlgTbl_GetStr
+	기  능 : 칸의 String 포인터를 리턴한다.
+	Parameter :	
+			 index : 칸의 인덱스( 표의 제목을 포함한 인덱스 )
+	return : 해당 칸의 포인터
+	========================================================================================*/
+	char* DlgTbl_GetStr ( long nId, long nRow, long nCol )
+	{
+		long i;
+		long nColPos;
+		long index;
+
+		for (i=0; i<g_nTblMaxNum; i++)
+		{
+			if ( nId == (g_Table[i].nId >> 16) )
+			{
+				// 셀의 인덱스를 계산
+				index = TBL_CELL (g_Table[i].col, nRow, nCol);
+				nColPos = index % g_Table[i].col;
+				
+				if( g_Table[i].pColumn[nColPos].ctrltype == TABLE_EDIT )
+					return EditCtrl_GetStr ( g_Table[i].ptd[index] );
+				else
+					return g_Table[i].pValue[index];
+			}
+		}
+		
+		return NULL;
+	}
+	
+	/*========================================================================================
+	함수명 : DlgTbl_GetHandle
+	기  능 : 칸의 핸들을 리턴한다.
+	Parameter :	
+		 index : 칸의 인덱스( 표의 제목을 포함한 인덱스 )
+	return : 해당 칸의 핸들
+	========================================================================================*/
+	handle DlgTbl_GetHandle ( long nId, long nRow, long nCol )
+	{
+		long i;
+		long index;
+		
+		for (i=0; i<g_nTblMaxNum; i++)
+		{
+			if ( nId == (g_Table[i].nId >> 16) )
+			{
+				// 셀의 인덱스를 계산
+				index = TBL_CELL (g_Table[i].col, nRow, nCol);
+				return g_Table[i].ptd[index];
+			}
+		}
+		
+		return NULL;
+	}
+	
+	/*========================================================================================
+	함수명 : DlgTbl_SetStr
+	기  능 : 칸에 String을 입력한다.
+	Parameter :	
+		 index : 칸의 인덱스( 표의 제목을 포함한 인덱스 )
+		 pStr : 입력할 String 
+	========================================================================================*/
+	void DlgTbl_SetStr ( long nId, long nRow, long nCol, char* pStr )
+	{
+		long i;
+		long nColPos;
+		long index;
+		
+		for (i=0; i<g_nTblMaxNum; i++)
+		{
+			if ( nId == (g_Table[i].nId >> 16) )
+			{
+				// 셀의 인덱스를 계산
+				index = TBL_CELL (g_Table[i].col, nRow, nCol);
+				
+				nColPos = index % g_Table[i].col;
+				
+				if( g_Table[i].pColumn[nColPos].ctrltype == TABLE_EDIT )
+				{
+					if( strlen ( pStr) > g_Table[i].pColumn[nColPos].maxchar )
+						return;
+					EditCtrl_SetStr ( g_Table[i].ptd[index], pStr );
+				}
+				else
+				{
+					if( strlen (pStr) >= g_Table[i].maxLen  )
+						return;
+					strcpy ( g_Table[i].pValue[index], pStr );
+				}
+				
+				return;
+			}
+		}
+	}
+	
+	//---------------------------------------------------------------
+	long	DlgTbl_Create (DlgObject* pObj)
+	{
+		long i;
+		long nRet;
+		char szMsg[64];
+		
+		if (g_nTblMaxNum >= MAX_TBLNUM)
+		{
+			
+			SPRINT (szMsg, "테이블 생성 개수 : 최대(%d), 현재(%d)",
+			 				MAX_TBLNUM, g_nTblMaxNum, 0);
+			MessageBoxEx (ERROR_OK, szMsg);
+			return NULL;
+		}
+		
+		for (i=0; i<g_nTblMaxNum; i++)
+		{
+			if ( (pObj->m_nId & 0xFFFF0000) == g_Table[i].nId )
+			{
+				SPRINT (szMsg, "같은 테이블 아이디 이미 존재(%d)",
+				 				g_Table[i].nId, 0, 0);
+				MessageBoxEx (ERROR_OK, szMsg);
+				return NULL;
+			}
+		}
+		
+		nRet = DlgTbl_CreateCusor (&g_Table[g_nTblMaxNum], pObj);
+		if (nRet < 0)
+		{
+			MessageBoxEx (ERROR_OK, "테이블 생성 실패");
+			return NULL;
+		}
+		
+		nRet = (long)&g_Table[g_nTblMaxNum];
+		
+		g_nTblMaxNum++;	
+		
+		return nRet;	
+	}
+	
+	//---------------------------------------------------------------
+	void	DlgTbl_Pointing ( handle hDlg, long nAction, long X, long Y )
+	{
+		long i;
+		long ret;
+		
+		for (i=0; i<g_nTblMaxNum; i++)
+		{
+			g_Table[i].selected = FALSE;
+		}
+		
+		for (i=0; i<g_nTblMaxNum; i++)
+		{
+			ret = DlgTbl_PointingCursor ( hCurDlg, nAction, X, Y, &g_Table[i] );
+			if ( nAction == 0 )
+			{
+				if( ret > 0 )
+				{
+					PRINT("selected ret = %d", ret,0,0);
+					g_Table[i].selected = TRUE;
+					SET_EVENT (MSG_SELECT, 0, ret);
+					return;
+				}
+//				else
+//				{	//다중 테이블 일시 첫번째테이블에서 무조건 리턴됨. 오류
+//				 	//두번째 테이블선택 되었을때의 추가처리가 필요함.  
+//					g_Table[i].selected = FALSE;
+//				}
+			}			
+		}
+	}
+	
+	//---------------------------------------------------------------
+	void InitDialog (void)
+	{
+		// 카드 로드시 모든 로컬 카드가 공통으로 할 것.
+		LoadCardGui ();
+	}
+
+	//---------------------------------------------------------------
+	long PushDlgCtrl (DlgObject* pObj)
+	{
+		if (nDlgCtrlNum > MAX_OBJ_NUM)
+			return -1;
+		
+		theDlgCtrl[nDlgCtrlNum++] = (handle)pObj;
+		
+		return 0;
+	}
+
+	//---------------------------------------------------------------
+	long PushSlfCtrl (DlgObject* pObj)
+	{
+		if (nSlfCtrlNum > MAX_OBJ_NUM)
+			return -1;
+		theSlfCtrl[nSlfCtrlNum++] = (handle)pObj;
+		return 0;
+	}
+
+	//---------------------------------------------------------------
+	long Is_ActiveCtrlID (long nID)
+	{
+		long i;
+		long id;
+		DlgObject* p;
+		
+		id = ((nID<<16)&0xFFFF0000);
+		
+		i = Dialog_GetActiveCtrlIndex(hCurDlg);
+		if (i < 0 || i > nDlgCtrlNum-1)
+			return 0;
+		
+		p = (DlgObject*)theDlgCtrl[i];
+		if ((p->m_nId & 0xFFFF0000) == id)
+		{
+			return 1;
+		}
+		
+		return 0;		
+	}
+	
+	//---------------------------------------------------------------
+	long Get_iDlgCtrlFromID (long nID)
+	{
+		long i;
+		long id;
+		DlgObject* p;
+		
+		id = ((nID<<16)&0xFFFF0000);
+		
+		for(i=0; i<nDlgCtrlNum; i++)
+		{
+			p = (DlgObject*)theDlgCtrl[i];
+			if ((p->m_nId & 0xFFFF0000) == id)
+			{
+				return (p->m_nId & 0x0000FFFF);	
+			}
+		}
+		
+		return -1;
+	}
+	
+	//---------------------------------------------------------------
+	handle Get_hDlgCtrlFromID (long nID)
+	{
+		long i;
+		long id;
+		DlgObject* p;
+		
+		id = ((nID<<16)&0xFFFF0000);
+		
+		for(i=0; i<nDlgCtrlNum; i++)
+		{
+			p = (DlgObject*)theDlgCtrl[i];
+			if ((p->m_nId & 0xFFFF0000) == id)
+			{
+				return (p->m_h);	
+			}
+		}
+		
+		return NULL;
+	}
+
+	//---------------------------------------------------------------
+	DlgObject* FindObject (long nID)
+	{
+		long i, j, n[2];
+		DlgObject* p;
+		
+		n[0] = nDlgCtrlNum;
+		n[1] = nSlfCtrlNum;
+		
+		for (j=0; j<2; j++)
+		{
+			for (i=0; i<n[j]; i++)
+			{
+				p = (j==0)?
+				    (DlgObject*)theDlgCtrl[i]:
+					(DlgObject*)theSlfCtrl[i];
+				switch (p->m_nType)
+				{
+					case OBJ_BUT:
+					case OBJ_IBT:
+						if (p->m_stCtrl.m_nVal == nID)
+						{
+							return p;
+						}
+						break;
+						
+				
+					//콤보 박스의 경우 에디트 컨트롤에서
+					//콤보 버튼의 아이디를 알 수 있다.
+					//에디트 다음 아이디이므로 +1이 된다.
+					//dkjung 2004-02-09
+					/*	
+					case OBJ_CMB:
+					{
+						// 연산자 우선 순위 주의!!!
+						if ( (((p->m_nId>>16) + 1) & 0x0000FFFF) == nID )
+						{
+							return p;
+						}
+						break;
+					}
+					*/
+				}
+			}
+		}
+		return NULL;
+	}
+	
+	//---------------------------------------------------------------
+	handle Get_hSlfCtrlFromID (long nID)
+	{
+/*
+// 이게 안되는 이유는 버튼만 FindObject()에서
+   찾도록 되어 있기 때문이다.
+		DlgObject* p;
+		long id;
+		
+		id = ((nID<<16)&0xFFFF0000);
+		
+		p = FindObject(id);
+		if ((p->m_nId & 0xFFFF0000) == id)
+		{
+			return (p->m_h);	
+		}
+		return NULL;
+*/
+
+		long i;
+		long id;
+		DlgObject* p;
+		
+		id = ((nID<<16)&0xFFFF0000);
+		
+		for(i=0; i<nSlfCtrlNum; i++)
+		{
+			p = (DlgObject*)theSlfCtrl[i];
+			if ((p->m_nId & 0xFFFF0000) == id)
+			{
+				return (p->m_h);	
+			}
+		}
+		return NULL;
+	}
+
+	//dkjung 2004-02-12
+	//컨트롤들에 대한 정보를 얻기 위한 아이디와 인덱스 부여
+	//long nObjType  : 다이얼로그 종속 컨트롤인가, 독립 컨트롤인가?
+	//long nInitFlag : 컨트롤 구조체가 초기화 되었는지 구분
+	//                 0: 초기상태, 1:이미 초기화된 구조체
+	//long* pId      : 아이디값 포인터
+	//---------------------------------------------------------------
+	void SetDlgObjIndex (long nObjType, long nInitFlag, long* pId)
+	{
+		long nId=0;
+
+		// 다이얼로그 선언시 사용된 구조체 정보는 설정된다.
+		nId = ( ( *pId << ( (!nInitFlag)? 16: 0) ) & 0xFFFF0000 );
+		
+		if ( (nObjType & 0xF0000000) == DLG_CTRL )
+		{
+			nId |= ( nDlgCtrlSeq & 0x0000FFFF );
+			
+			// 다이얼로그 컨트롤에 대한 인덱스 이므로
+			// 다이얼로그 종속 컨트롤만 적용해야 한다.
+			nDlgCtrlSeq++;
+		}
+		else
+		{
+			nId |= ( nSlfCtrlNum & 0x0000FFFF );
+		}
+		
+		*pId = nId;
+	}
+	
+	//---------------------------------------------------------------
+	handle CreateDlgObject (DlgObject* pObj, long nObjNum)
+	{
+		long i, nRet;
+		
+		//버튼 생성시
+		//콤보 리스트를 처리하기 위한 플래그.
+		long nCmbLstFlag = 0;
+		
+		//nDlgCtrlSeq는 SetDlgObjIndex()내에서 증가.
+		for (i=0, nDlgCtrlSeq=0; i<nObjNum; i++)
+		{
+			if ( i > 0 )
+			{
+				SetDlgObjIndex (pObj[i].m_nType, pObj[0].m_nIdNum, &pObj[i].m_nId);
+			}
+
+			switch (pObj[i].m_nType & 0x0000FFFF)
+			{
+				case OBJ_DLG:
+					if (i > 0)
+					{
+						MessageBoxEx (ERROR_OK,
+						"메인 다이얼로그를 제일 먼저 생성 하신 후,\n다시 실행해 주세요."
+							);
+						EvtExit ();
+						return NULL;
+					}
+
+					if (hCurDlg) Dialog_DeleteObject (hCurDlg);
+					hCurDlg = Dialog_Create (&pObj[i]);
+					if (pObj[i].m_nActType == MAIN_CARD)
+					{
+						Str_Cpy (theApp.m_szMainCard, pObj[i].m_pAct);
+					}
+
+					if (pObj[i].m_pExitCard[0] != '\0')
+					{
+						Str_Cpy (theApp.m_szExitCard, pObj[i].m_pExitCard);
+						//TRACE ("종료시 이동할 카드=%s", pObj[i].m_pExitCard, 0, 0);
+					}
+
+					// 다이얼로그 타이틀 높이를 설정.
+					g_nDlgTitleHeight = pObj[i].m_stCtrl.m_nVal;
+
+					// 다이얼로그 생성은 인덱스를 변경하지 않음.
+					continue;
+					
+				case OBJ_IBT:
+				case OBJ_BUT:
+				case OBJ_ABT:
+					if (pObj[i].m_nActType == CALL_CTRL)
+					{
+						if ( MATCH("OBJ_CMB", pObj[i].m_pAct) )
+						{
+							nCmbLstFlag = 1;
+						}
+					}
+					else if (pObj[i].m_nActType == CALL_CTRL)
+					{
+						if ( MATCH("OBJ_CMB2", pObj[i].m_pAct) )
+						{
+							nCmbLstFlag = 1;
+						}
+					}
+					
+					pObj[i].m_h = DlgBut_Create (&pObj[i]);
+					break;
+
+				case OBJ_TXT:
+					// 다이얼로그 타이틀 높이를 설정.
+					pObj[i].m_stCtrl.m_nVal = g_nDlgTitleHeight;
+					pObj[i].m_h = DlgText_Create (&pObj[i]);
+					break;
+					
+				case OBJ_EDT:
+					pObj[i].m_h = DlgEdit_Create (&pObj[i]);
+					break;
+					
+				case OBJ_LST:
+					pObj[i].m_h = DlgList_Create (&pObj[i]);
+					if (nCmbLstFlag)
+					{
+						// 콤보의 리스트는 모두 보이지 않도록 설정한다.
+						DlgCtrl_SetVisible(GetCurhDlg(), (pObj[i].m_nId & 0x0000FFFF), FALSE);
+						nCmbLstFlag = 0;
+					}
+					break;
+					
+				case OBJ_SEL:
+					pObj[i].m_h = DlgSel_Create (&pObj[i]);
+					break;
+
+				case OBJ_CHK:
+					pObj[i].m_h = DlgChk_Create (&pObj[i]);
+					break;
+					
+				case OBJ_ICO:
+					pObj[i].m_h = DlgIcon_Create (&pObj[i]);
+					break;
+					
+				case OBJ_LNE:
+					pObj[i].m_h = DlgLine_Create (&pObj[i]);
+					break;
+					
+				case OBJ_PNG:
+					pObj[i].m_h = DlgPng_Create (&pObj[i]);
+					//Print("pObj[i].m_h = 0x%x", (quad)pObj[i].m_h, 0, 0);
+					break;
+
+				case OBJ_GRD:
+					pObj[i].m_h = DlgGrid_Create (&pObj[i]);
+					//Print("pObj[i].m_h = 0x%x", (quad)pObj[i].m_h, 0, 0);
+					break;
+
+				// 테이블 생성 -> 우선은 다이얼로그에서만 가능하도록...
+				// 단 한개의 콘트롤으로 간주한다.
+				case OBJ_TBL:
+					pObj[i].m_h = (void*)DlgTbl_Create (&pObj[i]);
+					
+					// 다중으로 인덱스가 발생하는 오브젝트들.
+					// for loop에서 1 증가 하기때문에 1은 뺀다.
+					nDlgCtrlSeq += (pObj[i].m_nIdNum - 1);
+					pObj[i].m_nIdNum = 0;
+					break;
+			}
+			
+			if ((pObj[i].m_nType & 0xF0000000) == DLG_CTRL)
+				nRet = PushDlgCtrl (&pObj[i]);
+			else
+			{
+				nRet = PushSlfCtrl (&pObj[i]);
+			}
+			
+			if (nRet < 0)
+			{
+				char szMsg[80];
+				
+				SPRINT (szMsg, 
+				"오브젝트 생성 실패.\n최대개수(MAX_OBJ_NUM)=%d\nDlgCtrlNum : %d, \
+				SlfCtrlNum : %d", 
+				MAX_OBJ_NUM, nDlgCtrlNum, nSlfCtrlNum );
+				if(MessageBoxEx (ERROR_OK, szMsg) == MB_OK)
+				{
+					EvtExit ();
+					VM_AmEnd ();
+				}
+				
+				return NULL;
+			}
+		}
+
+		// 다이얼로그 구조체를 한번 초기화 했는지 구분하기 위함.
+		// 한 카드에서 여러 화면을 구성할 경우 초기화 문제 해결.
+		pObj[0].m_nIdNum = 1;
+
+		return hCurDlg;
+	}
+
+	//---------------------------------------------------------------
+	long NewDlgObj (DlgObject* pObj[], long nObjNum)
+	{
+		*pObj = (void*)malloc (nObjNum*sizeof(DlgObject));
+		if (!*pObj)
+			return -1;
+			
+		return 0;
+	}
+	
+	//---------------------------------------------------------------
+	long DelDlgObj (DlgObject* pObj[])
+	{
+		if (*pObj)
+		{
+			free ((void*)*pObj);		
+		}
+		
+		return 0;	
+	}
+
+/*
+		//-----------------------------------------------------------------------------
+		//		messages : vm ==> card
+		//-----------------------------------------------------------------------------
+		#define		MSG_INIT				0
+		#define		MSG_EXIT				1
+		#define		MSG_DRAW				2
+		#define		MSG_CHAR				3
+		#define		MSG_KEY					4
+		#define		MSG_BUTTON				5
+		#define		MSG_SELECT				6
+		#define		MSG_POINTING			7
+		#define		MSG_TIMER				8
+		#define		MSG_SOCKET				9
+		#define		MSG_UART				10
+		#define		MSG_BATTERY				11
+*/
+	//---------------------------------------------------------------
+	bool PreDispatchEvent (quad MsgType, quad wParam, quad lParam)
+	{
+		SET_EVENT (MsgType, wParam, lParam);
+		
+		//PRINT ("이벤트=%d, %d, %d", MsgType, wParam, lParam);
+		switch (MsgType)
+		{
+			case MSG_INIT :
+				break;
+			case MSG_CHAR :
+				EvtChar (wParam);
+				break;
+			case MSG_KEY :
+				EvtKey (wParam);
+				break;
+			case MSG_DRAW :	
+				EvtDraw ();	
+				break;
+			case MSG_TIMER :
+				EvtTimer (wParam);
+				break;
+			case MSG_POINTING :
+				EvtPointing (wParam, (long)(lParam & 0xFFFF), (long)(lParam >> 16));
+				break;
+			case MSG_BUTTON :
+				EvtButton (wParam);
+				break;
+			case MSG_SELECT :
+				EvtSelect (lParam);				
+				break;
+			case MSG_EXIT :		
+				EvtExit ();
+				break;
+			case MSG_PROGRESS:
+				EvtProgress (wParam,lParam);
+				break;
+			case MSG_USER :		
+				EvtUser (wParam,lParam);
+				break;
+			case MSG_SESSION:
+				EvtSession(wParam);
+				break;
+			case MSG_SENDTEXT:
+				EvtSendText(lParam);
+				break;
+			case MSG_UART:
+				EvtUart(wParam, lParam );
+				break;
+			case MSG_TASK:
+				EvtTask( wParam, lParam );
+				break;
+			case MSG_TICKER:
+				EvtTicker(theApp.m_wParam);
+				break;
+			case MSG_EDITCTRL:
+				EvtEditctrl(wParam);
+				break;
+			case MSG_EXTCTRL:
+				EvtExtctrl( wParam, lParam );
+				break;
+			case MSG_GRIDCTRL:
+				EvtGridctrl( wParam, lParam );
+				break;
+		}
+		
+		//PRINT ("이벤트end =%d, %d, %d", MsgType, wParam, lParam);
+		
+		return TRUE;
+	}
+
+	//---------------------------------------------------------------
+	void EvtExit (void)
+	{
+		if( theApp.m_hMsgboxDlg )
+		{
+			g_Close_SubDlg();
+		}
+		
+		if ( theApp.m_hSubDlg )
+		{
+			Dialog_DeleteObject ( theApp.m_hSubDlg );
+			theApp.m_hSubDlg = 0;
+			theApp.m_nMsgboxInActiveFlag = 0;	// 인액티브 다시 초기화.
+		}
+		
+		DELETE_CHILD_DLG ();
+		
+		if (nSlfCtrlNum)
+		{
+			DlgObject* pObj;
+			long i;
+			
+			//TRACE ("############### nSlfCtrlNum=%d", nSlfCtrlNum, 0, 0);	
+			for (i=0; i<nSlfCtrlNum; i++)
+			{
+				pObj = (DlgObject*)theSlfCtrl[i];
+				
+				if ((pObj->m_nType & 0xF0000000) == SLF_CTRL)
+				{
+					switch (pObj->m_nType & 0x0000FFFF)
+					{
+						case OBJ_BUT:
+						case OBJ_IBT:
+						case OBJ_ABT:
+							ButCtrl_DeleteObject (pObj->m_h);
+							break;
+		
+						case OBJ_EDT:
+							EditCtrl_DeleteObject (pObj->m_h);
+							break;
+							
+						case OBJ_LST:
+							ListCtrl_DeleteObject (pObj->m_h);
+							break;
+							
+						case OBJ_SEL:
+							SelCtrl_DeleteObject (pObj->m_h);
+							break;
+							
+						case OBJ_CHK:
+							ChkCtrl_DeleteObject (pObj->m_h);
+							break;
+							
+						case OBJ_ICO:
+							IconCtrl_DeleteObject (pObj->m_h);
+							break;
+							
+						case OBJ_LNE:
+							LineCtrl_DeleteObject (pObj->m_h);
+							break;
+					
+						case OBJ_PNG:
+							if ( pObj->m_h )
+							{
+								free( pObj->m_h );
+								pObj->m_h = 0;
+							}
+							break;
+							
+						case OBJ_GRD:
+							GridCtrl_DeleteObject (pObj->m_h);
+							break;
+					}
+				}
+			}
+			
+			nSlfCtrlNum = 0;
+		}
+
+		if (hCurDlg)
+		{
+			Dialog_DeleteObject ( hCurDlg );
+			hCurDlg = 0;
+		}
+		
+		if (nDlgCtrlNum) nDlgCtrlNum = 0;
+		
+		// 동적 컨트롤 리소스 해제
+		DlgDynObj_Delete ();
+		
+		// 시스템 버튼 리소스 해제
+		g_SysBut_Delete ();
+		
+		// 테이블 리소스 해제
+		DlgTbl_Delete ();
+		
+		// 다이얼로그 컨트롤 일련 아이디 초기화
+		nDlgCtrlSeq = 0;
+	}
+	
+	//---------------------------------------------------------------
+	void EvtUser (long nEvent, long nData)
+	{
+	}
+	
+	//---------------------------------------------------------------
+	void EvtProgress	(long nValue, long nTotal)
+	{
+	/*
+		if (IsMessageBox() &&  nValue > 0)
+		{
+			char buf[32];
+			Str_Printf(buf, "%d byte(s) 다운로드...", nValue,0,0);
+			EditCtrl_SetStr(theApp.m_hTxtMsg, buf);
+
+			Dialog_Draw(theApp.m_hMsgboxDlg, TRUE);
+			GrDev_Refresh();
+		}
+		*/
+	}
+
+	//---------------------------------------------------------------
+	// 프로그레스 오픈시 자동으로 메시지를 닫도록 하기 위함
+	// 그래서, 메시지가 깜빡이지 않도록 한다.
+	//---------------------------------------------------------------
+	bool close_oneshot = FALSE;
+	long oneshot_count = 0;
+	#define __ONESHOT_COUNT__ 5
+	//---------------------------------------------------------------
+	void EvtSession	(long wParam)
+	{
+		//PRINT("EvtSession => %d",wParam,0,0);
+		
+		switch(wParam)
+		{
+			case SESSION_OPEN:
+				close_oneshot = FALSE;
+				break;
+				
+			case SESSION_CLOSE:
+				close_oneshot = TRUE;
+				break;
+		}
+	
+		if (g_pEvtSession != NULL)
+		{
+			g_pEvtSession (wParam);
+		}
+	}
+	
+	//---------------------------------------------------------------
+	void EndSession( void )
+	{
+		if (g_pEvtEndSession != NULL)
+		{
+			g_pEvtEndSession (0);
+		}
+	}
+	
+	//---------------------------------------------------------------
+	void EvtSendText (long lParam)
+	{
+		MessageBoxEx(MESSAGE, (char*)lParam);
+	}
+	
+	//---------------------------------------------------------------
+	void EvtChar	(long nChar)
+	{
+		if( theApp.m_hMsgboxDlg )
+		{
+			Dialog_CharProcess ( theApp.m_hMsgboxDlg, nChar );
+			return;
+		}
+		
+		if (theApp.m_hChildDlg)
+		{
+			Dialog_CharProcess ( theApp.m_hChildDlg, nChar );
+		}
+		else if (hCurDlg)
+		{
+			Dialog_CharProcess ( hCurDlg, nChar );
+		}
+	}
+	
+	//---------------------------------------------------------------
+	void EvtKey  (long nKey)
+	{
+		if( theApp.m_hMsgboxDlg )
+		{
+			Dialog_KeyProcess ( theApp.m_hMsgboxDlg, nKey );
+			return;
+		}
+		
+		if (theApp.m_hChildDlg)
+		{
+			Dialog_KeyProcess ( theApp.m_hChildDlg, nKey );
+		}
+		else if (hCurDlg)
+		{
+			Dialog_KeyProcess ( hCurDlg, nKey );
+		}
+	}
+	
+	//---------------------------------------------------------------
+	void EvtDraw (void)
+	{
+		if ( theApp.m_hSubDlg )
+		{
+			Dialog_Draw ( theApp.m_hSubDlg, TRUE );
+		}
+		else if (theApp.m_hChildDlg)
+		{
+			Dialog_Draw ( theApp.m_hChildDlg, TRUE );
+		}
+		else
+		{
+			if (IsMessageBox())
+			{
+				Dialog_Draw ( theApp.m_hMsgboxDlg, TRUE );
+				return;
+			}
+			
+			if (hCurDlg)
+			{
+				Dialog_Draw ( hCurDlg, TRUE );
+			}
+			
+			g_SysBut_Draw ();
+			
+			if (nSlfCtrlNum)
+			{
+				long i;
+				DlgObject* pObj;
+				for (i=0; i<nSlfCtrlNum; i++)
+				{
+					pObj = (DlgObject*)theSlfCtrl[i];
+					if ((pObj->m_nType & 0xF0000000) == SLF_CTRL)
+					{
+						switch (pObj->m_nType & 0x0000FFFF)
+						{
+							case OBJ_BUT:
+							case OBJ_IBT:
+							case OBJ_ABT:
+								ButCtrl_Draw (pObj->m_h, TRUE);
+								break;
+			
+							case OBJ_EDT:
+								EditCtrl_Draw (pObj->m_h, TRUE);
+								break;
+								
+							case OBJ_LST:
+								ListCtrl_Draw (pObj->m_h, TRUE);
+								break;
+								
+							case OBJ_SEL:
+								SelCtrl_Draw (pObj->m_h, TRUE);
+								break;
+								
+							case OBJ_CHK:
+								ChkCtrl_Draw (pObj->m_h, TRUE);
+								break;
+
+							case OBJ_ICO:
+								IconCtrl_Draw (pObj->m_h);
+								break;
+								
+							case OBJ_LNE:
+								LineCtrl_Draw (pObj->m_h);
+								break;
+								
+							case OBJ_GRD:
+								GridCtrl_Draw (pObj->m_h, TRUE);
+								break;
+						}
+					}
+				}
+			}
+			
+			g_SysBut_Draw ();
+		}		
+		
+		GrDev_Refresh ();
+	}
+	
+	//---------------------------------------------------------------
+	void EvtTimer (long nTimerID)
+	{
+		if (g_pEvtTimer != NULL)
+		{
+			g_pEvtTimer(nTimerID);
+		}	
+	
+		if (theApp.m_hChildDlg)
+		{
+			Dialog_Timer ( theApp.m_hChildDlg );
+		}
+		else if (hCurDlg)
+		{
+			if (theApp.m_hMsgboxDlg != NULL)
+			{
+				Dialog_Timer(theApp.m_hMsgboxDlg);
+			}
+			else
+			{
+				Dialog_Timer(hCurDlg);
+			}
+		}
+
+		if(g_nTimerId == nTimerID)
+		{
+			g_nTimerCnt++;
+			
+			if( g_nTimerCnt >= 6 )
+			{
+				if( Str_AtoI (stUserinfo.szloginday) != Time_GetDate() )
+				{
+					Timer_Kill( g_nTimerId);
+					EvtExit();
+					g_ImgFree();
+					VM_AmEnd();
+				}
+				return;
+			}
+			//g_Str_TimeType( g_TIME, Time_GetTime());
+		}
+		else if (theApp.m_nMsgboxTimerId == nTimerID)
+		{
+			if (theApp.m_hMsgboxDlg != NULL)
+			{
+				char buf[32];
+				
+				theApp.m_nMsgboxIcoIndex++;
+				//theApp.m_nMsgboxIcoIndex = theApp.m_nMsgboxIcoIndex % theApp.m_nMsboxIcoCount;
+				theApp.m_nMsgboxIcoIndex = theApp.m_nMsgboxIcoIndex % 12;
+				//theApp.m_nMsgboxIcoIndex = theApp.m_nMsgboxIcoIndex % 6;
+				
+				if (theApp.m_hImgBuf[1])
+				{
+					Mem_Free(theApp.m_hImgBuf[1]);
+					theApp.m_hImgBuf[1] = 0;
+				}
+
+				Str_Printf(buf, theApp.m_szMsgboxImgPath, theApp.m_nMsgboxIcoIndex,0,0);
+				theApp.m_hImgBuf[1] = GrDev_LoadPngImage(PNG_COLOR_ALPHA, buf);
+				IconCtrl_SetSelIndex(theApp.m_hMsgboxIco, 0);
+				IconCtrl_SetImage(theApp.m_hMsgboxIco, 0, theApp.m_hImgBuf[1]);
+				
+				Dialog_Draw(theApp.m_hMsgboxDlg, TRUE);
+				
+				//dkjung 2017-07-03
+				//버전업그레이드할 경우, 메시지 자동으로 닫히면 안된다.
+				if (theApp.m_bUpgradeFlag == FALSE)
+				{
+				
+					//dkjung 2017-05-15
+					//close_oneshot을 통해 자동으로 메시지박스를 닫는다.
+					if (close_oneshot == TRUE)
+					{
+						oneshot_count++;
+					}
+					else
+					{
+						oneshot_count = 0;
+					}
+					
+					//PRINT("oneshot_count = %d",oneshot_count,0,0);
+					if (oneshot_count >= __ONESHOT_COUNT__)
+					{
+						oneshot_count = 0;
+						CloseMessageBox();
+						EvtDraw();
+					}
+				
+				}
+				
+				GrDev_Refresh();
+				
+				//PRINT("메시지박스 타이머 이미지 그리기(%s)", buf,0,0);
+			}
+		}	
+		
+	}
+	
+	//---------------------------------------------------------------
+	void EvtPointing (long nAction,long X, long Y)
+	{
+		//터치가 있으면 자동종료 카운트를 리셋한다.
+		g_nTimerCnt =0;
+		if( theApp.m_hMsgboxDlg )
+		{
+			Dialog_PointingProcess ( theApp.m_hMsgboxDlg, nAction, X, Y );
+			return;
+		}
+		
+		if ( theApp.m_hSubDlg )
+		{
+			Dialog_PointingProcess ( theApp.m_hSubDlg, nAction, X, Y );
+			return;
+		}
+		else if (theApp.m_hChildDlg)
+		{
+			Dialog_PointingProcess ( theApp.m_hChildDlg, nAction, X, Y );
+			return;
+		}
+		
+		if (hCurDlg)
+		{
+			Dialog_PointingProcess ( hCurDlg, nAction, X, Y );
+		}
+			
+		g_SysBut_PointProcess ( nAction, X, Y );
+
+		DlgTbl_Pointing ( hCurDlg, nAction, X, Y);
+		
+		if (nSlfCtrlNum)
+		{
+			long i;
+			DlgObject* pObj;
+
+			for (i=0; i<nSlfCtrlNum; i++)
+			{
+				pObj = (DlgObject*)theSlfCtrl[i];
+				
+				if ((pObj->m_nType & 0xF0000000) == SLF_CTRL)
+				{
+					switch (pObj->m_nType & 0x0000FFFF)
+					{
+						case OBJ_BUT:
+						case OBJ_IBT:
+						case OBJ_ABT:
+							ButCtrl_PointingProcess(pObj->m_h, nAction, X, Y);
+							break;
+		
+						case OBJ_EDT:
+							EditCtrl_PointingProcess(pObj->m_h, nAction, X, Y);
+							break;
+							
+						case OBJ_LST:
+							ListCtrl_PointingProcess(pObj->m_h, nAction, X, Y);
+							break;
+							
+						case OBJ_SEL:
+							SelCtrl_PointingProcess(pObj->m_h, nAction, X, Y);
+							break;
+							
+						case OBJ_CHK:
+							ChkCtrl_PointingProcess(pObj->m_h, nAction, X, Y);
+							break;
+
+						case OBJ_GRD:
+							GridCtrl_PointingProcess(pObj->m_h, nAction, X, Y);
+							break;
+					}
+				}
+			}
+		}
+	}
+	
+	//---------------------------------------------------------------
+	long Edit_Handler (long nIndex)
+	{
+		handle hEdt;
+		
+			hEdt = Get_hDlgCtrlByIndex(nIndex+1);
+			g_EditCtrl_ShowEditInput( hEdt, EditCtrl_GetStr(hEdt) );
+		
+		return 0;
+	}
+	
+	long g_nCmbJustClose = 0;
+	long g_nCmbIdx = 0;
+	
+	//---------------------------------------------------------------
+	// 콤보 처리 이벤트 핸들러
+	// 콤보 버튼이 눌리면, 새로운 리스트 컨트롤을 생성하고, 
+	// 리스트를 펼쳐 보이고, 기존의 리스트에서 리스트를 복사후
+	// 리스트가 선택되면, 에디트에 복사, 새로운 리스트는 삭제한다.
+	//---------------------------------------------------------------
+	long Combo_Handler (long nIndex)
+	{
+		handle h;
+		handle hOrgLst;
+		handle hOrgEdt;
+		
+		long i;
+		long nListNum;
+		GR_RECT rBtn, rLst, r, t;
+		HandlerMsg msg;
+		
+		g_nCmbJustClose = 0;
+			
+		hOrgEdt = Get_hDlgCtrlByIndex(nIndex-2);
+		hOrgLst = Get_hDlgCtrlByIndex(nIndex);
+		nListNum = ListCtrl_GetItemNum (hOrgLst);
+		if (nListNum < 0)
+			return -1;
+		
+		//버튼 좌표를 알아낸다.
+		DlgCtrl_GetRange (this->m_hDlg, nIndex-1, &rBtn);
+		//리트트 좌표를 알아낸다.
+		DlgCtrl_GetRange (this->m_hDlg, nIndex, &rLst);
+		Dialog_GetClientRect ( this->m_hDlg, &r );
+		
+		// 버튼 보정
+		rBtn.X1 += r.X1;
+		rBtn.X2 += r.X1;
+		rBtn.Y1 += r.Y1;
+		rBtn.Y2 += r.Y1;
+		
+		// 리스트 보정
+		/*
+		rLst.X1 += r.X1;
+		rLst.X2 += r.X1;
+		rLst.Y1 += r.Y1;
+		rLst.Y2 += r.Y1;
+		*/
+		rLst.X1 = DMS_X(100);
+		rLst.X2 = DMS_X(900);
+		rLst.Y1 = DMS_Y(100);
+		rLst.Y2 = DMS_Y(900);
+		
+		h = ListCtrl_CreateObject( rLst.X1, rLst.Y1, rLst.X2, rLst.Y2 );
+		ListCtrl_ModifyStyle(h, 0, LISTSTY_BORDER|LISTSTY_ROUNDBORDER|LISTSTY_THICKBORDER|LISTSTY_WIDESCRLBAR|LISTSTY_VARSCROLLBAR );
+		ListCtrl_SetBkColorEx(h, LIGHTSKYBLUE);  //BRIGTHSKY,YELLOWGREEN,LIGHTSKYBLUE
+		ListCtrl_SetForeColorEx(h, TXTFRCOLOR);
+		ListCtrl_SetRoundRadius(h, DMS_X(5));
+		ListCtrl_SetRoundThickness(h, DMS_X(3));
+		//ListCtrl_SetRoundBoarderColor(h, BTNCTRLBKCOLOR, BTNCTRLBKCOLOR);
+		ListCtrl_SetRoundBoarderColor(h, SILVER, SILVER);
+		FrmCtrl_SetVarScrollThickness(h, DMS_X(100));
+		
+		ScrlBar_SetForeColorEx(FrmCtrl_GetVScroll(h), 0xad55);	//밝은회색
+		ScrlBar_SetThickness(FrmCtrl_GetVScroll(h), DMS_Y(40));
+		
+		//ListCtrl_SetFont(h, theDevInfo.m_nFontType);
+		ListCtrl_SetFont(h, theDevInfo.m_nFontLageType);
+		ListCtrl_AddItem(h, "", 0, ICON_NONE);
+		for (i=0; i<nListNum; i++)
+		{
+			ListCtrl_AddItem(h, ListCtrl_GetStr(hOrgLst, i), 0, ICON_NONE);
+		}		
+		
+		GrDev_Inactive();
+
+		ListCtrl_Draw(h, TRUE);
+		GrDev_Refresh();
+
+		while ( 1 )
+		{
+			Handler_PeekMessage(&msg);
+
+			if ( msg.MsgType == MSG_EXIT )
+			{
+				ListCtrl_DeleteObject(h);
+				return 0;		
+			}
+			
+			Handler_GetMessage(&msg);
+			
+			switch ( msg.MsgType )
+			{
+				case MSG_POINTING:
+				{
+					long x, y;
+					
+					x = (long)(msg.lParam & 0xFFFF);
+					y = (long)(msg.lParam >> 16);
+					
+					if( (x>rLst.X2 || x<rLst.X1) || (y>rLst.Y2 || y<rLst.Y1) )
+					{
+						if ( POINTING_UP != (long)msg.wParam )
+						{
+							break;
+						}
+					
+						//PRINT ("버튼 X좌표: %d < %d < %d", rBtn.X1, x, rBtn.X2);
+						//PRINT ("버튼 Y좌표: %d < %d < %d", rBtn.Y1, y, rBtn.Y2);
+						ListCtrl_DeleteObject (h);
+						g_nCmbJustClose = 1;
+						Dialog_Draw ( this->m_hDlg, TRUE );
+						//GrDev_Refresh();
+						return 0;
+					}
+					else
+					{
+						ListCtrl_PointingProcess(h, msg.wParam, x, y);
+
+						if( POINTING_UP == (long)msg.wParam )
+						{
+							long nSelIndex;
+							nSelIndex = ListCtrl_GetSelIndex(h);
+							
+							if(nSelIndex > 0)
+							{
+								EditCtrl_SetStr(hOrgEdt, ListCtrl_GetStr (Get_hDlgCtrlByIndex(nIndex), nSelIndex-1));
+							}
+							else
+							{
+								break;
+							}
+							ListCtrl_DeleteObject(h);
+							
+							//셀렉트 메시지 호출.
+							msg.MsgType = MSG_SELECT;
+							msg.wParam = nSelIndex;
+							msg.lParam = 0;
+							Handler_PostMessage(&msg);
+							
+							// 원래 선택된 리스트에 인덱스를 설정 해 준다.
+							if( nSelIndex > 0)
+							{
+								ListCtrl_SelectItem ( hOrgLst, nSelIndex-1 );
+							}
+							//원래의 리스트로 포커스를 이동.
+							//Dialog_SetActiveCtrl (this->m_hDlg, nIndex);
+							Dialog_Draw ( this->m_hDlg, TRUE );
+							return 0;
+						}
+					}
+					
+					break;
+				}
+				case MSG_SELECT:
+				{
+					long nSelIndex;
+
+					nSelIndex = ListCtrl_GetSelIndex(h);
+					if(nSelIndex > 0)
+					{
+						EditCtrl_SetStr(hOrgEdt, ListCtrl_GetStr (Get_hDlgCtrlByIndex(nIndex), nSelIndex-1));
+					}
+					ListCtrl_DeleteObject(h);
+					
+					//셀렉트 메시지 호출.
+					msg.MsgType = MSG_SELECT;
+					msg.wParam = nSelIndex;
+					msg.lParam = 0;
+					Handler_PostMessage(&msg);
+					
+					// 원래 선택된 리스트에 인덱스를 설정 해 준다.
+					if( nSelIndex > 0)
+					{
+						ListCtrl_SelectItem (hOrgLst, nSelIndex-1);
+					}
+					//원래의 리스트로 포커스를 이동.
+					//Dialog_SetActiveCtrl (this->m_hDlg, nIndex);
+					Dialog_Draw ( this->m_hDlg, TRUE );
+					return 0;
+				}
+				
+			}//end of switch
+			GrDev_Refresh();
+		}// end of while
+		
+		ListCtrl_DeleteObject(h);
+		Dialog_Draw ( this->m_hDlg, TRUE );
+		return 0;
+	}
+
+	//---------------------------------------------------------------
+	void EvtButton (long ID)
+	{
+		DlgObject* pObj;
+
+		//버튼 소리 , 20160530
+		//VM_PlaySound(CLICKSOUND);
+		switch (ID)
+		{
+			case MB_OK:
+			case MB_EXIT:
+				CloseMessageBox ();
+				return;
+			//case GID_SOCK_RETRY:
+			//case GID_SOCK_ERROR:
+			case GID_SOCK_CANCEL:
+				CloseMessageBox ();
+				return;
+				
+			case GID_EXIT:
+				CloseMessageBox ();
+				EvtExit ();
+				VM_AmEnd ();
+				return;
+		}
+
+		pObj = FindObject (ID);
+		if (pObj == NULL) 
+		{
+			VM_PlaySound(CLICKSOUND);
+			return;
+		}
+
+		switch (pObj->m_nActType)
+		{
+/*
+			case CALL_CARD:
+				// 현재 카드를 이전 카드로 설정하고,
+				// 새로운 카드를 호출한다.
+				
+				// 이벤트가 OnButton으로 넘어가지 않도록 이벤트를 클리어 한다.
+				CLR_EVENT();
+				
+				if (pObj->m_pAct == NULL)
+				{
+					MessageBoxEx (ERROR_OK, "호출될 카드가 지정되지 않았습니다.");
+					break;	
+				}
+				EvtExit ();
+				break;
+*/				
+			case CALL_FUNC:
+				// 이 경우 바로 OnButton()으로 가서 처리되도록 한다.
+				break;
+				
+			case CALL_CTRL:
+				// 특정한 컨트롤에 대한 Action을 처리한다.
+				// 컨트롤의 종류를 구분? -> 아마 구분해야 할듯 하다.
+				// Action(event)를 처리.
+				// pObj->m_nType 타입을 어떻게 정할 것인가?
+				//MessageBoxEx (ERROR_OK, "콤보 상자 클릭!!");
+
+				if ( MATCH ("OBJ_CMB", pObj->m_pAct) )
+				{
+					//PRINT ("콤보 버튼 클릭 0x%x", pObj->m_nId, 0, 0);
+					
+					// 하위 16비트만 컨트롤 인덱스를 저장.
+					Combo_Handler ( (pObj->m_nId + 1) & 0x0000FFFF );
+				}
+				else if ( MATCH ("OBJ_CMB2", pObj->m_pAct) )
+				{
+					//PRINT ("콤보 버튼 클릭 0x%x", pObj->m_nId, 0, 0);
+					
+					// 하위 16비트만 컨트롤 인덱스를 저장.
+					Combo_Handler ( (pObj->m_nId + 1) & 0x0000FFFF );
+				}
+				else if ( MATCH ("OBJ_EDIT", pObj->m_pAct) )
+				{
+					//PRINT ("콤보 버튼 클릭 0x%x", pObj->m_nId, 0, 0);
+					
+					// 하위 16비트만 컨트롤 인덱스를 저장.
+					Edit_Handler ( (pObj->m_nId ) & 0x0000FFFF );
+				}
+				break;
+		}
+
+		//버튼 소리 , 20160530
+		//2016-10-28 Sanghyun Lee
+		//버튼 소리 위치 수정
+		VM_PlaySound(CLICKSOUND);
+	}
+	
+	//---------------------------------------------------------------
+	void EvtSelect (long Index)
+	{
+		//그리드 선택 컬러값...
+		//pObj->m_stCtrl.m_pBuf[2];
+		//PRINT("EvtSelect:: %d",Index,0,0);
+		
+		//그리드인지 어떻게 알아내지?
+		if ( IsMessageBox() )
+		{
+			//PRINT("EvtSelect:: 메시지 박스 팝업 됨.",0,0,0);
+			return;
+		}
+		
+		if (hCurDlg)
+		{
+			long ctrl_index = Dialog_GetActiveCtrlIndex(hCurDlg);
+			
+			//현재 액티브 포커스된 컨트롤이 그리드 컨트롤이면
+			if ( DCTYPE_GRIDCTRL == DlgCtrl_GetType(hCurDlg, ctrl_index) )
+			{
+				//타이틀은 처리하지 않도록...
+				if (Index > 0)
+				{
+					//현재 인덱스의 색상을 바꾼다.
+					handle h = DlgCtrl_GetHandle(hCurDlg, ctrl_index);
+					if (h)
+					{
+						GridCtrl_SetSelectedColor(h, Index, GridCtrl_GetSelectedColor(h));
+					}
+				}
+			}
+		}
+	}
+	
+	//---------------------------------------------------------------
+	//UART EVENT 호출
+	void EvtUart (long nType, long nData)
+	{
+		//M(EvtUart >>> 이벤트 발생...);
+		
+		if (g_pEvtUart != NULL)
+		{
+			g_pEvtUart(nType, nData);
+		}
+		
+		EvtDraw();
+	}
+	
+	//---------------------------------------------------------------
+	//PUSH EVENT 호출
+	void EvtTask (long nType, long nData)
+	{
+		//M(EvtTask >>> 이벤트 발생...);
+		
+		if (g_pEvtTask != NULL)
+		{
+			g_pEvtTask(nType, nData);
+		}
+		
+		EvtDraw();
+	}
+	
+	//---------------------------------------------------------------
+	void EvtTicker (long nType)
+	{
+	}
+	
+	//---------------------------------------------------------------
+	void EvtEditctrl (long nType)
+	{
+		if(nType == 1)
+		{
+			EvtDraw();
+		}
+	}
+	
+	//---------------------------------------------------------------
+	void EvtExtctrl	(long nEvent, long nData)
+	{
+		handle hOrgLst;
+		handle hOrgEdt;	
+		long nSelIndex= -1, nListNum = 0;
+
+PRINT("EvtExtctrl nEvent=%d, nData=%d",nEvent,nData,0);
+		
+		if( nEvent == EXTCTRL_LIST && g_nCmbJustClose == 1 ) 
+		{
+
+			hOrgEdt = Get_hDlgCtrlByIndex(g_nCmbIdx-2);
+			hOrgLst = Get_hDlgCtrlByIndex(g_nCmbIdx);
+			
+			nListNum = ListCtrl_GetItemNum (hOrgLst);			
+			
+			if( nData >= 0  && nListNum > nData )
+			{
+				EditCtrl_SetStr(hOrgEdt, ListCtrl_GetStr( hOrgLst, nData));
+				ListCtrl_SelectItem ( hOrgLst, nData);
+			}
+
+			g_nCmbJustClose = 0;
+		}
+		
+		EvtDraw();
+	}
+
+	//---------------------------------------------------------------
+	void EvtGridctrl (long nEvent, long nData)
+	{
+		handle h = NULL;	
+		long* page = NULL;	
+		long* total_page = NULL;
+		BaseCallback func = NULL;
+		long max_row = 0;		
+			
+		if (theApp.m_hGrid == NULL)
+		{
+			return;
+		}
+		
+		h 			= theApp.m_hGrid;
+		page 		= theApp.m_pCurPage;
+		total_page 	= theApp.m_pTotalPage;
+		func 		= theApp.m_pCallback;
+		max_row 	= theApp.m_nMaxRow;
+			
+		switch(nEvent)
+		{
+			//페이지 업/다운 이벤트시
+			//데이터 다시 채워주는 코드 삽입.
+			case PAGE_UP:
+				
+				(*page)--;
+				if(*page < 0)
+				{
+					*page = 0;
+					return;
+				}
+
+				MessageBoxEx(PROGRESS_LOADING, "페이지 로딩 중...");
+				
+				func();
+				
+				VmSleep(50);
+				
+				CloseMessageBoxEx();
+
+				//그리드 컨트롤 인덱스를 선택한다.
+				GridCtrl_SetIndex(max_row);
+				//그리드 컨트롤의 스크롤 위치를 이동한다.
+				GridCtrl_SetScroll(h, -1, nData);
+				
+				theApp.m_nScrollY = GridCtrl_GetScrollY(h);
+				
+				EvtDraw();
+				break;
+				
+			case PAGE_DOWN:
+			
+				(*page)++;
+				if( *page > *total_page-1 )
+				{
+					*page = *total_page-1;
+					return;
+				}
+
+				MessageBoxEx(PROGRESS_LOADING, "페이지 로딩 중...");
+					
+				func();
+				
+				VmSleep(50);
+				
+				CloseMessageBoxEx();
+				
+				//인덱스는 1부터 레코드 임.
+				//인덱스를 선택한다.
+				GridCtrl_SetIndex(1);
+				GridCtrl_SetScroll(h, -1, nData);	
+					
+				theApp.m_nScrollY = GridCtrl_GetScrollY(h);
+				
+				EvtDraw();
+				break;
+		}
+		
+	}
+
+	//---------------------------------------------------------------
+	void g_Gridctrl_SetTitleBkColor (handle hGrid, long nCols)
+	{
+		long i;
+		handle h;
+		
+		//그리드 컨트롤 타이틀 색 초기화.
+		for(i=0; i<nCols; i++)
+		{
+			h = GridCtrl_GetCellHandle(hGrid, i, 0);
+			EditCtrl_SetBkColorEx( h, GRIDTTLBK );
+		}
+	}
+
+	//---------------------------------------------------------------
+	//---------------------------------------------------------------
+	// 콜백 함수 설정
+	//---------------------------------------------------------------
+	//---------------------------------------------------------------
+	
+	//---------------------------------------------------------------
+	// 앱 최초 실행시 한번만 호출해 주는 외부 모듈 Entry Function.
+	// (주로 로그인 화면에서 CardGui가 로드되기 전 설정되어야 한다.)
+	//---------------------------------------------------------------
+	void SetExtLoadModule(void* p)
+	{
+		g_pExtLoadModule = p;
+	}
+	
+	//---------------------------------------------------------------
+	// 앱 실행시 Uart 이벤트 콜백 설정(프린터, 카드리더).
+	//---------------------------------------------------------------
+	void SetExtEvtUart(void* p)
+	{
+		g_pEvtUart = p;
+	}
+	
+	//---------------------------------------------------------------
+	// 앱 실행시 Task 이벤트 콜백 설정(Task, Push etc).
+	//---------------------------------------------------------------
+	void SetExtEvtTask(void* p)
+	{
+		g_pEvtTask = p;
+	}
+	
+	//---------------------------------------------------------------
+	// 앱 실행시 Uart 이벤트 콜백 설정(프린터, 카드리더).
+	//---------------------------------------------------------------
+	void SetExtEvtTimer(void* p)
+	{
+		g_pEvtTimer = p;
+	}
+	
+	//---------------------------------------------------------------
+	// 앱 Start Session 이벤트 콜백 설정.
+	//---------------------------------------------------------------
+	void SetExtSession(void* p)
+	{
+		g_pEvtSession = p;
+	}
+
+	//---------------------------------------------------------------
+	// 앱 End Session 이벤트 콜백 설정.
+	//---------------------------------------------------------------
+	void SetExtEndSession(void* p)
+	{
+		g_pEvtEndSession = p;
+	}
+
+#endif // __CARDGUI_LIB__

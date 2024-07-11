@@ -1,0 +1,89 @@
+{
+    // See https://go.microsoft.com/fwlink/?LinkId=733558
+    // for the documentation about the tasks.json format
+    "version": "2.0.0",
+    "tasks": [
+        {
+            "label": "Smart Build",
+            "type": "shell",
+            "args": [
+                "${fileBasenameNoExtension}",
+                "${workspaceFolder}"
+            ],
+            "options": {
+                "cwd": "${workspaceFolder}"
+            },
+            "command": "${cwd}/sdk/build.bat",
+            "problemMatcher": [],
+            "group": {
+                "kind": "build",
+                "isDefault": true
+            },
+            "detail": "MC 한개 파일을 빌드합니다."
+        },
+        {
+            "label": "Smart Build All",
+            "type": "shell",
+            "args": [
+                "${workspaceFolder}"
+            ],
+            "options": {
+                "cwd": "${workspaceFolder}"
+            },
+            "command": "${cwd}/sdk/build_all.bat",
+            "problemMatcher": [],
+            "detail": "MC 전체 빌드를 합니다."
+        },
+        {
+            "label": "Smart Emulator",
+            "type": "shell",
+            "args": [
+                "${workspaceFolder}",
+                "${workspaceFolder}/Debug"
+            ],
+            "options": {
+                "cwd": "${workspaceFolder}"
+            },
+            "command": "${cwd}/sdk/run_smart.bat",
+            "problemMatcher": [],
+            "detail": "에뮬레이터 실행"
+        },
+        {
+            "label": "Smart Trace",
+            "type": "shell",
+            "args": [
+                "${workspaceFolder}"
+            ],
+            "options": {
+                "cwd": "${workspaceFolder}"
+            },
+            "command": "${cwd}/sdk/run_trace.bat",
+            "problemMatcher": [],
+            "detail": "로그창을 실행합니다."
+        },
+        {
+            "label": "Make POP File",
+            "type": "shell",
+            "args": [
+                "${workspaceFolder}",
+                "${workspaceFolder}/Package"
+            ],
+            "options": {
+                "cwd": "${workspaceFolder}"
+            },
+            "command": "${cwd}/sdk/makepopfile.bat",
+            "problemMatcher": [],
+            "detail": "POP 파일을 생성합니다."
+        },
+        // {
+        //     "label": "Send Push Message",
+        //     "type": "shell",
+        //     "args": [],
+        //     "options": {
+        //         "cwd": "${workspaceFolder}"
+        //     },
+        //     "command": "${cwd}/sdk/push_test.bat",
+        //     "problemMatcher": []
+        // }
+    ]
+}

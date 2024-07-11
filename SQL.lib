@@ -1,0 +1,624 @@
+/*----------------------------------------------------------------------------------
+	Project Name: Smart 
+	Smart Application : SQLite 쿼리문
+	Smart Version : Smart 1.0
+	Copyright(c) 2014  ValueCMD Co., Ltd.
+	----------	------		------------------------------------------------------
+	2014.21.31	이상훈		v 3.0.1		: Create 스마트폰 포팅
+----------------------------------------------------------------------------------*/
+#include	"SQL.h"
+
+	//-----------------------------------------------------------
+	//생성자
+	SQLITE NewSqLite (void)
+	{
+		SQLITE p;
+	
+		p = (SQLITE) SqLite_malloc ( sizeof(SqLite) );
+		if (p == 0)
+		{
+			return 0;
+		}
+		
+		//멤버 변수 초기화
+		//가급적 모두 초기화 해 준다.
+		p->m_hdb = NULL;
+		p->m_hStmt = NULL;
+		p->m_hIStmt = NULL;
+		p->m_hUStmt = NULL;
+		p->m_nRetError = 0;
+		p->m_szSql = NULL;
+		p->m_bTranFlag = TRUE;
+		p->m_bExecFlag = FALSE;
+		
+		#define DEF_FPTR(f)		p->f = (SQLITE_##f) SqLite_##f
+		//매쏘드 설정
+		__SQLITE_CLASS_METHODS();
+		
+		#undef DEF_FPTR
+	
+		CM_NEW_CHECK(p);
+	
+		return p;
+	}
+	
+	//-----------------------------------------------------------
+	//소멸자
+	long DelSqLite (SQLITE p)
+	{
+	SQLITE pThis = p;
+	long ret;
+		
+				//PRINT("DelSqLite start", 0, 0, 0);
+		if(pThis == NULL)
+			return NULL;
+			
+//		if (pThis->m_bTranFlag == FALSE)
+//		{
+//			SQL_Rollback(pThis->m_hdb);
+//		}
+//		else
+//		{
+//			SQL_Commit(pThis->m_hdb);
+//		}
+		
+		if(pThis->m_bExecFlag == TRUE)
+		{
+			if (pThis->m_bTranFlag == FALSE)
+			{
+				SQL_Rollback(pThis->m_hdb);
+				//PRINT("DelSqLite SQL_Rollback", 0, 0, 0);
+			}
+			else
+			{
+				SQL_Commit(pThis->m_hdb);
+				//PRINT("DelSqLite SQL_Commit", 0, 0, 0);
+			}
+
+			SqLite_free ((byte*)pThis->m_szSql);
+		}
+		else {
+			//PRINT("DelSqLite No Commit or Rollback", 0, 0, 0);
+		}
+
+		pThis->Close(pThis);
+			
+		SqLite_free ((byte*)pThis);
+
+		//PRINT("DelSqLite return 0", 0, 0, 0);
+		return 0;
+	}
+	
+	//-----------------------------------------------------------
+	handle SqLite_Open(void* p)
+	{
+	char szbuf[256];
+	SQLITE pThis = (SQLITE) p;
+
+		Mem_Set((byte*)szbuf, 0x00, sizeof(szbuf));	
+		GET_FILENM(szbuf, SQLITE_DB);
+		pThis->m_hdb = SQL_Open(szbuf);	
+		return pThis->m_hdb;
+	}
+	
+	//-----------------------------------------------------------
+	long SqLite_Close(void* p)
+	{
+	long ret;
+	SQLITE pThis = (SQLITE) p;
+	
+		if(pThis == NULL)
+			return 0;
+		
+		pThis->DeleteStatement(pThis);
+		
+		if(pThis->m_hdb != NULL)
+		{
+			ret = SQL_Close(pThis->m_hdb);
+			pThis->m_hdb = NULL;
+			return ret;
+		}
+		
+		return 0;
+	}
+	
+	//-----------------------------------------------------------
+	bool SqLite_Bind(void* p, long idx, char cType, long* value, long len, bool encrypt )
+	{
+		bool ret = FALSE;
+		SQLITE pThis = (SQLITE)p;
+		char* sztmp;
+		long v = 0;
+		
+		if(pThis == NULL)
+			return ret;
+					
+		if( encrypt == ENCRYPT)
+		{
+			sztmp =(char*)Mem_Alloc(len+1);
+			Mem_Set((byte*)sztmp , 0x00, len+1 );
+			Mem_Cpy( (byte*)sztmp,(byte*)value , len );
+			
+			g_EncryptDecrypt(ENCRYPT, (char*) sztmp, len); 			
+			ret = SQL_Bind(pThis->m_hStmt, idx, 'B', (long*)sztmp, len );
+			Mem_Free((byte*)sztmp);
+		}
+		else
+		{
+			if(cType == 'X' )
+			{
+				v = *value;
+				ret = SQL_Bind(pThis->m_hStmt, idx, cType, (long*)&v, len );
+			}
+			else
+			{
+				ret = SQL_Bind(pThis->m_hStmt, idx, cType, (long*)value, len );
+			}
+		}
+		
+		return ret;
+	}
+	
+	//-----------------------------------------------------------
+	bool SqLite_IBind(void* p, long idx, char cType, long* value, long len, bool encrypt )
+	{
+		bool ret = FALSE;
+		SQLITE pThis = (SQLITE)p;
+		char* sztmp;
+		long v = 0;
+		
+		if(pThis == NULL)
+			return ret;
+					
+		if( encrypt == ENCRYPT)
+		{
+			sztmp =(char*)Mem_Alloc(len+1);
+			Mem_Set((byte*)sztmp , 0x00, len+1 );
+			Mem_Cpy( (byte*)sztmp,(byte*)value , len );
+			
+			g_EncryptDecrypt(ENCRYPT, (char*) sztmp, len); 			
+			ret = SQL_Bind(pThis->m_hIStmt, idx, 'B', (long*)sztmp, len );
+			Mem_Free((byte*)sztmp);
+		}
+		else
+		{
+			if(cType == 'X' )
+			{
+				v = *value;
+				ret = SQL_Bind(pThis->m_hIStmt, idx, cType, (long*)&v, len );
+			}
+			else
+			{
+				ret = SQL_Bind(pThis->m_hIStmt, idx, cType, (long*)value, len );
+			}
+		}
+		
+		return ret;
+	}
+	
+	//-----------------------------------------------------------
+	bool SqLite_UBind(void* p, long idx, char cType, long* value, long len, bool encrypt )
+	{
+		bool ret = FALSE;
+		SQLITE pThis = (SQLITE)p;
+		char* sztmp;
+		long v = 0;
+		
+		if(pThis == NULL)
+			return ret;
+					
+		if( encrypt == ENCRYPT)
+		{
+			sztmp =(char*)Mem_Alloc(len+1);
+			Mem_Set((byte*)sztmp , 0x00, len+1 );
+			Mem_Cpy( (byte*)sztmp,(byte*)value , len );
+			
+			g_EncryptDecrypt(ENCRYPT, (char*) sztmp, len); 			
+			ret = SQL_Bind(pThis->m_hUStmt, idx, 'B', (long*)sztmp, len );
+			Mem_Free((byte*)sztmp);
+		}
+		else
+		{
+			if(cType == 'X' )
+			{
+				v = *value;
+				ret = SQL_Bind(pThis->m_hUStmt, idx, cType, (long*)&v, len );
+			}
+			else
+			{
+				ret = SQL_Bind(pThis->m_hUStmt, idx, cType, (long*)value, len );
+			}
+		}
+		
+		return ret;
+	}
+	
+	//-----------------------------------------------------------
+	long SqLite_GetValue( void* p, long index, char cType, long* pVal, long len, bool encrypt )
+	{
+		long ret = -1;
+		SQLITE pThis = (SQLITE) p;
+		char* sztmp;
+		
+		if(pThis == NULL)
+			return ret;
+		
+		if( encrypt == ENCRYPT)
+		{
+			sztmp =(char*)Mem_Alloc(len+1);
+			Mem_Set((byte*)sztmp , 0x00, len+1 );
+			ret = SQL_GetValue( pThis->m_hStmt, index, 'B', (long*)sztmp);
+			g_EncryptDecrypt(DECRYPT, sztmp, len); 			
+			Mem_Cpy( (byte*)pVal,(byte*)sztmp, len );
+			Mem_Free((byte*)sztmp);
+		}
+		else
+		{
+			ret = SQL_GetValue( pThis->m_hStmt, index, cType, (long*)pVal);
+		}
+		
+		return ret;
+	}
+	
+	//-----------------------------------------------------------
+	bool SqLite_Execute( void* p )
+	{
+	bool ret = FALSE;
+	SQLITE pThis = (SQLITE) p;
+		
+		if(pThis == NULL)
+		{
+			pThis->m_bTranFlag = FALSE;
+			return ret;
+		}
+
+		if(pThis->m_hStmt == NULL)
+		{
+			pThis->m_bTranFlag = FALSE;
+			return ret;
+		}
+			
+		ret	 = SQL_Execute(pThis->m_hStmt);
+		if( ret == FALSE)
+		{
+			PRINT("SqLite_Execute ::SQL_Execute fail [%d]", ret, 0, 0);
+			PRINT("SqLite_Execute SQL_GetLastError(pThis->m_hdb) : %s",SQL_GetLastError(pThis->m_hdb),0,0);
+			pThis->m_bTranFlag = FALSE;
+			return ret;
+		}
+		
+		pThis->m_bExecFlag = TRUE;
+		
+		return ret;
+	}
+	
+	//-----------------------------------------------------------
+	bool SqLite_ExecuteI( void* p )
+	{
+	bool ret = FALSE;
+	SQLITE pThis = (SQLITE) p;
+		
+		if(pThis == NULL)
+		{
+			pThis->m_bTranFlag = FALSE;
+			return ret;
+		}
+
+		if(pThis->m_hIStmt == NULL)
+		{
+			pThis->m_bTranFlag = FALSE;
+			return ret;
+		}
+			
+		ret	 = SQL_Execute(pThis->m_hIStmt);
+		if( ret== FALSE)
+		{
+			PRINT("::SQL_ExecuteI fail [%d]", ret, 0, 0);
+			PRINT("SQL_GetLastErrorI(pThis->m_hdb) : %s",SQL_GetLastError(pThis->m_hdb),0,0);
+			pThis->m_bTranFlag = FALSE;
+			return ret;
+		}
+		
+		pThis->m_bExecFlag = TRUE;
+		
+		return ret;
+	}
+	
+	//-----------------------------------------------------------
+	bool SqLite_ExecuteU( void* p )
+	{
+	bool ret = FALSE;
+	SQLITE pThis = (SQLITE) p;
+		
+		if(pThis == NULL)
+		{
+			pThis->m_bTranFlag = FALSE;
+			return ret;
+		}
+
+		if(pThis->m_hUStmt == NULL)
+		{
+			pThis->m_bTranFlag = FALSE;
+			return ret;
+		}
+			
+		ret	 = SQL_Execute(pThis->m_hUStmt);
+		if( ret== FALSE)
+		{
+			PRINT("::SQL_ExecuteU fail [%d]", ret, 0, 0);
+			PRINT("SQL_GetLastErrorU(pThis->m_hdb) : %s",SQL_GetLastError(pThis->m_hdb),0,0);
+			pThis->m_bTranFlag = FALSE;
+			return ret;
+		}
+		
+		pThis->m_bExecFlag = TRUE;
+		
+		return ret;
+	}
+	
+	//-----------------------------------------------------------
+	handle	SqLite_CreateStatement	(void* p, char* szSql)
+	{
+		SQLITE pThis = (SQLITE) p;
+		
+		if(pThis == NULL)
+		{
+			pThis->m_bTranFlag = FALSE;
+			return NULL;
+		}
+
+		pThis->m_hStmt = (handle)SQL_CreateStatement(pThis->m_hdb, szSql);
+		if( pThis->m_hStmt == NULL )
+		{
+			PRINT("::SQL_CreateStatement fail [%s]", SQL_GetLastError(pThis->m_hdb), 0, 0);
+			pThis->m_bTranFlag = FALSE;
+			return NULL;
+		}
+		
+		return pThis->m_hStmt;
+	}
+
+	//-----------------------------------------------------------
+	handle	SqLite_CreateStatementU	(void* p, char* szSql)
+	{
+		SQLITE pThis = (SQLITE) p;
+		
+		if(pThis == NULL)
+		{
+			pThis->m_bTranFlag = FALSE;
+			return NULL;
+		}
+		
+		pThis->m_hUStmt = (handle)SQL_CreateStatement(pThis->m_hdb, szSql);
+		if( pThis->m_hUStmt == NULL )
+		{
+			PRINT("::SQL_CreateStatement fail [%s]", SQL_GetLastError(pThis->m_hdb), 0, 0);
+			pThis->m_bTranFlag = FALSE;
+			return NULL;
+		}
+		
+		return pThis->m_hUStmt;
+	}
+
+	//-----------------------------------------------------------
+	handle	SqLite_CreateStatementI	(void* p, char* szSql)
+	{
+		SQLITE pThis = (SQLITE) p;
+		
+		if(pThis == NULL)
+		{
+			pThis->m_bTranFlag = FALSE;
+			return NULL;
+		}
+
+		pThis->m_hIStmt = (handle)SQL_CreateStatement(pThis->m_hdb, szSql);
+		if( pThis->m_hIStmt == NULL )
+		{
+			PRINT("::SQL_CreateStatement fail [%s]", SQL_GetLastError(pThis->m_hdb), 0, 0);
+			pThis->m_bTranFlag = FALSE;
+			return NULL;
+		}
+		
+		return pThis->m_hIStmt;
+	}
+	
+	//-----------------------------------------------------------
+	long SqLite_DeleteStatement (void* p)
+	{
+	long ret = 0;
+	SQLITE pThis = (SQLITE) p;
+	
+		if(pThis == NULL)
+			return NULL;
+	
+		if(pThis->m_hStmt != NULL)
+		{
+			ret = SQL_DeleteStatement (pThis->m_hStmt);
+			if (ret < 0) {
+				PRINT("::SQL_DeleteStatement m_hStmt fail.", 0, 0, 0);
+			}
+			pThis->m_hStmt = NULL;
+		}
+		
+		if(pThis->m_hIStmt != NULL)
+		{
+			ret = SQL_DeleteStatement (pThis->m_hIStmt);
+			if (ret < 0) {
+				PRINT("::SQL_DeleteStatement m_hIStmt fail.", 0, 0, 0);
+			}
+			pThis->m_hIStmt = NULL;
+		}
+		
+		if(pThis->m_hUStmt != NULL)
+		{
+			ret = SQL_DeleteStatement (pThis->m_hUStmt);
+			if (ret < 0) {
+				PRINT("::SQL_DeleteStatement m_hUStmt.", 0, 0, 0);
+			}
+			pThis->m_hUStmt = NULL;
+		}
+	
+		return ret;
+	}
+	
+	//-----------------------------------------------------------
+	long SqLite_ExecDirect(void* p, char* szSql )
+	{
+	long ret = 0;
+	SQLITE pThis = (SQLITE) p;
+
+		if(pThis == NULL)
+			return ret;
+			
+		if(pThis->m_hdb == NULL)
+			return ret;
+		
+		ret = SQL_ExecDirect(pThis->m_hdb, szSql);
+		
+		if( ret == FALSE)
+		{
+			PRINT("::SQL_ExecDirect ret:[%d]", ret, 0, 0);
+			//PRINT("SQL_GetLastError(pThis->m_hdb) : %s",SQL_GetLastError(pThis->m_hdb),0,0);
+			//pThis->m_bTranFlag = FALSE;
+			return ret;
+		}
+		
+		pThis->m_bExecFlag = TRUE;
+		
+		return ret;
+	}
+	 
+	//-----------------------------------------------------------
+	bool SqLite_Next(void* p)
+	{
+	bool ret = FALSE;
+	SQLITE pThis = (SQLITE) p;
+		
+		if(pThis == NULL)
+			return ret;
+		if(pThis->m_hStmt == NULL)
+			return ret;
+			
+		ret = SQL_Next(pThis->m_hStmt);
+		
+		return ret;
+	}
+	
+	//-----------------------------------------------------------
+	long SqLite_GetColCount(void* p)
+	{
+		long ret = 0;
+		SQLITE pThis = (SQLITE) p;
+
+		if(pThis == NULL)
+			return ret;
+		if(pThis->m_hStmt == NULL)
+			return ret;
+	
+		ret = SQL_GetColCount(pThis->m_hStmt);
+		
+		return ret;
+	}
+	
+	//-----------------------------------------------------------
+	char* SqLite_GetColName(void*p, long index)
+	{
+		SQLITE pThis = (SQLITE) p;
+		if(pThis == NULL)
+			return "";
+		if(pThis->m_hStmt == NULL)
+			return "";
+			
+		return SQL_GetColName( pThis->m_hStmt, index);
+	}
+	
+	//-----------------------------------------------------------
+	char SqLite_GetColType(void* p, long index)
+	{
+		SQLITE pThis = (SQLITE) p;
+
+		if(pThis == NULL)
+			return NULL;
+		if(pThis->m_hStmt == NULL)
+			return NULL;
+
+		return SQL_GetColType( pThis->m_hStmt, index);
+	}
+	
+	//-----------------------------------------------------------
+	char* SqLite_GetLastError(void* p)
+	{
+		SQLITE pThis = (SQLITE) p;
+		if(pThis == NULL)
+			return "";
+		if(pThis->m_hdb == NULL)
+			return "";
+			
+		return SQL_GetLastError(pThis->m_hdb);
+	}
+	
+	//-----------------------------------------------------------
+	void SqLite_SetErrorFlag(void* p)
+	{
+		SQLITE pThis = (SQLITE) p;
+		if(pThis == NULL)
+			return;
+		if(pThis->m_hdb == NULL)
+			return;
+			
+		pThis->m_bTranFlag = FALSE;
+	}
+	
+	//-----------------------------------------------------------
+	bool SqLite_Begin(void* p)
+	{
+		bool ret = FALSE;
+		SQLITE pThis = (SQLITE) p;
+		if(pThis == NULL)
+			return ret;
+		if(pThis->m_hdb == NULL)
+			return ret;
+	
+		ret = SQL_Begin(pThis->m_hdb);
+		return ret;
+	}
+	
+	//-----------------------------------------------------------
+	bool SqLite_Commit(void* p)
+	{
+		bool ret = FALSE;
+		SQLITE pThis = (SQLITE) p;
+		if(pThis == NULL)
+			return ret;
+		if(pThis->m_hdb == NULL)
+			return ret;	
+	
+		ret = SQL_Commit(pThis->m_hdb);
+		return ret;
+	}
+	
+	//-----------------------------------------------------------
+	bool SqLite_Rollback(void* p)
+	{
+		bool ret = FALSE;
+		SQLITE pThis = (SQLITE) p;
+		if(pThis == NULL)
+			return ret;
+		if(pThis->m_hdb == NULL)
+			return ret;
+	
+		ret = SQL_Rollback(pThis->m_hdb);
+		return ret;
+	}
+	
+	
+	
+	
+	
+	
+	
+
+
+
+
+	

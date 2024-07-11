@@ -1,0 +1,173 @@
+/*----------------------------------------------------------------------------------
+
+	mPOP25 Application : registry.lib
+
+	Compiler & Virtual Machine : mPOP 25.4
+
+    기능 :	PDA 내부에 Registry Database(DB)를 만들어, mPOP GW 서버 IP, mPOP GW 서버 Port,
+		    사용자 ID, Password 등의 정보를 저장한다.
+
+	Copyright(c) 2003 Mobile C&C Co., Ltd.
+
+	----------	------		------------------------------------------------------
+	2003.01.29	서병준		v1.00		: Create
+	2003.05.19	dkjung		v1.00		: Modify
+	
+	2004.10.06	dkjung		v3.00		: Release ( 표준모듈명 : registry )
+										: 이 버전 이후, 모듈 수정시 메일로 수정 내용
+										: 알려 주기 바람 ( dkjung@mcnc.co.kr )
+	----------	------		------------------------------------------------------
+----------------------------------------------------------------------------------*/
+
+#ifndef	_REGISTRY_LIB_
+#define	_REGISTRY_LIB_
+
+#include "registry.h"
+
+	#if defined(USE_DBASE)
+
+		// 함수들을 globalcard.mc 에 추가할 경우는 다음 부분을 globalcard.h 에 추가하여야 한다.
+
+		/****************************************************************************************
+		// 시작
+		// Registry DB 관련 Code 번호
+		#define	RG_MEMBERID	0	// 사용자 ID
+		#define	RG_PASSWORD	1	// 비밀번호
+		#define	RG_SAVEDATE	2	// 정보 저장 날짜
+		#define	RG_IPADDRES	3	// mPOP GW 서버 IP 주소
+		#define RG_PORTNUM	4	// mPOP GW 서버 Port 번호
+
+		#define	fn_RegiCode	0x0100FF01	// HJC_Registry DB에 사용될 필드아이디
+		#define	fn_RegiData	0x0400FF01	// HJC_Registry DB에 사용될 필드아이디
+
+		global	long	REGIDBSort[1];		// DB에 사용될 필드아이디
+		global	byte	REGIDBSortOrder[1];
+
+		global	char	g_FN_Registry[16];	// 오픈할 DB 이름 : PMO : 풀무원
+
+		// Registry 관련
+		// PDA 내부에 Registry Database(DB)를 만들어, mPOP GW 서버 IP, mPOP GW 서버 Port,
+		// 사용자 ID, Password 등의 정보를 저장한다.
+		global	long	g_Exist_Registry(void);
+		global	long	g_SET_Registry(long Code, char *Data);
+		global	long	g_GET_Registry(long Code, char *Data, long Size);
+
+		// 끝
+		**************************************************************************************/
+
+		// Registry DB 관련
+		long	REGIDBSort[1]		= { fn_RegiCode };	// DB에 사용될 필드아이디
+		byte	REGIDBSortOrder[1]	= { 0 };
+
+		char	g_FN_Registry[16]	= "SK_Registry";	// DB 이름 : SK-Enron 디비
+
+		//----------------------------------------------------------------------------------
+		// 기  능 : Registry DB 유무 검색
+		// 설  명 : Registry DB가 있는지 검사하고 없다면 새로 만든다.
+		// 리턴값 : 0 : Registry DB가 없고, 만들기도 실패.
+		//          1 : Registry DB가 없어서 새로 만들어서 성공.
+		//          2 : Registry DB가 있다.
+		//----------------------------------------------------------------------------------
+		long	g_Exist_Registry(void)
+		{
+			long	hDB;
+			quad	oid;
+			
+			hDB = DB_OpenDatabaseByName(g_FN_Registry, fn_RegiCode);		
+			if (hDB == VD_DB_INVALID_HANDLE)//	DB가 없으면 새로만든다.
+			{
+				DB_DeleteDatabaseByName (g_FN_Registry);
+				oid = DB_CreateDatabase(g_FN_Registry, 9, 1, REGIDBSort, REGIDBSortOrder);
+				if(oid == VD_INVALID_OID)
+				{
+					return 0;
+				}
+				return 1; // DB가 없어서 새로 만든 것이 성공함
+			}
+			DB_CloseDatabase(hDB);
+			return 2; // 처음에 DB가 있었다.
+		}
+
+		// Registry에 하나의 레코드를 저장한다.
+
+		//----------------------------------------------------------------------------------
+		// 기  능 : Registry DB 에 정보 등록
+		// 설  명 : Registry DB 의 해당 정보 레코드가 있으면 삭제하고, 레코드를 재생성한 후 정보를 등록한다.
+		//	        fn_RegiCode에 integer type의 Code
+		//	        fn_RegiData에 string type의 Data
+		// 리턴값 : 0 : Registry DB가 없는 경우
+		//          1 : 레코드 만들기를 실패한 경우
+		//          2 : 정보 등록이 성공한 경우
+		//----------------------------------------------------------------------------------
+		long	g_SET_Registry(long Code, char *Data)
+		{
+			long	hDB;
+			quad	oid;
+			
+			hDB = DB_OpenDatabaseByName(g_FN_Registry, fn_RegiCode);		
+			if (hDB == VD_DB_INVALID_HANDLE)
+			{
+				//Error
+				return 0;
+			}
+
+			// 입력으로 들어온 Code값을 가지는 Record를 찾는다.
+			// 그런 Code를 가지는 레코드가 있다면, 그 레코드를 지운다.
+			oid = DB_SearchRecordInt(hDB, fn_RegiCode, Code, VD_DB_SEARCH_FIRSTEQUAL);
+			if ( oid != VD_INVALID_OID)
+				DB_DeleteRecord	(hDB, oid);
+
+			// 새로 Record를 만들고 입력된 Code와 Data를 기록한다.
+			oid = DB_CreateRecord(hDB);
+			if ( oid == VD_INVALID_OID )
+			{
+				DB_CloseDatabase(hDB);
+				return 1;
+			}
+
+			// 각 field에 코드와 데이터를 쓴다.
+			DB_WriteIntField(hDB, oid, fn_RegiCode, Code);
+			DB_WriteStringField(hDB, oid, fn_RegiData, (byte *)Data);
+
+			DB_SaveRecord(hDB, oid);
+			DB_CloseDatabase(hDB);
+			return 2;
+		}
+
+		//----------------------------------------------------------------------------------
+		// 기  능 : Registry DB 에 정보 읽기
+		// 설  명 : Code값을 가지는 레코드에서 Data 정보를 읽는다.
+		//	        fn_RegiCode에 integer type의 Code
+		//	        fn_RegiData에 string type의 Data
+		// 리턴값 : 0 : Registry DB가 없는 경우
+		//          1 : 검색한 레코드가 없는 경우
+		//          2 : Registry DB에서 정보 읽기가 성공한 경우
+		//----------------------------------------------------------------------------------
+		long	g_GET_Registry(long Code, char *Data, long Size)
+		{
+			long	hDB;
+			quad	oid;
+			hDB = DB_OpenDatabaseByName(g_FN_Registry, fn_RegiCode);
+			if ( hDB == VD_DB_INVALID_HANDLE )
+			{
+				return 0;
+			}
+
+			oid = DB_SearchRecordInt(hDB, fn_RegiCode, Code, VD_DB_SEARCH_FIRSTEQUAL);
+			if ( oid == VD_INVALID_OID)
+			{
+				DB_CloseDatabase(hDB);
+				return 1;
+			}
+
+			//해당코드에 해당되는 값을 Data에 저장한다.
+			DB_ReadStringField(hDB, oid, fn_RegiData, (byte*)Data, Size);
+			DB_CloseDatabase(hDB);
+
+			return 2;
+		}
+
+	#elif defined(USE_FILE)
+	#endif
+
+#endif	//_REGISTRY_LIB_

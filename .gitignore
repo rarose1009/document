@@ -1,0 +1,5 @@
+Package/*.crd
+Package/*.pop
+Error/*
+Debug/*
+*.bak

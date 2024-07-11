@@ -1,0 +1,308 @@
+/*----------------------------------------------------------------------------------
+
+	mPOP25 Application : 통신관련 전역함수 모듈 (socket.lib)
+
+	Compiler & Virtual Machine : mPOP 25.4
+
+	Copyright(c) 2004 Mobile C&C Co., Ltd.
+
+	----------	------		------------------------------------------------------
+	2003.01.29	서병준		v1.00		: Create
+	2003.05.02	dkjung		v1.10		: CardGui.lib 모듈 사용하도록 수정.
+	
+	2004.02.05	dkjung		v2.0		: mPOP 25.4 적용 mPOP 25.3과 호환되지 않음.
+	2004.02.05	dkjung					: 모달 박스 기능 추가.
+	
+	2004.10.06	dkjung		v3.00		: Release ( 표준모듈명 : registry )
+										: 이 버전 이후, 모듈 수정시 메일로 수정 내용
+										: 알려 주기 바람 ( dkjung@mcnc.co.kr )
+	----------	------		------------------------------------------------------
+	2005.02.14	misocap		v.3.13		: g_SocketConnect 함수 내에서
+	                  					 g_SeverConnection 함수를 호출하도록 수정
+	                  					 'E'인경우 에러 메시지를 보여주는 게 아니라,
+	                  					 정상 TR 타입이 아닌 경우에 에러 메시지를 
+	                  					 보여주도록 수정
+----------------------------------------------------------------------------------*/
+
+#ifndef	_SOCKET_LIB_
+#define	_SOCKET_LIB_
+
+#include "socket.h"
+
+long g_Sock_SetDummy ( long* pnDummy )
+{
+	g_nDummy = *pnDummy;
+	return 0;
+}
+
+//----------------------------------------------------------------------------------
+// 기  능 : Ppp 연결한다.
+// 설  명 : Ppp_Connect 를 시도한다. 첫번째 인자가 TRUE 이면 메지지를 보여준다.
+//	    이미 접속되어 있는 경우는 접속 시도하지 않음.
+// 리턴값 : TRUE, FALSE
+//----------------------------------------------------------------------------------
+long	g_SeverConnection(void)
+{
+	long ret;
+
+	MessageBoxEx (MESSAGE, "전화접속 연결 중입니다.");
+	
+	//chan 2004-07-13                                                                               
+	//Ppp_Connect함수 내부에서 Ppp_IsConnected를 체크함
+	//Ppp_IsConnected를 외부에서 체크하게 되면 유선 업그레이드가
+	//지원되지 않게된다.
+//	ret = Ppp_Connect();	// 성공하였을 경우 0을 리턴
+//	Sock_Close();
+	SSL_SetEnable(TRUE);
+	
+	ret = Ppp_Connect();	// 성공하였을 경우 0을 리턴
+	if ( ret )		// 접속이 되지 않으면..
+	{
+		// dkjung 2003-08-20
+		// TIME_SLEEP초 정도 딜레이를 준다.
+		VmSleep(TIME_SLEEP);
+		MessageBoxEx (ERROR_OK, "통신연결이 되지 않습니다.\n전화기를 확인하세요!");
+		return -1;
+	}
+	
+	return 0;
+}
+
+//----------------------------------------------------------------------------------
+// 기  능 : Ppp 연결과 Socket 연결 모두를 끊는다.
+// 설  명 : 우선 Socket 연결을 끊고, Ppp 가 연결되어 있는지를 확인한 후 Ppp 연결을 끊는다.
+// 리턴값 : TRUE, FALSE
+//----------------------------------------------------------------------------------
+void	g_Sock_Close( void )
+{
+	long	ret;
+	long	i;
+	
+	Sock_Close();
+
+	if (Ppp_IsConnected())
+	{
+		for(i = 0; i < 2; i++)
+		{
+			ret = Ppp_Disconnect();
+
+			if(ret == 0)	// 연결 끊기를 성공하면
+				break;
+				
+			// dkjung 2003-08-20
+			// TIME_SLEEP초 정도 딜레이를 준다.
+			VmSleep (TIME_SLEEP);
+		}
+	}
+}
+
+//----------------------------------------------------------------------------------
+// 기  능 : Socket Connect
+// 설  명 : Ppp_Connect 이후 시도해야 한다. 첫번째 인자가 TRUE 이면 메지지를 보여준다.
+// 리턴값 : TRUE, FALSE
+//----------------------------------------------------------------------------------
+long	g_SocketConnect (void)
+{
+	long i;
+	long ret;
+	long ret2;
+	
+	_RETRY_:
+	
+	// misocap 2005-02-14
+	// 전화접속을 먼저 시도하도록 함. (이미 연결이 된경우에 다음으로 넘어감)
+	ret = g_SeverConnection();
+	if (ret)
+		return -1;
+	
+	MessageBoxEx (MESSAGE, "mPOP서버와 연결 중입니다.");
+
+	// Sock_Connect()
+	// success	: 0
+	// fail	: 0xFFFFFFFF
+	ret = Sock_Connect(g_HostIP, g_HostPort, TIME_SOCKETOUT ); // 타임아웃을 20초
+	if ( ret )	// 연결할수 없으면
+	{
+		for (i = 0 ; i < 1000000; i++)
+			;
+		// 한번 더 시도한다.
+		ret2 = Sock_Connect (g_HostIP, g_HostPort, TIME_SOCKETOUT/2 ); // 타임아웃을 10초
+		if ( ret2 )	// 연결할수 없으면
+		{
+			ret = MessageBoxEx (CONFIRM_YESNO, 
+			"mPOP서버와 연결할 수 없습니다.\n다시 시도하시겠습니까?");
+			if (ret == MB_OK)
+				goto _RETRY_;
+			return -1;
+		}
+		return 0;
+	}
+	return 0;
+}
+
+
+
+
+//----------------------------------------------------------------------------------
+// 기  능 : 헤더정보 생성 및 데이터 전송
+// 설  명 : 헤더에 기본적으로 들어가는 값들을 세팅하고 서버에 전송한다.
+// 리턴값 : success 이면 0, fail 이면 -1
+//----------------------------------------------------------------------------------
+long	g_Sock_DataSend(char CompanyID, char* TRCode, char TRClass, char TRType, byte* Buf, long BufSize, long nTimeOut )
+{
+	byte	LRC;
+	long	SendLength, i, ret;
+	byte*	pBuf;
+
+	// 사용자가 설정한 타임 아웃이 적용 되도록...
+	#ifdef CHANGE_SOCK_TIME_OUT
+		nTimeOut = g_nSockTimeOut * TIME_SEC;
+	#endif // CHANGE_SOCK_TIME_OUT
+
+	pBuf = (byte*)g_DataBuffer;	// Send Buffer를 Receive Buffer와 공유함
+
+	pBuf[IX_STX] = STX;
+
+	SendLength = BufSize + 18;
+	pBuf[IX_LEN  ] = (byte)(SendLength >> 8);
+	pBuf[IX_LEN+1] = (byte)(SendLength & 0xFF); // Length - Data
+
+	pBuf[IX_CID] = CompanyID;					// 프로그램 구분 Code
+
+	pBuf[IX_TCL] = TRClass;
+
+	Mem_Cpy(pBuf + IX_TCD, (byte*)TRCode, 4);
+
+	pBuf[IX_TTY] = TRType;						// F, M, L
+
+	Mem_Set(pBuf + IX_IDN, (char)0, 4);	
+	
+	Tapi_GetPhoneNum(pBuf + IX_PHN, 1);			// Client ID (전화번호)
+
+	// 사용되지 않음. (삭제)
+	// 설정된 더미 4바이트를 설정한다.
+	//Mem_Cpy ( (byte*)&pBuf[IX_DMY], (byte*)&g_nDummy, sizeof(g_nDummy) );
+	pBuf[IX_CTY] = '1';							// ipaq = '1'
+
+	// Data
+	Mem_Cpy(pBuf + IX_PTC, Buf, BufSize);
+	SendLength++;
+	pBuf[SendLength] = ETX;
+
+	SendLength++;
+	LRC = 0;
+	for ( i = 1; i < SendLength; i++)
+		LRC = LRC ^ pBuf[i];	// XOR
+	pBuf[SendLength] = LRC;
+	//pBuf[SendLength] = 0xAA;
+
+	ret = Sock_Write(pBuf, SendLength+1, nTimeOut);
+	return ret;
+}
+
+//----------------------------------------------------------------------------------
+// 기  능 : 데이터 수신
+// 설  명 : 데이터를 서버에서 수신한다.
+// 리턴값 : TRUE, FALSE
+//----------------------------------------------------------------------------------
+long	g_Sock_DataReceive( char* TRCode, long nTimeOut)
+{
+	long ret, nLength;
+	
+	// 사용자가 설정한 타임 아웃이 적용 되도록...
+	#ifdef CHANGE_SOCK_TIME_OUT
+		nTimeOut = g_nSockTimeOut * TIME_SEC;
+	#endif // CHANGE_SOCK_TIME_OUT
+	
+	ret = g_Sock_PacketRead(g_DataBuffer, MAX_PACKET_SIZE, TRCode, nTimeOut);
+	if (ret <= 0)
+	{
+		if (ret == 0)
+			ret = ERR_SVR_RES_FAIL;
+		else
+			ret = ERR_SVR_CON_FAIL;
+		
+		Sock_Close();
+		return ret;
+	}
+
+	// misocap 2005-01-27
+	//if (g_DataBuffer[9] == 'E')
+	if (g_DataBuffer[9] != 'L' && g_DataBuffer[9] != 'M' && 
+	    g_DataBuffer[9] != 'F' && g_DataBuffer[9] != 'N')
+	{
+		Sock_Close();
+		nLength = ((long)g_DataBuffer[1]) * 256+ (long)g_DataBuffer[2];
+		g_DataBuffer[nLength + 1] = 0;
+
+		return -1;
+	}
+	
+	return ret;
+}
+
+//----------------------------------------------------------------------------------
+// 기  능 : 데이터 수신
+// 설  명 : 데이터를 길이만큼 수신한다.
+// 리턴값 : 성공하면 읽은 데이터 길이, 실패하면 0보다 작은 값 리턴
+//----------------------------------------------------------------------------------
+long 	g_Sock_PacketRead( byte* Buf, long BufSize, char* TRCode, long nTimeOut )
+{     
+	long	tmpSize;
+	long 	PosBuf;
+	long	Len;
+	long	i;
+	long	ret;
+
+	PosBuf	= 0;
+	tmpSize	= 0;
+	Len	= 0;
+
+	while(1)
+	{
+		ret = Sock_Read(Buf + tmpSize, BufSize - tmpSize, nTimeOut );
+		if ( ret <= 0)			//chan
+			return ret;
+
+		tmpSize += ret;
+		if ( tmpSize > 2 )
+		{
+			if( Buf[0] == 0x02 )
+			{
+				Len = (long)Buf[1] * 256; 
+				Len += (long)Buf[2] + 2;
+			}
+			else
+			{
+				return -2;	// Invalid header from SERVER;
+			}
+
+			if (tmpSize >= Len )
+			{
+				if (Buf[Len-1] != 0x03)
+					return -2;
+				else
+					return tmpSize;
+			}
+		}
+	}	
+	return ret;
+}
+
+
+
+
+//----------------------------------------------------------------------------------
+// 기  능 : Socket 연결만 끊는다.
+// 설  명 : 
+// 리턴값 : TRUE, FALSE
+//----------------------------------------------------------------------------------
+void	g_Sock_Close_Only( void )
+{
+	long	ret;
+	long	i;
+	
+	Sock_Close();
+}
+
+#endif	//_SOCKET_LIB_

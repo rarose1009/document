@@ -1,0 +1,238 @@
+/*----------------------------------------------------------------------------------
+	Project Name: Smart HYGAS
+	Compiler & Virtual Machine : SMART 1.0.0
+	Copyright(c) 2014 Value CMD Co., Ltd
+	----------	------		------------------------------------------------------
+	2014.10.01	dkjung		v 3.0.1		: Create 스마트폰 포팅
+----------------------------------------------------------------------------------*/
+
+#ifndef	_FILEMGR_LIB_
+#define	_FILEMGR_LIB_
+
+	#include "FileMgr.h"
+
+	//========================================================================================
+	//	기  능 : 파일에 생성 & Write
+	//	설  명 : 파일이 없으면 생성하고 있으면 끝에 덧 붙인다.
+	//	Parameter
+	//		fd		: 파일 핸들
+	//		startPos	: 파일에 저장할 시작 위치
+	//		Buf		: 파일에 저장할 버퍼
+	//		length		: 저장할 크기
+	//		bCreate		: 파일 생성 여부
+	//========================================================================================
+
+	bool	g_File_Write ( long fd, long startPos, byte *Buf, long length )
+	{
+		char *pstr;
+		
+		pstr = Mem_Alloc ( length+1 );
+		
+		Mem_Set((byte*)pstr , 0x20, length );
+		Mem_Cpy((byte*)pstr,(byte*)Buf, Str_Len((char*)Buf) );
+		FFS_Seek ( fd, startPos, FS_SEEK_FROM_SET );
+		FFS_Write ( fd, (byte*)pstr, length );
+		
+		Mem_Free ( (byte*)pstr );
+		return TRUE;
+	}
+	
+	
+	/*=======================================================================================
+	함수명 : Str_trimcpy
+	기  능 : 데이터 양쪽 끝의 space를 0x00으로 치환한다.
+	Param  : dest: 대상 문자열 포인터
+			 source:원본 문자열 포인터
+			 size:원본데이터 길이
+	Return : 없음.
+	========================================================================================*/
+	void	g_Str_trimcpy(char* dest,char* source,long size)
+	{
+	long idx,i,num;
+	char temp[200];
+	char temp2[200];
+			
+		Mem_Set((byte*)temp, 0x00, sizeof(temp));
+		Mem_Cpy((byte*)temp,(byte*)source, size);		
+		
+		temp[size] = 0;
+				
+		idx = Str_Len(temp);
+
+		num =0;
+		
+		for(i=0;i<idx;i++)
+		{
+			if(temp[i] == ' ')
+				num++;
+			else
+				break;
+		}
+				
+		Str_Cpy(temp,temp+num);
+		
+		num =0;
+		idx = Str_Len(temp);
+		for(i=idx; i > 0; i--)
+		{
+			if(temp[i-1] == ' ')
+				num++;
+			else
+				break;
+		}		
+		Mem_Set((byte*)temp2, 0x00, sizeof(temp2));
+		Mem_Cpy((byte*)temp2,(byte*)temp, idx-num);
+		temp2[idx-num]=0;
+		Str_Cpy( dest, temp2);
+	}
+	
+	//========================================================================================
+	//	기  능 : 파일 읽기
+	//	설  명 : 파일에서 데이터를 읽는다.
+	//	Parameter
+	//		fd		: 파일 핸들
+	//		startPos	: 읽고자하는 포인트
+	//		Buf		: 저장할 버퍼
+	//		length		: 읽어낼 사이즈
+	//========================================================================================
+	bool	g_File_Read ( long fd, long startPos, byte *Buf, long length )
+	{
+	char *pstr;
+		
+		pstr = Mem_Alloc ( length+1 );
+		Mem_Set( (byte*)pstr, 0, length+1 );
+		
+		if (FFS_Seek ( fd, startPos, FS_SEEK_FROM_SET ) != SUCCESS)
+		{
+			Mem_Free ( (byte*)pstr );
+			return FALSE;
+		}	
+		if(FFS_Read ( fd, (byte*)pstr, length ) < 0)
+		{
+			Mem_Free ( (byte*)pstr );
+			return FALSE;
+		}
+		g_Str_trimcpy((char*)Buf, pstr, length);
+	
+		Mem_Free ( (byte*)pstr );
+		return TRUE;
+	}
+	
+	
+	/*=======================================================================================
+	함수명 : ClearFiles
+	기  능 : 지정된 디렉토리에서 폴더에 jpg파일을 모두삭제한다.
+	Parameter : pszDir : 디렉토리
+	: pszFilter : 찾는파일
+	Return    :  0 : 성공
+	-1 : 실패
+	========================================================================================*/
+	long g_ClearFiles (char* pszDir, char* pszFilter )
+	{
+	long fh;
+	char szPath[256];
+	char szTemp[256];
+	char szFileName[256] = {""};
+	
+		if (pszDir[0] == '\0')
+		{
+			Str_Cpy (szPath, pszFilter);
+		}
+		else
+		{
+			SPRINT(szPath, "%s\\%s", (quad)pszDir+((pszDir[0]=='\\')?1:0), (quad)pszFilter, 0);
+		}
+		
+		fh = FFS_FindFirst(szPath, szFileName);
+		if (fh < 0 )
+		{
+			return -1;
+		}
+		
+		// 파일이 하나도 없는 경우.
+		if ( szFileName[0] == '\0' )
+		{
+			FFS_FindClose(fh);
+			return 0;
+		}
+		
+		do
+		{
+			if ( pszDir[0] != '\0' )
+			{
+				SPRINT( szTemp, "%s\\%s", (quad)pszDir+((pszDir[0]=='\\')?1:0), (quad)szFileName, 0 );
+			}
+			else
+			Str_Cpy( szTemp, szFileName );
+			
+			FFS_Delete ( szTemp );
+			
+			Mem_Set( (byte*)szFileName, 0x00, sizeof(szFileName) );
+			Mem_Set( (byte*)szTemp, 0x00, sizeof(szTemp) );
+		} 
+		while ( FFS_FindNext( fh, szFileName) );
+		FFS_FindClose(fh);
+		return 1;
+	}
+	
+	/*=======================================================================================
+	함수명 : FindFiles
+	기  능 : 지정된 디렉토리에서 폴더, 파일들을 모두 찾아 온다.
+	Parameter : pszDir : 디렉토리
+	: pszFilter : 찾는파일
+	Return    :  0 : 성공
+	-1 : 실패
+	========================================================================================*/
+	long g_FindFiles (char* pszDir, char* pszFilter, char* pzfinefile )
+	{
+	long fh;
+	char szPath[256];
+	char szTemp[256];
+	char szFileName[256] = {""};
+		
+		if (pszDir[0] == '\0')
+		{
+			Str_Cpy (szPath, pszFilter);
+		}
+		else
+		{
+			SPRINT(szPath, "%s\\%s", (quad)pszDir+((pszDir[0]=='\\')?1:0), (quad)pszFilter, 0);
+		// pszDir+((pszDir[0]=='\\')?1:0)는 pszDir[1] 부터 든지 pszDir[0] 부터를 뜻한다.
+		}
+	
+		fh = FFS_FindFirst(szPath, szFileName);
+		if (fh < 0 )
+		{
+			return -1;
+		}
+	
+		// 파일이 하나도 없는 경우.
+		if ( szFileName[0] == '\0' )
+		{
+			FFS_FindClose(fh);
+			return 0;
+		}
+		
+		do
+		{
+			if ( pszDir[0] != '\0' )
+			{
+				SPRINT( szTemp, "%s\\%s", (quad)pszDir+((pszDir[0]=='\\')?1:0), (quad)szFileName, 0 );
+			}
+			else
+				Str_Cpy( szTemp, szFileName );
+			
+			Str_Cpy ( pzfinefile, szTemp );
+			
+			Mem_Set( (byte*)szFileName, 0x00, sizeof(szFileName) );
+			Mem_Set( (byte*)szTemp, 0x00, sizeof(szTemp) );
+		} 
+		while ( FFS_FindNext( fh, szFileName) );
+		FFS_FindClose(fh);
+		return 1;
+	}
+	
+	
+	
+	
+#endif	// _FILEMGR_LIB_

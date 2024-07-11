@@ -1,0 +1,2134 @@
+/*----------------------------------------------------------------------------------
+	Project Name: Smart HYGAS
+	Compiler & Virtual Machine : SMART 1.0.0
+	Copyright(c) 2014 Value CMD Co., Ltd
+	----------	------		------------------------------------------------------
+	2014.10.01	dkjung		v 3.0.1		: Create 스마트폰 포팅
+----------------------------------------------------------------------------------*/
+
+#ifndef	_COMM_LIB_
+#define	_COMM_LIB_
+
+#include "Comm.h"
+
+const TR_INFO TrInfo[] =
+{
+	ARR_TRCODE ( DEF_TABLE )
+	{0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0}	// 끝인걸?
+};
+
+// 내부적으로만 접근이 가능하도록...
+//---------------------------------------------------------------
+long Comm_Rcv			(char* pszTitle, char bInMsgDisplay);
+long Comm_Snd 			(char* pszTitle, char bInMsgDisplay);
+long Comm_RcvZip 		(char* pszTitle);
+long Comm_SndZip 		(char* pszTitle);
+void DebugSaveDB 		(long i, long nTotalCnt, long nTrCode);
+long Comm_nSnRZip 		(char* pszTitle);
+
+
+// 버퍼에 있는 데이터를 길이만큼 long값으로 변환
+//---------------------------------------------------------------
+long BtoI (byte* pBuf, long length)
+{
+	long i;
+	long nVal;
+	
+	nVal = 0;
+	for( i=0; i<length; i++ )
+	{ 
+		nVal <<= 8;
+		nVal |= pBuf[i];
+	}
+	
+	return nVal;
+}
+
+//---------------------------------------------------------------
+long GetTrIndex (char* pszTrCode)
+{
+	long i, n;
+
+	if (pszTrCode == NULL || pszTrCode[0] == '\0')
+		return -1;
+
+	n = SIZEOF(TrInfo);
+	for (i=0; i<n; i++)
+	{
+		if (MATCH (pszTrCode, TrInfo[i].m_szCode))
+		{
+			return i;	
+		}
+	}
+	
+	return -1;
+}
+
+//----------------------------------------------------------------------------------
+long OpenCommFile (char* pszTrCode, long nDataNum, long nMode)
+{
+	char szBuf[32];
+
+	if (!pszTrCode) return NULL;
+		
+	comm_chMode = nMode;
+	
+	switch (comm_chMode)
+	{
+		case RD:
+			GET_RESULT_FILE_INDEX (szBuf, GetTrIndex (pszTrCode));
+			return FS_Open ( szBuf, FS_READ_MODE, FS_NORMAL_FLAG );
+		case WR:
+			return COMFILE_OPEN_INDEX (GetTrIndex (pszTrCode), nDataNum);
+		default:
+			MessageBoxEx (ERROR_OK, "파일 열기 모드 에러!");
+	}
+	
+	return NULL;
+}
+
+
+// dkjung 2003-06-15
+// nDataNum :
+// 'N' 통신을 여러번 반복할 경우에 사용하는 값.
+// 서버측에 한번의 request를 통해서 여러개의 데이터를 받아올때,
+// 여러번 request를 반복하고 싶은 경우 사용하는 회수. -> TR 311번을 참조 할 것.
+//----------------------------------------------------------------------------------
+long CreateCommFile(TR_INFO* pTr, long nDataNum)
+{
+	long 	fd;
+	word	wNum;
+	
+	//M ("1.1");
+	MessageBoxEx (MESSAGE, "서버와 접속중입니다.\n잠시만 기다려 주세요.");
+	//M ("1.2");
+
+	if( FS_CreateDir ( DIR_COMM_STR ) < 0 )
+	{
+		if( GetApiError() == FS_ERR_INTERNAL_ERROR )
+		{
+			return ERR_DIR_CREATE;
+		}
+	}
+
+	fd = FS_Open ( REQUEST_FILE, FS_WRITE_MODE, FS_CREATE_FLAG );
+	if( fd == -1 )
+	{
+		return ERR_SNDFILE_OPEN;
+	}
+	
+	// misocap 2004-11-29
+	// v3.11 에 반영
+	// 먼저 초기화를 시킨후에 쓰도록 함.
+	{
+		long i;
+		char ch;
+				
+		ch = '0';
+		for (i=0; i<COMM_HEAD_SIZE; i++)
+		{
+			FS_Write (fd, (byte*)&ch, 1);
+		}
+		// 파일 포인터의 위치를 처음으로 셋팅하도록 함.
+		FS_Seek (fd, 0, FS_SEEK_FROM_SET);
+	}
+
+	FS_Write (fd, (byte*)HEAD_STR, 				8);
+	FS_Write (fd, (byte*)pTr->m_szCode, 		4);
+	FS_Write (fd, (byte*)&pTr->m_chTrClass, 	1);
+	FS_Write (fd, (byte*)&pTr->m_chTrType, 		1);
+	FS_Write (fd, (byte*)&pTr->m_wSndInfSiz, 	2);	// 송신 헤더 크기
+	FS_Write (fd, (byte*)&pTr->m_wSndDatSiz, 	2);	// 송신 반복 데이터 크기
+	
+	FS_Write (fd, (byte*)&pTr->m_wRcvInfSiz, 	2);	// 수신 헤더 크기
+	FS_Write (fd, (byte*)&pTr->m_wRcvDatSiz, 	2);	// 수신 반복 데이터 크기
+	FS_Write (fd, (byte*)&pTr->m_nMaxInfoSiz, 	4);	// 받은데이터 총 개수의 표시 길이
+	FS_Write (fd, (byte*)&pTr->m_ucCommType, 	1);	// 통신 유형
+
+	// Request 횟수.
+	wNum = (word)nDataNum;
+	FS_Write (fd, (byte*)&wNum, 2);
+	
+	Mem_Set ( m_DataBuf, 	0x00, sizeof(m_DataBuf) );
+	Mem_Set ( g_DataBuffer, 0x00, sizeof(g_DataBuffer) );
+
+	return fd;
+}
+
+// dkjung 2003-06-24
+// 각 통신 유형에 맞게 함수를 호출해 준다.
+//---------------------------------------------------------------
+long Comm_Data (TR_INFO* pTr, char* pszTitle)
+{
+	long nRet;
+	long fd;
+	char szBuf[8];
+	
+	switch (pTr->m_ucCommType)
+	{
+		case COMM_1S0R:
+		case COMM_nS0R:
+		case COMM_nS1R:
+			nRet = Comm_Snd (pszTitle, pTr->m_bInMsgDisplay);
+			break;
+		case COMM_1S1R:
+		case COMM_1SnR:
+			nRet = Comm_Rcv (pszTitle, pTr->m_bInMsgDisplay);
+			break;
+		case COMM_SZIP:
+			nRet = Comm_SndZip (pszTitle);
+			break;
+		case COMM_RZIP:
+			nRet = Comm_RcvZip (pszTitle);
+			break;
+		//chan 2004-08-05	
+//		case COMM_nSnRZIP:
+//			nRet = Comm_nSnRZip (pszTitle);
+//			break;			
+			
+		default:
+			MessageBoxEx(ERROR_OK, "전문유형이 잘못되었습니다.");
+	}
+
+	// dkjung 2003-08-20
+	// 소켓은 무조건 끊음.
+	//Sock_Close();
+
+	// dkjung 2003-07-21
+	// 결과가 에러이면 리턴해야 한다.
+	if (nRet < 0)
+	{
+		switch (nRet)
+		{
+			// dkjung 2004-07-14
+			// 결과가 없을 경우 모듈 에러처리 되지 않도록...
+			case ERR_NO_RESULT:
+				return ERR_NO_RESULT;
+		}
+		
+		// dkjung 2003-08-20
+		// 에러일 경우 소켓을 닫고, ppp도 끊는다?
+		// 끊지 않는다.
+		//g_Sock_Close();
+		return nRet;
+	}
+
+	// dkjung 2003-07-18
+	// 결과 파일 검증 부분 하나로 합침.
+	Str_Printf (m_szResultFile, "%sRcv%s", (quad)DIR_COMM, (quad)pTr->m_szCode, 0);
+	if (!FS_Exist (m_szResultFile))
+	{
+		return ERR_RCVFILE_OPEN;
+	}
+	
+	// 검증하는 부분이 있어야 한다.
+	fd = FS_Open ( m_szResultFile, FS_READ_MODE, FS_NORMAL_FLAG );
+	if( fd < 0 )
+	{
+		return ERR_RCVFILE_FORMAT;
+	}
+		
+	FS_Seek ( fd, COMM_HEAD_INFO, FS_SEEK_FROM_SET );
+	FS_Read ( fd, (byte*)szBuf, 7 );
+	FS_Flush(fd);																	\
+	FS_Close ( fd );
+	szBuf[7] = '\0';
+	
+	if (!IS_RESULT_OK (szBuf))
+	{
+		//if ( Str_Cmp ("RCVZERO", szBuf) )
+		return ERR_RCVDATA_FAIL;	
+	}
+	
+	return nRet;
+}
+
+// COMM_1S0R, COMM_nS0R 인 경우.	
+//---------------------------------------------------------------
+long Comm_Snd (char* pszTitle, char bInMsgDisplay)
+{
+	long 	fd = -1;
+	long 	fdRcv = -1;
+	long 	nRet;
+	long 	nErrCode;
+	long 	i, SendCnt;
+	long 	nSndSize;
+	long	RcvSize = 0;
+	long	nRcvTotal = 0;
+	byte	ch = 0;	// 패킷당 개수
+	word	wNumTotal = 0;   // 전체 개수
+	word	wNumPacket = 0;  //  패킷당 개수
+	word	wOnePacket = 0;  //  패킷당 최대개수
+	char 	szHeadStr[9];
+	
+	if( FS_CreateDir ( DIR_COMM_STR ) < 0 )
+	{
+		if( GetApiError() == FS_ERR_INTERNAL_ERROR )
+		{
+			nErrCode = ERR_DIR_CREATE;
+			goto EXIT;
+		}
+	}
+
+	Str_Cpy (m_szReqFileName, DIR_COMM);
+	Str_Cat (m_szReqFileName, SNDFILE);	// 송신파일명
+	
+	if (!FS_Exist (m_szReqFileName))
+	{
+		nErrCode = ERR_SNDFILE_OPEN;
+		goto EXIT;
+	}
+	
+	nSndSize =  FS_GetSize( m_szReqFileName );
+ 	nSndSize = nSndSize - COMM_HEAD_SIZE;
+ 	
+	fd = FS_Open ( m_szReqFileName, FS_READ_MODE, FS_NORMAL_FLAG );
+	if( fd < 0 )
+	{
+		nErrCode = ERR_SNDFILE_OPEN;
+		goto EXIT;
+	}
+
+	FS_Read (fd, (byte*)szHeadStr, 8);	// Head string check
+	szHeadStr[8] = '\0';
+	if (Str_Cmp(HEAD_STR, szHeadStr))
+	{
+		nErrCode = ERR_SNDFILE_FORMAT;
+		goto EXIT;
+	}
+
+	FS_Read ( fd, (byte*)m_stTr.m_szCode, 		4 ); // TR Code
+	m_stTr.m_szCode[4] ='\0';
+	FS_Read ( fd, (byte*)&m_stTr.m_chTrClass, 	1 ); // TR Class
+	FS_Read ( fd, (byte*)&m_stTr.m_chTrType, 	1 ); // TR Type
+	FS_Read ( fd, (byte*)&m_stTr.m_wSndInfSiz,	2 ); // 헤더크기
+	FS_Read ( fd, (byte*)&m_stTr.m_wSndDatSiz,	2 ); // 반복데이터 크기
+	FS_Read ( fd, (byte*)&m_stTr.m_wRcvInfSiz,	2 ); // 헤더크기
+	FS_Read ( fd, (byte*)&m_stTr.m_wRcvDatSiz,	2 ); // 반복데이터 크기
+	FS_Read ( fd, (byte*)&m_stTr.m_nMaxInfoSiz, 4 ); // 받은데이터 총 개수의 표시 길이
+	FS_Read ( fd, (byte*)&m_stTr.m_ucCommType,  1 ); // 통신 유형.
+
+	// 헤더 COMM_HEAD_SIZE를 제외한 곳에 위치.
+	FS_Seek ( fd, GET_DATA_POS(0), FS_SEEK_FROM_SET );
+	Mem_Set ( m_DataBuf, 	0x00, sizeof(m_DataBuf) );
+
+	// 송신시 송신 회수를 서버쪽에 알려 주어야 할 경우 고려해야 함.
+	// 송신 회수 구하기
+	// 상품 총 개수를 읽어 오기.
+	if(m_stTr.m_wSndDatSiz > 0)
+		wOnePacket = (DATASIZE-m_stTr.m_wSndInfSiz)/m_stTr.m_wSndDatSiz;
+	else
+		wOnePacket = 0;
+	wNumTotal = 0;
+	wNumPacket = 0;
+	
+	if (m_stTr.m_chTrType == 'C')
+	{
+		//보낼 총 개수와 패킷당 갯수를 파일싸이즈정보에서 계산한다.
+		if(m_stTr.m_wSndDatSiz > 0)
+		{
+			wNumTotal = (nSndSize-m_stTr.m_wSndInfSiz)/m_stTr.m_wSndDatSiz;
+			wNumPacket = 0;
+		}
+		else
+		{
+			wNumTotal = 0;
+			wNumPacket = 0;
+		}
+		
+		// 2004.07.29 chan 수정
+		// 보내는 데이타가 0이어도 헤더만 보낼 수 있도록 수정
+		if ( wOnePacket > 0 )
+		{
+			// loop를 돌아야 할 개수 계산
+			SendCnt = (long)(wNumTotal%wOnePacket)?(wNumTotal/wOnePacket+1):(wNumTotal/wOnePacket);
+		}
+		else
+		{
+			SendCnt = 1;
+		}	
+		// 보낼 크기 = 헤더크기 + 전체크기*반복데이터크기
+		// 처음 보낼 크기 계산
+		nSndSize = m_stTr.m_wSndInfSiz + ((SendCnt > 1)?wOnePacket:wNumTotal)*m_stTr.m_wSndDatSiz;
+	}
+	else
+	{
+		if (m_stTr.m_ucCommType == COMM_nS0R || m_stTr.m_ucCommType == COMM_nS1R)
+		{
+			nSndSize = m_stTr.m_wSndInfSiz + wNumTotal*m_stTr.m_wSndDatSiz;
+		}
+		else
+		{
+			nSndSize = m_stTr.m_wSndInfSiz;
+			// 반복 데이터는 없음.
+		}
+		
+		SendCnt = 1;	// 'N'인 경우 임.
+		//Print ("SendCnt=%d, LastSize=%d", (quad)SendCnt, (quad)LastSize, 0);
+	}
+	
+	// 타이틀을 설정하지 않았을 경우.
+	if (pszTitle == NULL)
+	{
+		Str_Printf (m_szReqTitle, "\"TR%s\"을", (quad)m_stTr.m_szCode, 0, 0);
+	}
+	else
+		Str_Cpy (m_szReqTitle, pszTitle);		// 송신타이틀
+		
+	Mem_Set ( (byte*)m_MsgStr, 0x00, sizeof ( m_MsgStr ) );
+	if (Str_Len (pszTitle) > MAXLINE_MSG)
+	{
+		Str_Printf ( m_MsgStr, "\"%s\"\n 처리 중입니다.", (quad)pszTitle, 0 , 0 );
+	}
+	else
+		Str_Printf ( m_MsgStr, "\"%s\" 처리 중입니다.", (quad)pszTitle, 0 , 0 );
+	
+	MessageBoxEx ( MESSAGE, m_MsgStr );
+	FS_Seek ( fd, GET_DATA_POS(0), FS_SEEK_FROM_SET );
+	
+	for ( i=0; i<SendCnt; i++ )
+	{	
+		_RETRY_:
+		if ( i == ( SendCnt - 1 ) )	// 한 패킷인 경우와 마지막 패킷인 경우 처리.
+		{
+		long n;
+		
+			if (m_stTr.m_chTrType == 'C')
+			{
+				if (SendCnt > 1)
+				{
+					// 여러 패킷일 경우 마지막 패킷의 크기를 구한다.
+					n = wNumTotal % wOnePacket;
+					nSndSize = n * m_stTr.m_wSndDatSiz;
+				}
+			}
+			
+			m_DataBuf[0] = (byte)(SendCnt>>8);
+			m_DataBuf[1] = (byte)(SendCnt);	
+			m_DataBuf[2] = (byte)(i>>8);
+			m_DataBuf[3] = (byte)(i);	
+			m_DataBuf[4] = (byte)(n>>8);
+			m_DataBuf[5] = (byte)(n);
+			//헤더 데이터를 읽는다.
+			FS_Seek ( fd, GET_DATA_POS(0), FS_SEEK_FROM_SET );
+			FS_Read ( fd, m_DataBuf+6, m_stTr.m_wSndInfSiz );
+			//마지막 반복 데이터를 읽는다.
+			FS_Seek ( fd, GET_DATA_POS(i*wOnePacket*m_stTr.m_wSndDatSiz+m_stTr.m_wSndInfSiz), FS_SEEK_FROM_SET );
+			FS_Read ( fd, m_DataBuf+6+m_stTr.m_wSndInfSiz, nSndSize );
+			g_Sock_DataSend( FIRM_ID, m_stTr.m_szCode, m_stTr.m_chTrClass, 
+					((m_stTr.m_chTrType=='N')?m_stTr.m_chTrType:'L'), m_DataBuf, nSndSize+m_stTr.m_wSndInfSiz+6, TIME_SOCKETOUT );
+		}
+		else	// 처음과 중간 패킷인 경우
+		{
+			m_DataBuf[0] = (byte)(SendCnt>>8);
+			m_DataBuf[1] = (byte)(SendCnt);	
+			m_DataBuf[2] = (byte)(i>>8);
+			m_DataBuf[3] = (byte)(i);	
+			m_DataBuf[4] = (byte)(wOnePacket>>8);
+			m_DataBuf[5] = (byte)(wOnePacket);
+			
+			//헤더 데이터를 읽는다.
+			FS_Seek ( fd, GET_DATA_POS(0), FS_SEEK_FROM_SET );
+			FS_Read ( fd, m_DataBuf+6, m_stTr.m_wSndInfSiz );
+			
+			//반복 데이터를 읽는다.
+			FS_Seek ( fd, GET_DATA_POS(i*wOnePacket*m_stTr.m_wSndDatSiz+m_stTr.m_wSndInfSiz), FS_SEEK_FROM_SET );
+			FS_Read ( fd, m_DataBuf+6+m_stTr.m_wSndInfSiz, wOnePacket*m_stTr.m_wSndDatSiz );
+			nSndSize = 6+m_stTr.m_wSndInfSiz+wOnePacket*m_stTr.m_wSndDatSiz;
+			g_Sock_DataSend( FIRM_ID, m_stTr.m_szCode, m_stTr.m_chTrClass, ((i==0)?'F':'M'), m_DataBuf, nSndSize, TIME_SOCKETOUT );
+		}
+
+		Mem_Set ( g_DataBuffer, 0x00, sizeof(g_DataBuffer) );
+		RcvSize = g_Sock_DataReceive( m_stTr.m_szCode, WAIT_TIME);
+		if( RcvSize <= 0 )
+		{
+			long ret;
+			char szStr[128];
+			
+			if (RcvSize == ERR_SVR_RES_FAIL)
+			{
+				Str_Cpy (szStr, " mPOP 서버가 응답이 없습니다. \n 다시 시도하시겠습니까?");
+			}
+			else if (RcvSize == ERR_SVR_CON_FAIL)
+			{
+				Str_Cpy (szStr, " mPOP서버와 통신이 끊겼습니다.\n 다시 시도하시겠습니까?");
+			}
+			
+			if (RcvSize == ERR_SVR_RES_FAIL || RcvSize == ERR_SVR_CON_FAIL)
+			{
+				//chan 2004-09-10
+				//RunTrPack를 호출 하는 부분에서 메시지 처리를 해야함.
+				if ( !bInMsgDisplay )
+				{
+					nErrCode = RcvSize;
+					goto EXIT;
+				}
+
+				ret = MessageBoxEx (CONFIRM_YESNO, szStr);
+				if (ret == MB_OK)
+				{
+					nRet = g_SocketConnect ();
+					if (  nRet < 0 )
+					{
+						// nErrCode = (nRet==RET_RETRY)? RET_RETRY:ERR_CONNECT_FAIL;
+						// 2004-09-15
+						// g_SocketConnect 함수에 리턴되는 값은 0 아니면 -1로 
+						// 0은 성공한 경우, -1은 재시도를 하지 않겠다. '아니오'를 누른 경우이므로
+						// nErrCode 를 ERR_NO_RESULT로 셋팅하여서 화면에 아무런 메시지를 보여주지 않도록 함.
+						nErrCode = ERR_NO_RESULT;
+						goto EXIT;
+					}
+					goto _RETRY_;
+				}
+				else
+				{
+					nErrCode = ERR_NO_RESULT;
+					goto EXIT;
+				}
+			}
+
+			//nErrCode = ERR_RCVDATA_FAIL;
+			// misocap 2005-01-27
+			//nErrCode = (g_DataBuffer[9] == 'E')?
+			nErrCode = (g_DataBuffer[9] != 'L' && 
+			            g_DataBuffer[9] != 'M' && 
+			            g_DataBuffer[9] != 'F' &&
+				        g_DataBuffer[9] != 'N')?
+					   ERR_RCVDATA_FAIL:
+					   ERR_COMM_FAIL;
+			goto EXIT;
+		}
+	
+		// dkjung 2003-08-27
+		// 전체 받은 크기를 누적한다.
+		nRcvTotal += (RcvSize - IX_DAT);
+	
+		//g_DataBuffer에 한 패킷이 수신 됨.
+		// 파일에 받은 데이터를 저장하고, 마지막에 그 파일명을 리턴한다.
+		// 받은 파일은 TR 코드를 붙여서 파일명을 만든다.
+		// 처음 받는 상태가 될 경우 파일을 초기화 한다.
+		//Print ("읽은 크기=%d", RcvSize, 0, 0);
+		if (i == 0)
+		{
+			long n;
+		
+			Str_Printf (m_szResultFile, "%sRcv%s", (quad)DIR_COMM, (quad)m_stTr.m_szCode, 0);
+			fdRcv = FS_Open ( m_szResultFile, FS_WRITE_MODE, FS_CREATE_FLAG );
+			if (fdRcv < 0)
+			{
+				nErrCode = ERR_RCVFILE_OPEN;
+				goto EXIT;
+			}
+			
+			// 헤더를 지나서 위치 시킴.
+			COMFILE_SET_HEAD (fdRcv, m_stTr.m_szCode, m_stTr.m_chTrClass, m_stTr.m_chTrType);
+			
+			n = BtoI ( g_DataBuffer+1, 2 );
+			
+			// 데이터가 전혀 없는 상태.
+			// 통신 결과만 표시한다.
+			if (n > (IX_DAT-1) )
+			{
+				FS_Write (fdRcv, (byte*)g_DataBuffer+IX_DAT, n-(IX_DAT-1) );
+			}
+		}
+		else
+		{
+			FS_Write (fdRcv, (byte*)g_DataBuffer+IX_DAT, RcvSize);
+		}
+		
+		DRAW_PROGRESS (BAR_X, BAR_Y, BAR_WIDTH, BAR_HEIGHT, i+1, SendCnt);
+	}
+	
+	// 에러 처리 루틴에서 사용하기 위해.
+	Str_Cpy (m_szReqTitle, pszTitle);
+	SET_RESULT_OK (fdRcv);	
+	nErrCode = nRcvTotal;
+	CloseMessageBox ();
+	
+EXIT:
+
+	COMFILE_CLOSE (fdRcv);
+	COMFILE_CLOSE (fd);
+
+	return nErrCode;	
+}
+
+//---------------------------------------------------------------
+long Comm_Rcv(char* pszTitle, char bInMsgDisplay)
+{
+	long 	fd = -1;
+	long 	fdRcv = -1;
+	long	nRet = 0;
+	long 	nErrCode;
+	long 	i, k;
+	long 	LastSize;
+	long	RcvSize = 0, nSndSize = 0;
+	long	nRcvTotal = 0;
+	long	size;
+	long	n=0, nCur = 0, nTotal = 0, nTotalTmp = 0;
+	long	nFirstFlag = 0;
+	byte	ch = 0;	// 패킷당 개수
+	word	wNumTotal = 0;  // 전체 개수
+	word	wNumPacket = 0;  //  패킷당 개수
+	word	wSumRowNum = 0;  //  총레코드 개수
+	
+	char 	szHeadStr[9];
+
+	if( FS_CreateDir ( DIR_COMM_STR ) < 0 )
+	{
+		if( GetApiError() == FS_ERR_INTERNAL_ERROR )
+		{
+			nErrCode = ERR_DIR_CREATE;
+			goto EXIT;
+		}
+	}
+
+	Str_Cpy (m_szReqFileName, DIR_COMM);
+	Str_Cat (m_szReqFileName, SNDFILE);					// 수신파일명
+	
+	if (!FS_Exist (m_szReqFileName))
+	{
+		nErrCode = ERR_SNDFILE_OPEN;
+		goto EXIT;
+	}
+		
+	nSndSize =  FS_GetSize( m_szReqFileName );
+ 	nSndSize = nSndSize - COMM_HEAD_SIZE;
+ 	
+	fd = FS_Open ( m_szReqFileName, FS_READ_MODE, FS_NORMAL_FLAG );
+	if( fd == -1 )
+	{
+		nErrCode = ERR_SNDFILE_OPEN;
+		goto EXIT;
+	}
+
+	FS_Read (fd, (byte*)szHeadStr, 8);		// Head string check
+	szHeadStr[8] = '\0';
+	if (Str_Cmp(HEAD_STR, szHeadStr))
+	{
+		nErrCode = ERR_SNDFILE_FORMAT;
+		goto EXIT;
+	}
+	
+	FS_Read ( fd, (byte*)m_stTr.m_szCode, 		4 ); // TR Code
+	m_stTr.m_szCode[4] ='\0';
+	FS_Read ( fd, (byte*)&m_stTr.m_chTrClass, 	1 ); // TR Class
+	FS_Read ( fd, (byte*)&m_stTr.m_chTrType, 	1 ); // TR Type
+	FS_Read ( fd, (byte*)&m_stTr.m_wSndInfSiz,	2 ); // 헤더크기
+	FS_Read ( fd, (byte*)&m_stTr.m_wSndDatSiz,	2 ); // 반복데이터 크기
+	FS_Read ( fd, (byte*)&m_stTr.m_wRcvInfSiz,	2 ); // 헤더크기
+	FS_Read ( fd, (byte*)&m_stTr.m_wRcvDatSiz,	2 ); // 반복데이터 크기
+	FS_Read ( fd, (byte*)&m_stTr.m_nMaxInfoSiz, 4 ); // 받은데이터 총 개수의 표시 길이
+	FS_Read ( fd, (byte*)&m_stTr.m_ucCommType,  1 ); // 통신 유형.
+	
+
+	//파일 생성
+	Str_Printf (m_szResultFile, "%sRcv%s", (quad)DIR_COMM, (quad)m_stTr.m_szCode, 0);
+	fdRcv = FS_Open ( m_szResultFile, FS_WRITE_MODE, FS_CREATE_FLAG );
+	if (fdRcv < 0)
+	{
+		nErrCode = ERR_RCVFILE_OPEN;
+		goto EXIT;
+	}
+	
+	// 헤더를 지나서 위치 시킴.
+	COMFILE_SET_HEAD (fdRcv, m_stTr.m_szCode, m_stTr.m_chTrClass, m_stTr.m_chTrType);
+	FS_Seek ( fdRcv, GET_DATA_POS(0), FS_SEEK_FROM_SET );
+	FS_Write( fdRcv, (byte*)&wSumRowNum, 2 );
+
+	LastSize = nSndSize;
+	
+	Mem_Set ( (byte*)m_MsgStr, 0x00, sizeof ( m_MsgStr ) );
+	if (Str_Len (pszTitle) > MAXLINE_MSG)
+	{
+		Str_Printf ( m_MsgStr, "\"%s\"\n 처리 중입니다.", (quad)pszTitle, 0 , 0 );
+	}
+	else
+		Str_Printf ( m_MsgStr, "\"%s\" 처리 중입니다.", (quad)pszTitle, 0 , 0 );
+	MessageBox( MESSAGE, m_MsgStr ,"", "", 0, 0 );
+	
+	
+	//수신 패킷을 제외하고 헤더의 내용은 동일하다.
+	Mem_Set ( m_DataBuf, 	0x00, sizeof(m_DataBuf) );
+	FS_Seek ( fd, GET_DATA_POS(0), FS_SEEK_FROM_SET );
+	FS_Read ( fd, m_DataBuf+6, LastSize );
+	
+	i = 0;
+	wNumTotal = 0;  // 전체 개수
+	wNumPacket = 0;  //  패킷당 개수	
+	
+	do
+	{
+		m_DataBuf[0] = (byte)(wNumTotal>>8);
+		m_DataBuf[1] = (byte)(wNumTotal);	
+		m_DataBuf[2] = (byte)(i>>8);
+		m_DataBuf[3] = (byte)(i);	
+		m_DataBuf[4] = (byte)(wNumPacket>>8);
+		m_DataBuf[5] = (byte)(wNumPacket);
+		
+		_RETRY_:	
+		// dkjung 2003-08-20
+		// 총개수와 패킷당 개수가 같은 경우 -> 첨에 'L'로 보내야 한다.
+		
+		if( i == 0)
+		{
+			//첫번째 패킷
+			g_Sock_DataSend( FIRM_ID, m_stTr.m_szCode, m_stTr.m_chTrClass,
+						((m_stTr.m_chTrType=='C')?'F':m_stTr.m_chTrType), m_DataBuf, LastSize+6, TIME_SOCKETOUT );
+		}
+		else
+		{
+			//두번째 패킷
+			g_Sock_DataSend( FIRM_ID, m_stTr.m_szCode, m_stTr.m_chTrClass,
+				(i == (wNumTotal-1)?'L':'M' ), m_DataBuf, LastSize+6, TIME_SOCKETOUT );
+		}
+		
+		RcvSize = g_Sock_DataReceive( m_stTr.m_szCode, WAIT_TIME);
+		if( RcvSize <= 0 )
+		{
+			long ret;
+			char szStr[128];
+
+			if ( RcvSize == ERR_SVR_RES_FAIL )
+				Str_Cpy (szStr, " mPOP 서버가 응답이 없습니다. \n 다시 시도하시겠습니까?");
+			else if ( RcvSize == ERR_SVR_CON_FAIL )
+				Str_Cpy (szStr, " mPOP서버와 통신이 끊겼습니다.\n 다시 시도하시겠습니까?");
+
+			if (RcvSize == ERR_SVR_RES_FAIL || RcvSize == ERR_SVR_CON_FAIL)
+			{
+				//chan 2004-09-10
+				//RunTrPack를 호출 하는 부분에서 메시지 처리를 해야함.
+				if ( !bInMsgDisplay )
+				{
+					nErrCode = RcvSize;
+					goto EXIT;
+				}
+
+				ret = MessageBoxEx (CONFIRM_YESNO, szStr);
+				if (ret == MB_OK)
+				{
+					nRet = g_SocketConnect ();
+					if (  nRet < 0 )
+					{
+						// nErrCode = (nRet==RET_RETRY)? RET_RETRY:ERR_CONNECT_FAIL;
+						// 2004-09-15
+						// g_SocketConnect 함수에 리턴되는 값은 0 아니면 -1로 
+						// 0은 성공한 경우, -1은 재시도를 하지 않겠다. '아니오'를 누른 경우이므로
+						// nErrCode 를 ERR_NO_RESULT로 셋팅하여서 화면에 아무런 메시지를 보여주지 않도록 함.
+						nErrCode = ERR_NO_RESULT;
+						goto EXIT;
+					}
+					goto _RETRY_;
+				}
+				else
+				{
+					nErrCode = ERR_NO_RESULT;
+					goto EXIT;
+				}
+			}
+				
+			//nErrCode = ERR_RCVDATA_FAIL;
+			// misocap 2005-01-27
+			//nErrCode = (g_DataBuffer[9] == 'E')?
+			nErrCode = (g_DataBuffer[9] != 'L' && 
+			            g_DataBuffer[9] != 'M' && 
+			            g_DataBuffer[9] != 'F' &&
+			            g_DataBuffer[9] != 'N')?
+					   ERR_RCVDATA_FAIL:
+					   ERR_COMM_FAIL;
+			goto EXIT;
+		}
+		else if (RcvSize == IX_DAT)
+		{
+			// dkjung 2003-08-27
+			// 이 경우는 데이터가 하나도 없는 경우.
+			break;
+		}
+	
+		// dkjung 2003-08-27
+		// 전체 받은 크기를 누적한다.
+		nRcvTotal += (RcvSize - IX_DAT);
+		
+		//총패킷 카운트를 읽어낸다.
+		wNumTotal = BtoI ( g_DataBuffer+IX_PTC, 2 );
+		wNumPacket = BtoI ( g_DataBuffer+IX_PRC, 2 );
+		wSumRowNum += wNumPacket;
+		// 한번에 처리되는 경우는 이 곳에서 끝낸다.
+		// 1R 타입.
+		if (m_stTr.m_chTrType=='N')
+		{
+			//이 경우는 결과 파일을 저장하고 바로 리턴한다.
+			FS_Write (fdRcv, (byte*)g_DataBuffer+IX_DAT, RcvSize-(IX_DAT+2) );
+			break;
+		}
+		else
+		{
+			if( i == 0)
+			{
+				//첫번째 패킷이어서 헤더를 포함해서 저장한다.
+				FS_Write (fdRcv, (byte*)g_DataBuffer+IX_DAT, RcvSize-(IX_DAT+2) );
+			}
+			else
+			{
+				//두번째 패킷부터는 헤더를 제외하고 반복 데이터만 저장한다.
+				FS_Write (fdRcv, (byte*)g_DataBuffer+IX_DAT+m_stTr.m_wRcvInfSiz, RcvSize-(IX_DAT+2+m_stTr.m_wRcvInfSiz) );
+			}
+			
+			if( g_DataBuffer[9] == 'L' )
+			{
+				break;
+			}
+			DRAW_PROGRESS (BAR_X, BAR_Y, BAR_WIDTH, BAR_HEIGHT, i+1, wNumTotal);
+		}
+		
+		i++;
+		if( wNumTotal == i )
+			break;
+	}
+	while(  !( g_DataBuffer[9] == 'L' || g_DataBuffer[9] == 'N')  );
+	
+	FS_Seek ( fdRcv, GET_DATA_POS(0), FS_SEEK_FROM_SET );
+	FS_Write( fdRcv, (byte*)&wSumRowNum, 2 );
+	
+	
+	// 에러 처리 루틴에서 사용하기 위해.
+	Str_Cpy (m_szReqTitle, pszTitle);
+	SET_RESULT_OK (fdRcv);
+	
+	nErrCode = nRcvTotal;
+	CloseMessageBox ();
+	
+EXIT:
+
+	COMFILE_CLOSE (fdRcv);
+	COMFILE_CLOSE (fd);
+
+	return nErrCode;	
+}
+
+//---------------------------------------------------------------
+void Comm_GetMsg (long nErrCode)
+{
+	char* pszErrStr;
+	
+	switch (nErrCode)
+	{
+		case ERR_NO_RESULT:
+			return;
+			
+		case RET_RETRY:
+			pszErrStr = "RETRY";
+			break;
+			
+		case ERR_DIR_CREATE:
+			pszErrStr = "디렉토리 생성 실패.";
+			break;
+		case ERR_RCVFILE_CREATE:
+			pszErrStr = "수신파일 생성 실패.";
+			break;
+		case ERR_SNDFILE_FORMAT:
+			pszErrStr = "송신파일 생성 실패.";
+			break;
+		case ERR_RCVFILE_FORMAT:
+			pszErrStr = "수신파일 포맷 에러.";
+			break;
+		case ERR_SNDFILE_OPEN:
+			pszErrStr = "송신파일 포맷 에러.";
+			break;
+		case ERR_RCVFILE_OPEN:
+			pszErrStr = "수신파일 열기 실패.";
+			break;
+		case ERR_RCVDATA_FAIL:	// 이 경우는 서버에서 보낸 메시지를 출력한다.
+			pszErrStr = (char*)&g_DataBuffer[IX_PTC];
+			break;
+		case ERR_DATASIZE_FAIL:
+			pszErrStr = "데이터크기 에러.";
+			break;
+		case ERR_CONNECT_FAIL:
+			pszErrStr = "[담당자 문의]접속 실패.";
+			break;
+		case ERR_RCV_PACKET_SEQ:
+			pszErrStr = "패킷 순번 에러.";
+			break;
+		case ERR_COMM_FAIL:
+			pszErrStr = "[담당자 문의]\n통신중 서버 비정상 종료.";
+			break;
+		default:
+			pszErrStr = "";
+			break;
+	}
+	
+	if (pszErrStr != "")
+	{
+		if (Str_Cmp ("RETRY", pszErrStr) != 0)
+		{
+			MessageBoxEx (ERROR_OK, pszErrStr);
+		}
+		
+		//dkjung 2004-09-02
+		//메시지를 보기 좋게 화면에 표시할 방법?
+		//메시지 작성자가 처리할 것.
+		/*
+		if (Str_Cmp ("RETRY", pszErrStr) != 0)
+		{
+			byte str[MAXLEN_MSG];
+			long i, j;
+			
+			Mem_Set (str, 0, MAXLEN_MSG);
+			
+			for (i=0, j=0; i<MAXLEN_MSG;)
+			{
+				if (pszErrStr[i] == '\0')
+					break;
+					
+				if (j >= MAXLEN_MSG)
+					break;
+			
+				if (i>0 && i%32 == 0)
+				{
+					str[j++] = 0x0A;
+				}
+				
+				if ((byte)pszErrStr[i] >= (byte)0x80)
+				{
+					if ((byte)pszErrStr[i+1] >= (byte)0x80)
+					{
+						str[j++] = pszErrStr[i++];
+						str[j++] = pszErrStr[i++];
+					}
+					else
+					{
+						//이 경우는 특수 문자만 있는 경우
+						//이므로 스페이스로 처리.
+						str[j++] = ' ';
+						i++;
+					}
+				}
+				else
+				{
+					str[j++] = pszErrStr[i++];		
+				}
+			}
+			
+			MessageBoxEx (ERROR_OK, (char*)str);
+		}
+		*/
+		
+	}
+	
+}
+
+// dkjung 2003-07-11
+// 말로 적기..
+// 헤더 부분을 제외한 파일을 압축하고, 테이블 정보대로 전송한다. 
+
+// COMM_SZIP 인 경우.	
+//---------------------------------------------------------------
+long Comm_SndZip (char* pszTitle)
+{
+	long 	nRet;
+	long 	fd = -1, fdRcv = -1; 
+	long	fdTmp = -1, fdTmpZip = -1;
+	long	fdZip = -1;
+	long	nErrCode;
+	long 	i, SendCnt;
+	long 	nZipFileSize;
+	long 	FileSize;
+	long	nReadSize;
+	long 	nLastSize;
+	long	RcvSize = 0;
+	long	nRcvTotal = 0;
+	long 	nOfs;
+	char	szTmpFile[42];
+	char	szTmpZipFile[42];
+	char	szZipFile[42];
+	char 	szHeadStr[9];
+	
+	char	szTmpFile1[256];
+	char	szTmpFile2[256];
+	
+START:	
+	
+	Mem_Set( (byte*)szTmpFile, 0x00, sizeof(szTmpFile) );
+	Mem_Set( (byte*)szTmpZipFile, 0x00, sizeof(szTmpZipFile) );
+	Mem_Set( (byte*)szZipFile, 0x00, sizeof(szZipFile) );
+	Mem_Set( (byte*)szHeadStr, 0x00, sizeof(szHeadStr) );
+	
+	if( FS_CreateDir ( DIR_COMM_STR ) < 0 )
+	{
+		if( GetApiError() == FS_ERR_INTERNAL_ERROR )
+		{
+			nErrCode = ERR_DIR_CREATE;
+			goto EXIT;
+		}
+	}
+
+	// 송신파일명 ( APP_COM\SndDat.dat )
+	Str_Cpy (m_szReqFileName, DIR_COMM);
+	Str_Cat (m_szReqFileName, SNDFILE);
+	
+	if (!FS_Exist (m_szReqFileName))
+	{
+		nErrCode = ERR_SNDFILE_OPEN;
+		goto EXIT;
+	}
+ 
+	// 임시파일명  ( APP_COM\SndDat.txt )
+	Str_Cpy (szTmpFile, DIR_COMM);
+	Str_Cat (szTmpFile, SNDTMPFILE);
+	
+	// 임시압축파일명 ( APP_COM\SndZipDat.txt )
+	Str_Cpy (szTmpZipFile, DIR_COMM);
+	Str_Cat (szTmpZipFile, SNDTMPZIPFILE);
+	
+	// 압축파일명 ( APP_COM\SndDat.dat )
+	Str_Cpy (szZipFile, DIR_COMM);
+	Str_Cat (szZipFile, SNDZIPFILE);
+
+	fd = FS_Open ( m_szReqFileName, FS_READ_MODE, FS_NORMAL_FLAG );
+	if( fd == -1 )
+	{
+		nErrCode = ERR_SNDFILE_OPEN;
+		goto EXIT;
+	}
+
+	FS_Read (fd, (byte*)szHeadStr, 8);		// Head string check
+	szHeadStr[8] = '\0';
+	if (Str_Cmp(HEAD_STR, szHeadStr))
+	{
+		nErrCode = ERR_SNDFILE_FORMAT;
+		goto EXIT;
+	}
+
+	FS_Read ( fd, (byte*)m_stTr.m_szCode, 		4 ); // TR Code
+	m_stTr.m_szCode[4] ='\0';
+	FS_Read ( fd, (byte*)&m_stTr.m_chTrClass, 	1 ); // TR Class
+	FS_Read ( fd, (byte*)&m_stTr.m_chTrType, 	1 ); // TR Type
+	FS_Read ( fd, (byte*)&m_stTr.m_wSndInfSiz,	2 ); // 헤더크기
+	FS_Read ( fd, (byte*)&m_stTr.m_wSndDatSiz,	2 ); // 반복데이터 크기
+
+
+	fdTmp = FS_Open ( szTmpFile, FS_WRITE_MODE, FS_CREATE_FLAG );
+	if (fdTmp < 0)
+	{
+		nErrCode = ERR_SNDFILE_OPEN;
+		goto EXIT;
+	}
+
+	// 데이터 영역을 임시 파일에 복사. ( COMM_HEAD_SIZE+(offset) )
+	FileSize = FS_GetSize ( m_szReqFileName ) - GET_DATA_POS(0);		// 헤더 크기를 뺀다.
+	
+	// dkjung 2003-07-21
+	// 리퀘스트 정보 영역을 제외해야 한다.
+	FileSize -= m_stTr.m_wSndInfSiz;
+
+	// 헤더 COMM_HEAD_SIZE를 제외한 곳에 위치.
+	// 송신 정보 영역을 지난 곳에 위치.
+	FS_Seek (fd, GET_DATA_POS(m_stTr.m_wSndInfSiz), FS_SEEK_FROM_SET);
+
+	// 압축할 데이터만 임시 파일로 복사한다.	
+	for (i=0; i<FileSize; i+=nReadSize)
+	{
+		nReadSize = MIN ((quad)(FileSize-i), sizeof(m_DataBuf));
+		
+		FS_Read (fd, m_DataBuf, nReadSize);
+		FS_Write (fdTmp, m_DataBuf, nReadSize);
+	}
+  FS_Flush(fdTmp);
+	COMFILE_CLOSE (fdTmp);
+	//FS_Close (fdTmp);	
+
+	// 임시 파일에 압축한다. 
+	if ( Compress_Zip ( szTmpFile, szTmpZipFile ) < 0 )
+	{
+		nErrCode = ERR_SNDFILE_FORMAT;
+		goto EXIT;
+	}
+
+	//dkjung 2004-12-16
+	//총 패킷과 패킷 순번 초기값 설정 문제 수정
+	//초기값도 정확히 패킷 총수를 계산해서 넣어 준다.
+	
+	//LSH	2005-10-06
+	// 새롭게 생성된 압축 파일의 크기만 적용.
+	//FileSize = FS_GetSize ( szZipFile ) + m_stTr.m_wSndInfSiz;
+	FileSize = FS_GetSize ( szTmpZipFile );
+	
+	// 송신 회수 구하기
+	//nLastSize = FileSize % (DATASIZE-m_stTr.m_wSndInfSiz);
+	nLastSize = FileSize % (DATASIZE-m_stTr.m_wSndInfSiz);
+
+	// misocap 2004-11-29
+    // v3.00 에 반영
+    if( nLastSize == 0 )
+    {
+        SendCnt = FileSize/(DATASIZE-m_stTr.m_wSndInfSiz);
+        nLastSize = DATASIZE-m_stTr.m_wSndInfSiz;
+    }
+    else
+        SendCnt = FileSize/(DATASIZE-m_stTr.m_wSndInfSiz) + 1;
+
+	fdZip = FS_Open ( szZipFile, FS_WRITE_MODE, FS_CREATE_FLAG );
+	if (fdZip < 0)
+	{
+		nErrCode = ERR_SNDFILE_OPEN;
+		goto EXIT;
+	}
+
+	// 송신 헤더를 읽어 오기 위하여.
+	FS_Seek (fd, GET_DATA_POS(0), FS_SEEK_FROM_SET);
+	
+	// 송신 헤더를 복사.
+	FS_Read (fd, m_DataBuf, m_stTr.m_wSndInfSiz);
+
+	FS_Write (fdZip, m_DataBuf, m_stTr.m_wSndInfSiz);
+
+	nZipFileSize = FS_GetSize ( szTmpZipFile );
+	
+	// 압축된 이미지를 읽어서 저장한다.
+	fdTmpZip = FS_Open ( szTmpZipFile, FS_READ_MODE, FS_NORMAL_FLAG );
+	if (fdTmpZip < 0)
+	{
+		nErrCode = ERR_SNDFILE_OPEN;
+		goto EXIT;
+	}
+
+	// dkjung 2003-07-21
+	// 임시 압축 전송 파일에 새로 복사.
+	for (i=0, nReadSize=0; i<nZipFileSize; i+=nReadSize)
+	{
+		nReadSize = MIN ((quad)(nZipFileSize-i), sizeof(m_DataBuf));
+		
+		FS_Read (fdTmpZip, m_DataBuf, nReadSize);
+		FS_Write (fdZip, m_DataBuf, nReadSize);
+	}
+	
+	COMFILE_CLOSE (fdTmpZip);
+	COMFILE_CLOSE (fdZip);
+	
+	//LSH	2005-10-06
+	// 새롭게 생성된 압축 파일의 크기만 적용.
+	FileSize = FS_GetSize ( szTmpZipFile );
+	// 송신 회수 구하기
+	nLastSize = FileSize % (DATASIZE-m_stTr.m_wSndInfSiz);
+
+	// misocap 2004-11-29
+    // v3.11 에 반영
+    if( nLastSize == 0 )
+    {
+        SendCnt = FileSize/(DATASIZE-m_stTr.m_wSndInfSiz);
+        nLastSize =(DATASIZE-m_stTr.m_wSndInfSiz);        // 추가된 코드
+    }
+    else
+        SendCnt = FileSize/(DATASIZE-m_stTr.m_wSndInfSiz) + 1;
+
+//	COMFILE_CLOSE (fd);
+
+	fdZip = FS_Open ( szZipFile, FS_READ_MODE, FS_NORMAL_FLAG );
+	if (fdZip < 0)
+	{
+		nErrCode = ERR_SNDFILE_OPEN;
+		goto EXIT;
+	}
+	
+	Mem_Set ( m_DataBuf, 0x00, sizeof(m_DataBuf) );
+
+
+	// 타이틀을 설정하지 않았을 경우.
+	if (pszTitle == NULL)
+	{
+		Str_Printf (m_szReqTitle, "\"TR%s\"을", (quad)m_stTr.m_szCode, 0, 0);
+	}
+	else
+		Str_Cpy (m_szReqTitle, pszTitle);		// 송신타이틀
+		
+	if (Str_Len (pszTitle) > MAXLINE_MSG)
+	{
+		Str_Printf ( m_MsgStr, "\"%s\"\n처리 중입니다.", (quad)pszTitle, 0 , 0 );
+	}
+	else
+		Str_Printf ( m_MsgStr, "\"%s\" 처리 중입니다.", (quad)pszTitle, 0 , 0 );
+	
+	MessageBox( MESSAGE, m_MsgStr ,"", "", 0, 0 );
+	
+	_RETRY_: // 2004년 8월 17일 변경 - 박범성 // (검침 수정본 통합)
+	
+	FS_Seek (fdZip, 0, FS_SEEK_FROM_SET); // 2004년 8월 17일 변경 - 박범성
+
+	for ( i=0, nOfs=0; i<SendCnt; i++ )
+	{	
+		
+		//LSH	2005-10-06
+		//i == 0일때 적용함.
+		//if (i > 0)
+		//{
+		// dkjung 2003-07-28
+		// 아래의 헤더 부분이 계속 반복 된다.
+		// 송신 헤더를 읽어 오기 위하여.
+		FS_Seek (fd, GET_DATA_POS(0), FS_SEEK_FROM_SET);
+		// 송신 헤더를 복사.
+		FS_Read (fd, m_DataBuf+6, m_stTr.m_wSndInfSiz);
+
+		nOfs = m_stTr.m_wSndInfSiz;
+		// 패킷 총수를 설정
+		m_DataBuf [0] = (byte)(SendCnt >> 8);
+		m_DataBuf [1] = (byte)SendCnt;
+		
+		// dkjung 2004-12-27
+		// 괄호를 빼먹다니!
+		// 패킷 순번 255개 넘어가면 상위 1바이트 처리를
+		// 하지 못한다. 0x00으로 처리 되었음.
+		//m_DataBuf [2] = (byte)k >> 8;
+		
+		m_DataBuf [2] = (byte)(i >> 8);
+		m_DataBuf [3] = (byte)i;
+		
+		m_DataBuf [4] = 0;
+		m_DataBuf [5] = 0;
+		//}
+		//LSH	2005-10-06
+		//i == 0일때 적용함 헤더만 크기만큼 이동한다.
+		//압축송신파일(szZipFile)에서 헤더 만큼만 이동하여
+		//데이터를 읽어낸다.
+		if( i == 0)
+			FS_Seek ( fdZip, nOfs, FS_SEEK_FROM_SET );
+		
+		if ( i == ( SendCnt - 1 ) )	// 한 패킷인 경우와 마지막 패킷인 경우 처리.
+		{
+			//LSH	2005-10-06
+			FS_Read ( fdZip, m_DataBuf+6+nOfs, nLastSize );
+			g_Sock_DataSend( FIRM_ID, m_stTr.m_szCode, m_stTr.m_chTrClass, 
+					((m_stTr.m_chTrType=='N')?m_stTr.m_chTrType:'L'), m_DataBuf, nLastSize+6+nOfs, TIME_SOCKETOUT );
+		}
+		else	// 처음과 중간 패킷인 경우.
+		{
+			//LSH	2005-10-06
+			FS_Read ( fdZip, m_DataBuf+6+nOfs, DATASIZE-nOfs );
+			g_Sock_DataSend( FIRM_ID, m_stTr.m_szCode, m_stTr.m_chTrClass, 
+					((i==0)?'F':'M'), m_DataBuf, DATASIZE+6, TIME_SOCKETOUT );
+		}
+		
+		Mem_Set ( g_DataBuffer, 0x00, sizeof(g_DataBuffer) );
+		RcvSize = g_Sock_DataReceive( m_stTr.m_szCode, WAIT_TIME);
+		if( RcvSize <= 0 )
+		{
+			long ret;
+			char szStr[128];
+			
+			if (RcvSize == ERR_SVR_RES_FAIL)
+			{
+				Str_Cpy (szStr, " mPOP 서버가 응답이 없습니다. \n 다시 시도하시겠습니까?");
+			}
+			else if (RcvSize == ERR_SVR_CON_FAIL)
+			{
+				Str_Cpy (szStr, " mPOP서버와 통신이 끊겼습니다.\n 다시 시도하시겠습니까?");
+			}
+			
+			if (RcvSize == ERR_SVR_RES_FAIL || RcvSize == ERR_SVR_CON_FAIL)
+			{
+
+				ret = MessageBoxEx (CONFIRM_YESNO, szStr);
+				if (ret == MB_OK)
+				{
+					nRet = g_SocketConnect ();
+					if (  nRet < 0 )
+					{
+						// nErrCode = (nRet==RET_RETRY)? RET_RETRY:ERR_CONNECT_FAIL;
+						// 2004-09-15
+						// g_SocketConnect 함수에 리턴되는 값은 0 아니면 -1로 
+						// 0은 성공한 경우, -1은 재시도를 하지 않겠다. '아니오'를 누른 경우이므로
+						// nErrCode 를 ERR_NO_RESULT로 셋팅하여서 화면에 아무런 메시지를 보여주지 않도록 함.
+						nErrCode = ERR_NO_RESULT;
+						goto EXIT;
+					}
+					//goto _RETRY_;
+					
+					COMFILE_CLOSE (fdTmp);
+					COMFILE_CLOSE (fdTmpZip);
+					COMFILE_CLOSE (fdZip);
+					COMFILE_CLOSE (fdRcv);
+					COMFILE_CLOSE (fd);
+					goto START;
+				}
+				else
+				{
+					nErrCode = ERR_NO_RESULT;
+					goto EXIT;
+				}
+			}
+
+			//nErrCode = ERR_RCVDATA_FAIL;
+			// misocap 2005-01-27
+			//nErrCode = (g_DataBuffer[9] == 'E')?
+			nErrCode = (g_DataBuffer[9] != 'L' && 
+			            g_DataBuffer[9] != 'M' && 
+			            g_DataBuffer[9] != 'F' &&
+				        g_DataBuffer[9] != 'N')?
+					   ERR_RCVDATA_FAIL:
+					   ERR_COMM_FAIL;
+			goto EXIT;
+		}
+	
+		// dkjung 2003-08-27
+		// 전체 받은 크기를 누적한다.
+		nRcvTotal += (RcvSize - IX_DAT);
+	
+		//g_DataBuffer에 한 패킷이 수신 됨.
+		// 파일에 받은 데이터를 저장하고, 마지막에 그 파일명을 리턴한다.
+		// 받은 파일은 TR 코드를 붙여서 파일명을 만든다.
+		// 처음 받는 상태가 될 경우 파일을 초기화 한다.
+		//Print ("읽은 크기=%d", RcvSize, 0, 0);
+		if (i == 0)
+		{
+			long n;
+		
+			Str_Printf (m_szResultFile, "%sRcv%s", (quad)DIR_COMM, (quad)m_stTr.m_szCode, 0);
+			fdRcv = FS_Open ( m_szResultFile, FS_WRITE_MODE, FS_CREATE_FLAG );
+			if (fdRcv < 0)
+			{
+				nErrCode = ERR_RCVFILE_OPEN;
+				goto EXIT;
+			}
+			
+			// 헤더를 지나서 위치 시킴.
+			COMFILE_SET_HEAD (fdRcv, m_stTr.m_szCode, m_stTr.m_chTrClass, m_stTr.m_chTrType);
+
+			if(m_stTr.m_chTrType == 'N')
+			{
+				n = BtoI ( g_DataBuffer+1, 2 );
+				
+				// 데이터가 전혀 없는 상태.
+				// 통신 결과만 표시한다.
+				if (n > ( IX_DAT-1 ) )
+				{
+					FS_Write (fdRcv, (byte*)g_DataBuffer+IX_DAT, n-(IX_DAT+2) );
+				}
+			}
+		}
+		else
+		{
+			FS_Write (fdRcv, (byte*)g_DataBuffer+IX_DAT+m_stTr.m_wRcvInfSiz, RcvSize-(IX_DAT+2+m_stTr.m_wRcvInfSiz) );
+		}
+		
+		DRAW_PROGRESS (BAR_X, BAR_Y, BAR_WIDTH, BAR_HEIGHT, i+1, SendCnt);
+		//k++; // misocap 2003-09-25 프로그래스 바를 뿌려주고 k값을 증가 시킴
+		
+		if( i != ( (unsigned char)g_DataBuffer[21]*256 + (unsigned char)g_DataBuffer[22] ) )
+		{
+			nErrCode = ERR_RCV_PACKET_SEQ;
+			goto EXIT;
+		}
+	}
+
+	#ifndef _COMM_DEBUG
+	// 디버그 모드 아니면,
+	// 임시 파일들은 삭제 한다.
+	COMFILE_CLOSE (fdTmp);
+	FS_Delete (szTmpFile);
+	
+	COMFILE_CLOSE (fdTmpZip);
+	FS_Delete (szTmpZipFile);
+	
+	COMFILE_CLOSE (fdZip);
+	FS_Delete (szZipFile);
+	#endif // _COMM_DEBUG 
+	
+
+	// 에러 처리 루틴에서 사용하기 위해.
+	Str_Cpy (m_szReqTitle, pszTitle);
+	SET_RESULT_OK (fdRcv);	
+	nErrCode = nRcvTotal;
+	CloseMessageBox ();
+	
+EXIT:
+
+	COMFILE_CLOSE (fdTmp);
+	COMFILE_CLOSE (fdTmpZip);
+	COMFILE_CLOSE (fdZip);
+	COMFILE_CLOSE (fdRcv);
+	COMFILE_CLOSE (fd);
+	
+	return nErrCode;	
+}
+
+// chan 2004-08-05
+// COMM_nSnRZIP 인 경우.	
+//---------------------------------------------------------------
+long Comm_nSnRZip (char* pszTitle)
+{
+	long	nRet;
+	long 	fd = -1, fdTmp = -1;
+	long 	fdZip = -1, fdRcv = -1;
+	long 	i;
+	long	nErrCode;
+	long 	FileSize;
+	long	RcvSize = 0;
+	long	nRcvTotal = 0;
+	long	nReadSize;
+	long	nSize;
+	long	SentDataNum;
+	long	nCur = 0, nTotal = 0, nTotalTmp = 0;
+	word	wReqNum;
+	char 	szHeadStr[9];
+	char	szTmpFile[32];
+	char	szZipFile[32];
+	char	szResultFile[100];
+
+	word	FileTitleLen;
+
+	if( FS_CreateDir ( DIR_COMM_STR ) < 0 )
+	{
+		if( GetApiError() == FS_ERR_INTERNAL_ERROR )
+		{
+			nErrCode = ERR_DIR_CREATE;
+			goto EXIT;
+		}
+	}
+
+	Str_Cpy (m_szReqFileName, DIR_COMM);
+	Str_Cat (m_szReqFileName, SNDFILE);	// 수신파일명
+	
+	if (!FS_Exist (m_szReqFileName))
+	{
+		nErrCode = ERR_SNDFILE_OPEN;
+		goto EXIT;
+	}
+	
+	fd = FS_Open ( m_szReqFileName, FS_READ_MODE, 0 );
+	if( fd < 0 )
+	{
+		nErrCode = ERR_SNDFILE_OPEN;
+		goto EXIT;
+	}
+
+	FS_Read (fd, (byte*)szHeadStr, 8);		// Head string check
+	szHeadStr[8] = '\0';
+	if (Str_Cmp(HEAD_STR, szHeadStr))
+	{
+		nErrCode = ERR_SNDFILE_FORMAT;
+		goto EXIT;
+	}
+	
+	FS_Read ( fd, (byte*)m_stTr.m_szCode, 		4 ); // TR Code
+	m_stTr.m_szCode[4] ='\0';
+	FS_Read ( fd, (byte*)&m_stTr.m_chTrClass, 	1 ); // TR Class
+	FS_Read ( fd, (byte*)&m_stTr.m_chTrType, 	1 ); // TR Type
+	FS_Read ( fd, (byte*)&m_stTr.m_wSndInfSiz,	2 ); // 헤더크기
+	FS_Read ( fd, (byte*)&m_stTr.m_wSndDatSiz,	2 ); // 반복데이터 크기
+	FS_Read ( fd, (byte*)&m_stTr.m_wRcvInfSiz,	2 ); // 헤더크기
+	FS_Read ( fd, (byte*)&m_stTr.m_wRcvDatSiz,	2 ); // 반복데이터 크기
+	FS_Read ( fd, (byte*)&m_stTr.m_nMaxInfoSiz, 4);	 // 받은데이터 총 개수의 표시 길이
+	FS_Read ( fd, (byte*)&m_stTr.m_ucCommType,  1 ); // 통신 유형.
+	FS_Read ( fd, (byte*)&wReqNum, 2 ); // 연속 통신시 횟수.
+
+	// misocap 2005-02-14
+	// g_SeverConnection 함수는 g_SocketConnect 함수 내부에서 호출하도록 함.
+//	nRet = g_SocketConnect ();
+//	if (  nRet < 0 )
+//	{
+		// nErrCode = (nRet==RET_RETRY)? RET_RETRY:ERR_CONNECT_FAIL;
+		// 2004-09-15
+		// g_SocketConnect 함수에 리턴되는 값은 0 아니면 -1로 
+		// 0은 성공한 경우, -1은 재시도를 하지 않겠다. '아니오'를 누른 경우이므로
+		// nErrCode 를 ERR_NO_RESULT로 셋팅하여서 화면에 아무런 메시지를 보여주지 않도록 함.
+//		nErrCode = ERR_NO_RESULT;
+//		goto EXIT;
+//	}
+	
+	// 연속 통신인 경우만 압축을 사용한다.
+	// 처음 보낼 크기 계산
+
+	if (Str_Len (pszTitle) > MAXLINE_MSG)
+	{
+		Str_Printf ( m_MsgStr, "\"%s\"\n처리 중입니다.", (quad)pszTitle, 0 , 0 );
+	}
+	else
+		Str_Printf ( m_MsgStr, "\"%s\" 처리 중입니다.", (quad)pszTitle, 0 , 0 );
+	
+	MessageBox( MESSAGE, m_MsgStr ,"", "", 0, 0 );
+
+	for (i=0; i<(long)wReqNum; i++)
+	{
+		Mem_Set ( m_DataBuf, 	0x00, sizeof(m_DataBuf) );
+		//#define GET_DATA_POS(offset) ( COMM_HEAD_SIZE+(offset) )
+		
+		//PRINT ( "GET_DATA_POS(%d*%d) = %d", i , LastSize, GET_DATA_POS(i*LastSize));
+
+		FS_Seek ( fd, GET_DATA_POS(0), FS_SEEK_FROM_SET );
+		FS_Read ( fd, m_DataBuf+6, m_stTr.m_wSndInfSiz );
+		
+		// 초기에 클리어 한다.
+		if(m_stTr.m_chTrType == 'C')
+		{
+			// dkjung 2003-06-23
+			// 이 짜식 정말 애 먹임..... (_ _;;)
+			// PDA는 반드시 초기화 해 주어야 한다.
+			
+			// 첨엔 무조건 1로 만든다.
+			//m_DataBuf [0] = (byte)( ( i + 1 ) >> 8 );
+			//m_DataBuf [1] = (byte)( i + 1 );
+			
+			//chan 2004-08-06 
+			m_DataBuf [0] = 0;
+			m_DataBuf [1] = (byte)( 1 );
+			
+			// Zip 파일 생성
+			Str_Printf (szZipFile, "%sRcv%s.zip", (quad)DIR_COMM, (quad)m_stTr.m_szCode, 0);
+			//PRINT ( "szZipFile = %s", szZipFile, 0, 0 );
+			
+			fdZip = FS_Open ( szZipFile, FS_WRITE_MODE, FS_CREATE_FLAG );
+			if (fdZip < 0)
+			{
+				//PRINT ( "%d=GetApiError()", GetApiError(),0,0 );
+				nErrCode = ERR_RCVFILE_OPEN;
+				goto EXIT;
+			}					
+		}
+		
+		// dkjung 2003-07-14 추가.
+		// 패킷 순번은 1부터 시작한다.
+		SentDataNum = 1;
+		
+		_RETRY_:
+		g_Sock_DataSend( FIRM_ID, m_stTr.m_szCode, m_stTr.m_chTrClass,
+					((m_stTr.m_chTrType=='N')?m_stTr.m_chTrType:'F'), m_DataBuf, m_stTr.m_wSndInfSiz, TIME_SOCKETOUT );
+		for (;;)
+		{
+			RcvSize = g_Sock_DataReceive( m_stTr.m_szCode, WAIT_TIME);
+			if( RcvSize <= 0 )
+			{
+				long ret;
+				char szStr[128];
+				
+				if (RcvSize == ERR_SVR_RES_FAIL)
+				{
+					Str_Cpy (szStr, " mPOP 서버가 응답이 없습니다. \n 다시 시도하시겠습니까?");
+				}
+				else if (RcvSize == ERR_SVR_CON_FAIL)
+				{
+					Str_Cpy (szStr, " mPOP서버와 통신이 끊겼습니다.\n 다시 시도하시겠습니까?");
+				}
+				
+				if (RcvSize == ERR_SVR_RES_FAIL || RcvSize == ERR_SVR_CON_FAIL)
+				{
+					ret = MessageBoxEx (CONFIRM_YESNO, szStr);
+					if (ret == MB_OK)
+					{
+						nRet = g_SocketConnect ();
+						if (  nRet < 0 )
+						{
+							// nErrCode = (nRet==RET_RETRY)? RET_RETRY:ERR_CONNECT_FAIL;
+							// 2004-09-15
+							// g_SocketConnect 함수에 리턴되는 값은 0 아니면 -1로 
+							// 0은 성공한 경우, -1은 재시도를 하지 않겠다. '아니오'를 누른 경우이므로
+							// nErrCode 를 ERR_NO_RESULT로 셋팅하여서 화면에 아무런 메시지를 보여주지 않도록 함.
+							nErrCode = ERR_NO_RESULT;
+							goto EXIT;
+						}
+						goto _RETRY_;
+					}
+					else
+					{
+						nErrCode = ERR_NO_RESULT;
+						goto EXIT;
+					}
+				}
+	
+				//nErrCode = ERR_RCVDATA_FAIL;
+				// misocap 2005-01-27
+				//nErrCode = (g_DataBuffer[9] == 'E')?
+				nErrCode = (g_DataBuffer[9] != 'L' && 
+				            g_DataBuffer[9] != 'M' && 
+				            g_DataBuffer[9] != 'F' &&
+				            g_DataBuffer[9] != 'N')?
+						   ERR_RCVDATA_FAIL:
+						   ERR_COMM_FAIL;
+				goto EXIT;
+			}
+			else if (RcvSize == 21)
+			{
+				// dkjung 2003-08-27
+				// 이 경우는 데이터가 하나도 없는 경우.
+				break;
+			}
+		
+			// dkjung 2003-08-27
+			// 전체 받은 크기를 누적한다.
+			nRcvTotal += (RcvSize - 21);
+		
+			//프로그래스바를 위한 셋팅
+			nTotalTmp 	= BtoI ( g_DataBuffer+19, 2 ); 	// 패킷 총 수
+			nCur 		= BtoI ( g_DataBuffer+21, 2 ); 	// 패킷 순번
+			nTotal 		= nTotalTmp;
+			
+			if (nTotal == 0)
+				break;
+
+			if( SentDataNum != nCur )
+			{
+				nErrCode = ERR_RCV_PACKET_SEQ;
+				goto EXIT;
+			}
+			
+			//chan 2004-08-06
+			//DRAW_PROGRESS (BAR_X, BAR_Y, BAR_WIDTH, BAR_HEIGHT, nCur, nTotal);
+			//PRINT ("진행율: %d / %d", nCur, nTotal, 0);
+
+			// 패킷 총수, 순번 빼면... 22개
+			nSize = BtoI ( g_DataBuffer+1, 2 ) - (18+m_stTr.m_wRcvInfSiz);
+			FS_Write ( fdZip, g_DataBuffer+19+m_stTr.m_wRcvInfSiz, nSize );
+		
+			//압축 풀고 생성될 파일명  저장
+			//주의!!  총 전송수, 패킷 순번수 2byte 
+			Mem_Cpy ( (byte*)szTmpFile, g_DataBuffer+19+4, m_stTr.m_wRcvInfSiz-4 );
+			szTmpFile[m_stTr.m_wRcvInfSiz-4] = '\0';
+
+			
+			if( g_DataBuffer[9] == 'L' )
+				break;
+				
+			SentDataNum++;
+			
+			m_DataBuf[0] = (byte)(SentDataNum>>8);
+			m_DataBuf[1] = (byte)(SentDataNum);
+					
+			g_Sock_DataSend ( FIRM_ID, m_stTr.m_szCode, m_stTr.m_chTrClass, 'M', m_DataBuf, m_stTr.m_wSndInfSiz, TIME_SOCKETOUT );
+		}
+
+		if( i == 0 )
+		{		
+			Str_Printf (m_szResultFile, "%sRcv%s", (quad)DIR_COMM, (quad)m_stTr.m_szCode, 0);
+			fdRcv = FS_Open ( m_szResultFile, FS_WRITE_MODE, FS_CREATE_FLAG );
+			if (fdRcv < 0)
+			{
+				nErrCode = ERR_RCVFILE_OPEN;
+				goto EXIT;
+			}
+			
+			// 헤더를 지나서 위치 시킴.
+			COMFILE_SET_HEAD (fdRcv, m_stTr.m_szCode, m_stTr.m_chTrClass, m_stTr.m_chTrType);
+	
+			//저장할 파일 리스트 개수
+			FS_Write ( fdRcv, (byte*)&wReqNum, 2 );
+			//파일명 길이
+			FileTitleLen = m_stTr.m_wRcvInfSiz-4+2;
+			FS_Write ( fdRcv, (byte*)&FileTitleLen, 2 );		
+		}		
+		
+		FS_Write ( fdRcv, (byte*)szTmpFile, m_stTr.m_wRcvInfSiz-4 );
+		FS_Write ( fdRcv, (byte*)"\r\n", 2 );
+		
+				
+		//chan 2004-08-06  전체에 대한 진행 현황 프로그래스
+		DRAW_PROGRESS (BAR_X, BAR_Y, BAR_WIDTH, BAR_HEIGHT, i+1, wReqNum );
+		
+		COMFILE_CLOSE (fdZip);
+		
+		Str_Cpy ( szResultFile, DIR_COMM );
+		Str_Cat ( szResultFile, szTmpFile );
+	
+		
+		if ( Uncompress_Zip ( szZipFile, szResultFile ) < 0 )
+		{
+			nErrCode = ERR_RCVFILE_FORMAT;
+			goto EXIT;
+		}		
+	}
+	
+
+	#ifndef _COMM_DEBUG
+	// 디버그 모드 아니면,
+	// 임시 파일들은 삭제 한다.
+	COMFILE_CLOSE (fdTmp);
+	FS_Delete (szTmpFile);
+	
+	COMFILE_CLOSE (fdZip);
+	FS_Delete (szZipFile);
+	#endif // _COMM_DEBUG 
+	
+	// 에러 처리 루틴에서 사용하기 위해.
+	Str_Cpy (m_szReqTitle, pszTitle);
+	SET_RESULT_OK (fdRcv);	
+	nErrCode = nRcvTotal;
+	CloseMessageBox ();
+	
+EXIT:
+
+	COMFILE_CLOSE (fdTmp);
+	COMFILE_CLOSE (fdRcv);
+	COMFILE_CLOSE (fdZip);
+	COMFILE_CLOSE (fd);
+	
+	return nErrCode;	
+}
+
+
+// COMM_RZIP 인 경우.	
+//---------------------------------------------------------------
+long Comm_RcvZip (char* pszTitle)
+{
+	long	nRet;
+	long 	fd = -1, fdTmp = -1;
+	long 	fdZip = -1, fdRcv = -1;
+	long 	i;
+	long	nErrCode;
+	long 	FileSize;
+	long	RcvSize = 0;
+	long	nRcvTotal = 0;
+	long	nReadSize;
+	long	nSize;
+	long	SentDataNum;
+	long	nCur = 0, nTotal = 0, nTotalTmp = 0;
+	word	wReqNum;
+	char 	szHeadStr[9];
+	char	szTmpFile[32];
+	char	szZipFile[32];
+
+
+START:	
+	nCur = 0, nTotal = 0, nTotalTmp = 0;
+	fd = -1, fdTmp = -1;
+	fdZip = -1, fdRcv = -1;
+
+	if( FS_CreateDir ( DIR_COMM_STR ) < 0 )
+	{
+		if( GetApiError() == FS_ERR_INTERNAL_ERROR )
+		{
+			nErrCode = ERR_DIR_CREATE;
+			goto EXIT;
+		}
+	}
+
+	Str_Cpy (m_szReqFileName, DIR_COMM);
+	Str_Cat (m_szReqFileName, SNDFILE);	// 수신파일명
+	
+	if (!FS_Exist (m_szReqFileName))
+	{
+		nErrCode = ERR_SNDFILE_OPEN;
+		goto EXIT;
+	}
+	
+	fd = FS_Open ( m_szReqFileName, FS_READ_MODE, 0 );
+	if( fd < 0 )
+	{
+		nErrCode = ERR_SNDFILE_OPEN;
+		goto EXIT;
+	}
+
+	FS_Read (fd, (byte*)szHeadStr, 8);		// Head string check
+	szHeadStr[8] = '\0';
+	if (Str_Cmp(HEAD_STR, szHeadStr))
+	{
+		nErrCode = ERR_SNDFILE_FORMAT;
+		goto EXIT;
+	}
+	
+	FS_Read ( fd, (byte*)m_stTr.m_szCode, 		4 ); // TR Code
+	m_stTr.m_szCode[4] ='\0';
+	FS_Read ( fd, (byte*)&m_stTr.m_chTrClass, 	1 ); // TR Class
+	FS_Read ( fd, (byte*)&m_stTr.m_chTrType, 	1 ); // TR Type
+	FS_Read ( fd, (byte*)&m_stTr.m_wSndInfSiz,	2 ); // 헤더크기
+	FS_Read ( fd, (byte*)&m_stTr.m_wSndDatSiz,	2 ); // 반복데이터 크기
+	FS_Read ( fd, (byte*)&m_stTr.m_wRcvInfSiz,	2 ); // 헤더크기
+	FS_Read ( fd, (byte*)&m_stTr.m_wRcvDatSiz,	2 ); // 반복데이터 크기
+	FS_Read ( fd, (byte*)&m_stTr.m_nMaxInfoSiz, 4);	 // 받은데이터 총 개수의 표시 길이
+	FS_Read ( fd, (byte*)&m_stTr.m_ucCommType,  1 ); // 통신 유형.
+	FS_Read ( fd, (byte*)&wReqNum, 2 ); // 연속 통신시 횟수.
+
+
+	// Zip 파일 생성
+	Str_Printf (szZipFile, "%sRcv%s.zip", (quad)DIR_COMM, (quad)m_stTr.m_szCode, 0);
+	fdZip = FS_Open ( szZipFile, FS_WRITE_MODE, FS_CREATE_FLAG );
+	if (fdZip < 0)
+	{
+		nErrCode = ERR_RCVFILE_OPEN;
+		goto EXIT;
+	}
+	
+	
+//	Print ("송신데이터 크기=%d", (quad)LastSize, 0, 0);
+
+	if (Str_Len (pszTitle) > MAXLINE_MSG)
+	{
+		Str_Printf ( m_MsgStr, "\"%s\"\n처리 중입니다.", (quad)pszTitle, 0 , 0 );
+	}
+	else
+		Str_Printf ( m_MsgStr, "\"%s\" 처리 중입니다.", (quad)pszTitle, 0 , 0 );
+	
+	MessageBox( MESSAGE, m_MsgStr ,"", "", 0, 0 );
+	Mem_Set ( m_DataBuf, 	0x00, sizeof(m_DataBuf) );
+	
+	for (i=0; i<(long)wReqNum; i++)
+	{
+		FS_Seek ( fd, GET_DATA_POS(0), FS_SEEK_FROM_SET );
+		FS_Read ( fd, m_DataBuf+6, m_stTr.m_wSndInfSiz );
+		
+		// 초기에 클리어 한다.
+		if(m_stTr.m_chTrType == 'C')
+		{
+			// dkjung 2003-06-23
+			// 이 짜식 정말 애 먹임..... (_ _;;)
+			// PDA는 반드시 초기화 해 주어야 한다.
+			
+			// 첨엔 무조건 1로 만든다.
+			m_DataBuf [2] = (byte)( i >> 8 );
+			m_DataBuf [3] = (byte)( i );
+		}
+		
+		// dkjung 2003-07-14 추가.
+		// 패킷 순번은 1부터 시작한다.
+		SentDataNum = 1;
+		
+		_RETRY_:
+		g_Sock_DataSend( FIRM_ID, m_stTr.m_szCode, m_stTr.m_chTrClass,
+					((m_stTr.m_chTrType=='N')?m_stTr.m_chTrType:'F'), m_DataBuf, m_stTr.m_wSndInfSiz+6, TIME_SOCKETOUT );
+		for (;;)
+		{
+			RcvSize = g_Sock_DataReceive( m_stTr.m_szCode, WAIT_TIME);
+			if( RcvSize <= 0 )
+			{
+				long ret;
+				char szStr[128];
+				
+				if (RcvSize == ERR_SVR_RES_FAIL)
+				{
+					Str_Cpy (szStr, " mPOP 서버가 응답이 없습니다. \n 다시 시도하시겠습니까?");
+				}
+				else if (RcvSize == ERR_SVR_CON_FAIL)
+				{
+					Str_Cpy (szStr, " mPOP서버와 통신이 끊겼습니다.\n 다시 시도하시겠습니까?");
+				}
+				
+				if (RcvSize == ERR_SVR_RES_FAIL || RcvSize == ERR_SVR_CON_FAIL)
+				{
+					ret = MessageBoxEx (CONFIRM_YESNO, szStr);
+					if (ret == MB_OK)
+					{
+						nRet = g_SocketConnect ();
+						if (  nRet < 0 )
+						{
+							// nErrCode = (nRet==RET_RETRY)? RET_RETRY:ERR_CONNECT_FAIL;
+							// 2004-09-15
+							// g_SocketConnect 함수에 리턴되는 값은 0 아니면 -1로 
+							// 0은 성공한 경우, -1은 재시도를 하지 않겠다. '아니오'를 누른 경우이므로
+							// nErrCode 를 ERR_NO_RESULT로 셋팅하여서 화면에 아무런 메시지를 보여주지 않도록 함.
+							nErrCode = ERR_NO_RESULT;
+							goto EXIT;
+						}
+						//goto _RETRY_;
+						COMFILE_CLOSE (fdTmp);
+						COMFILE_CLOSE (fdRcv);
+						COMFILE_CLOSE (fdZip);
+						COMFILE_CLOSE (fd);
+						goto START;
+					}
+					else
+					{
+						nErrCode = ERR_NO_RESULT;
+						goto EXIT;
+					}
+				}
+	
+				//nErrCode = ERR_RCVDATA_FAIL;
+				// misocap 2005-01-27
+				//nErrCode = (g_DataBuffer[9] == 'E')?
+				nErrCode = (g_DataBuffer[9] != 'L' && 
+				            g_DataBuffer[9] != 'M' && 
+				            g_DataBuffer[9] != 'F' &&
+				            g_DataBuffer[9] != 'N')?
+						   ERR_RCVDATA_FAIL:
+						   ERR_COMM_FAIL;
+				goto EXIT;
+			}
+			else if (RcvSize == (IX_PTC+2) )
+			{
+				// dkjung 2003-08-27
+				// 이 경우는 데이터가 하나도 없는 경우.
+				break;
+			}
+		
+			// dkjung 2003-08-27
+			// 전체 받은 크기를 누적한다.
+			nRcvTotal += (RcvSize - IX_DAT);
+		
+			//프로그래스바를 위한 셋팅
+			nTotalTmp 	= BtoI ( g_DataBuffer+IX_PTC, 2 ); 	// 패킷 총 수
+			nCur 		= BtoI ( g_DataBuffer+IX_PIC, 2 ); 	// 패킷 순번
+			nTotal 		= nTotalTmp;
+
+			// 패킷 총수, 순번 빼면... 22개
+			nSize = BtoI ( g_DataBuffer+1, 2 ) - (IX_DAT-1);	
+			FS_Write ( fdZip, g_DataBuffer+IX_DAT, nSize );
+
+			if (nTotal == 0)
+				break;
+
+			if( i != nCur || nTotalTmp == 0 )
+			{
+				nErrCode = ERR_RCV_PACKET_SEQ;
+				goto EXIT;
+			}
+			
+			DRAW_PROGRESS (BAR_X, BAR_Y, BAR_WIDTH, BAR_HEIGHT, nCur+1, nTotal);
+			//PRINT ("진행율: %d / %d", nCur, nTotal, 0);
+			
+			if( g_DataBuffer[9] == 'L' )
+				break;
+			i++;	
+			m_DataBuf [0] = (byte)( (nTotal) >> 8 );
+			m_DataBuf [1] = (byte)( (nTotal) );
+			m_DataBuf [2] = (byte)( (i) >> 8 );
+			m_DataBuf [3] = (byte)( (i) );
+
+			g_Sock_DataSend ( FIRM_ID, m_stTr.m_szCode, m_stTr.m_chTrClass, 'M', m_DataBuf, m_stTr.m_wSndInfSiz+6, TIME_SOCKETOUT );
+
+		}
+	}
+	
+	// dkjung 2003-07-14 추가.
+	// 압축을 풀기 위해 파일을 닫는다.
+	COMFILE_CLOSE (fdZip);
+		
+	// Zip 파일을 푼다.
+	Str_Printf (szTmpFile, "%sRcv%s.tmp", (quad)DIR_COMM, (quad)m_stTr.m_szCode, 0);
+	
+	// Leesh 2014-11-20 
+	// 스마트폰에서는 0 사이즈파일 압축해제시에 에러가 발생. 
+	// 압축해제할 파일만 압축풀게 하며, 0사이즈 파일은 임의의 파일생성으로 처리
+
+    if ( Uncompress_Zip ( szZipFile, szTmpFile ) < 0 )
+	{
+		//chan 2004-08-05
+		//nErrCode = ERR_RCVFILE_FORMAT;
+		//goto EXIT;
+		fdTmp = FS_Open ( szTmpFile, FS_WRITE_MODE, FS_CREATE_FLAG );
+		COMFILE_CLOSE (fdTmp);		
+	}
+
+	FileSize = FS_GetSize (szTmpFile);
+	fdTmp = FS_Open ( szTmpFile, FS_READ_MODE, 0 );
+	if (fdTmp < 0)
+	{
+		nErrCode = ERR_RCVFILE_OPEN;
+		goto EXIT;
+	}
+
+	Str_Printf (m_szResultFile, "%sRcv%s", (quad)DIR_COMM, (quad)m_stTr.m_szCode, 0);
+	fdRcv = FS_Open ( m_szResultFile, FS_WRITE_MODE, FS_CREATE_FLAG );
+	if (fdRcv < 0)
+	{
+		nErrCode = ERR_RCVFILE_OPEN;
+		goto EXIT;
+	}
+
+	//LSH 2005-06-28 수정
+	
+	// 헤더를 지나서 위치 시킴.
+	//COMFILE_SET_HEAD (fdRcv, m_stTr.m_szCode, m_stTr.m_chTrClass, m_stTr.m_chTrType);
+
+	// 복사 한다.
+	//for (i=0; i<FileSize; i+=nReadSize)
+	//{
+	//	nReadSize = MIN ((quad)(FileSize-i), sizeof(m_DataBuf));
+		
+	//	FS_Read (fdTmp, m_DataBuf, nReadSize);
+	//	FS_Write (fdRcv, m_DataBuf, nReadSize);
+	//}
+
+	#ifndef _COMM_DEBUG
+	// 디버그 모드 아니면,
+	// 임시 파일들은 삭제 한다.
+	COMFILE_CLOSE (fdTmp);
+	FS_Delete (szTmpFile);
+	
+	COMFILE_CLOSE (fdZip);
+	FS_Delete (szZipFile);
+	#endif // _COMM_DEBUG 
+	
+	// 에러 처리 루틴에서 사용하기 위해.
+	Str_Cpy (m_szReqTitle, pszTitle);
+	SET_RESULT_OK (fdRcv);	
+	nErrCode = nRcvTotal;
+	CloseMessageBox ();
+	
+EXIT:
+
+	COMFILE_CLOSE (fdTmp);
+	COMFILE_CLOSE (fdRcv);
+	COMFILE_CLOSE (fdZip);
+	COMFILE_CLOSE (fd);
+	
+	return nErrCode;	
+}
+
+// dkjung 2003-07-15
+// 디비에 저장.
+/*---------------------------------------------------------------
+bool	Comm_SaveDB ( stDataInfo* pstInfo )
+{
+	long	fd = -1;
+	bool	bRet;
+	long	hDB = VD_DB_INVALID_HANDLE;
+	long 	oid;
+	long	i, nStartPos;
+	char	szMsg[64];
+	long	nSize;
+	word	wTotalCnt;
+	char	chTotalCnt;
+	
+	// dkjung 2004-03-12
+	// 데이터베이스 아이디를 지워야 한다.
+	for (i=0; i<pstInfo->m_nSortFieldNum; i++)
+	{
+		pstInfo->m_SortField[i] &= 0xFF00FFFF;
+	}
+	
+	for (i=0; i<pstInfo->m_stRec.fieldcnt; i++)
+	{
+		pstInfo->m_stRec.field[i].id &= 0xFF00FFFF;
+	}
+	
+	if (pstInfo->m_szDatFile[0] == '\0')
+	{
+		GET_RESULT_FILE (pstInfo->m_szDatFile, pstInfo->m_nTrCode);
+	}
+	
+	if ((pstInfo->m_ucDbFlag & 0x0F) == DB_CREATE)
+	{
+		Str_Printf (szMsg, "\"%s\"\n이전 자료 삭제 중입니다.", (quad)pstInfo->m_szDbTitle, 0, 0);
+		MessageBoxEx ( MESSAGE, szMsg );
+		DB_Delete ( pstInfo->m_szDbTitle, pstInfo->m_szDbName, FALSE );
+		
+		Str_Printf (szMsg, "\"%s\"\n저장 중입니다.", (quad)pstInfo->m_szDbTitle, 0, 0);
+		MessageBoxEx ( MESSAGE, szMsg );
+		
+		if( DB_Create ( pstInfo->m_szDbTitle, pstInfo->m_szDbName, 
+						pstInfo->m_nSortFieldNum, pstInfo->m_SortField,
+						pstInfo->m_SortOrder ) == FALSE )
+		{
+			bRet = FALSE;
+			goto EXIT;
+		}
+	}
+		
+	hDB = DB_Open ( pstInfo->m_szDbTitle, pstInfo->m_szDbName, 0, TRUE );
+	if( (quad)hDB == VD_DB_INVALID_HANDLE )
+	{
+		bRet = FALSE;
+		goto EXIT;
+	}
+
+	//PRINT ("데이터 파일명=%s", pstInfo->m_szDatFile, 0, 0);	
+	fd = FS_Open ( pstInfo->m_szDatFile, FS_READ_MODE , 0 );
+	if( fd == -1 )
+	{
+		Str_Printf (szMsg, "\"%s\" 파일을 열수 없습니다.", (quad)pstInfo->m_szDbTitle, 0, 0);
+		MessageBoxEx ( ERROR_OK, szMsg );
+		bRet = FALSE;
+		goto EXIT;
+	}
+	
+	// 크기가 위치한 오프셋 만큼 파일 포인터를 이동 시킨다.
+	FS_Seek (fd, GET_DATA_POS(TrInfo[pstInfo->m_nTrCode].m_nMaxInfoPos), FS_SEEK_FROM_SET);
+	
+	// 전체 개수 읽기
+	if (TrInfo[pstInfo->m_nTrCode].m_nMaxInfoSiz == 1)
+	{
+		FS_Read( fd, (byte*)&chTotalCnt, TrInfo[pstInfo->m_nTrCode].m_nMaxInfoSiz );
+		wTotalCnt = (word)chTotalCnt;
+	}
+	else
+	{
+		FS_Read( fd, (byte*)&wTotalCnt, TrInfo[pstInfo->m_nTrCode].m_nMaxInfoSiz );
+	}
+	
+	nStartPos = TrInfo[pstInfo->m_nTrCode].m_wRcvInfSiz;
+	nSize = TrInfo[pstInfo->m_nTrCode].m_wRcvDatSiz;
+	FS_Seek (fd, GET_DATA_POS(nStartPos), FS_SEEK_FROM_SET);
+
+	for ( i=0; i<(long)wTotalCnt; i++ )
+	{
+		char szStr[32];
+	
+		Mem_Set ( g_DataBuffer, 0x00, sizeof( g_DataBuffer ) );
+		FS_Read( fd, g_DataBuffer, nSize );
+
+#ifdef DEBUG_SAVE_DB
+		// dkjung 2003-11-17
+		// 디비 저장 상태를 TR별로 디버깅.
+		DebugSaveDB (i, (long)wTotalCnt, pstInfo->m_nTrCode);
+#endif //DEBUG_SAVE_DB
+		
+		// dkjung 2003-07-19	
+		// 3000개 미만일 경우 %로 표시한다.
+		// 3000개 이상이면, "현재개수/총개수 진행중..." 로 표시한다.
+		// 변화량을 보여주기 위함. -> 죽은게 아님을 알리기 위해...
+		if (wTotalCnt < 3000)
+		{	
+			DRAW_PROGRESS (BAR_X, BAR_Y, BAR_WIDTH, BAR_HEIGHT, i+1, wTotalCnt);
+		}
+		else
+		{
+			SPRINT (szStr, "%d/%d 진행중...", i+1, wTotalCnt, 0);
+			DRAW_TXT_PROGRESS (BAR_X, BAR_Y, BAR_WIDTH, BAR_HEIGHT, i+1, wTotalCnt, 30, szStr, BLUE, LIGHTBLUE);
+		}
+		
+		oid = DB_CreateRecord ( hDB );
+		if ((quad)oid == VD_INVALID_OID)
+		{
+			Str_Printf (szMsg, "\"%s\" 레코드 생성을 실패했습니다.", (quad)pstInfo->m_szDbTitle, 0, 0);
+			MessageBoxEx ( ERROR_OK, szMsg );
+			bRet = FALSE;
+			goto EXIT;
+		}
+		
+		// 수신된 데이터의 인덱스 필드가 설정된 경우, 인덱스를 저장한다.
+		if (pstInfo->m_ucDbFlag & DB_USEIDX)
+		{
+			DB_WriteIntField ( hDB, oid, pstInfo->m_SortField[0], i );
+			//PRINT ("인덱스 저장(oid=0x%x, 소트필드=0x%x)=%d", oid, pstInfo->m_SortField[0], i);
+		}
+
+		//수신 데이터 저장 ( dbfunction.h )
+		DB_WriteRecord ( hDB, oid, &pstInfo->m_stRec, g_DataBuffer );
+	} 
+	
+	bRet = TRUE;
+	CloseMessageBox ();
+	
+EXIT:
+	if (fd >= 0)
+	{
+		FS_Flush(fd);
+		FS_Close ( fd );
+	}
+	if( (quad)hDB != VD_DB_INVALID_HANDLE )
+		DB_CloseDatabase ( hDB );
+	
+	return bRet;	
+}	
+
+// dkjung 2003-11-17
+// 각 TR별 데이터가 디비에 잘 저장 되는지 확인.
+#ifdef DEBUG_SAVE_DB
+
+void DebugSaveDB (long i, long nTotalCnt, long nTrCode)
+{
+	if (i==0)
+	{
+		PRINT ("총 상품 개수=%d", nTotalCnt, 0, 0);	
+	}
+
+	switch (nTrCode)
+	{
+		case TRC_1000:
+			PRINT ("[%d]: code=%s, name=%s", i, g_DataBuffer, g_DataBuffer+4);
+			break;
+	}
+}
+
+#endif // DEBUG_SAVE_DB
+*/
+
+#endif	//_COMM_LIB_
