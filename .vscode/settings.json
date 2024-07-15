@@ -26,5 +26,6 @@
         "globalcard.h": "c",
         "defevent.h": "c",
         "sqldb.h": "c"
-    }
+    },
+    "C_Cpp.errorSquiggles": "disabled"
 }
