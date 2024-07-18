@@ -26,7 +26,7 @@ card LOGIN
 	//DefType.h에 릴리즈가 선언될 경우, 자동으로 비활성화 됨.
 	//-----------------------------------------------------------------
 	//-----------------------------------------------------------------
-	//#define __USE_DEV_CARD__
+	// #define __USE_DEV_CARD__
 	
 	//릴리즈시 반드시 선언 및 제거 되어야 하는 것들 정의
 
@@ -64,7 +64,7 @@ card LOGIN
 	#ifdef 	__USE_DEV_CARD__
 	
 		//#define TEST_CARD	"C6101_MENU"
-		#define TEST_CARD	"SC_MTRCHK"
+		#define TEST_CARD	"C6301_LST"
 		
 		#define CALL_DEV_CARD()	{Card_Move(TEST_CARD);return TRUE;}
 		
