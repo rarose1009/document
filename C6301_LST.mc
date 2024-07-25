@@ -140,6 +140,7 @@ g_nWorkFlag = 742       계량기교체 무전표리스트(교체)
 	char m_szTitle[100];
 	char m_szCnt_page[20];		// 페이지 표시 변수
 	char m_szCobSel[20];
+	char m_szGmType[20];
 	char m_szSendYn[10];
 	char m_szMtrGrd[10];
 	char m_szPdaRepl[10];
