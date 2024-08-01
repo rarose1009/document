@@ -140,7 +140,6 @@ g_nWorkFlag = 742       계량기교체 무전표리스트(교체)
 	char m_szTitle[100];
 	char m_szCnt_page[20];		// 페이지 표시 변수
 	char m_szCobSel[20];
-	char m_szGmType[20];
 	char m_szSendYn[10];
 	char m_szMtrGrd[10];
 	char m_szPdaRepl[10];
@@ -152,7 +151,7 @@ g_nWorkFlag = 742       계량기교체 무전표리스트(교체)
 	handle m_hData = NULL;		//grid quick 데이터 핸들
 
 	bool m_bChgGmFlag = FALSE;
-	long m_nGmType = 0;
+	// long g_nGmKind = 0;		//글로벌로 선언을 바꿔서 구분하도록 한다.
 	
 	long FS_GetSrchTotCnt(void);
 	void Set_Index(void); 	//선택한 대상 인덱스 저장
@@ -438,6 +437,8 @@ g_nWorkFlag = 742       계량기교체 무전표리스트(교체)
 					{
 						g_nBojungFlag = 1;
 					}
+
+					//대용량
 					Card_Move("C6301_BIGCHG");
 				}
 				else if( Str_AtoI(m_szMtrGrd) < 10 )
@@ -451,16 +452,20 @@ g_nWorkFlag = 742       계량기교체 무전표리스트(교체)
 						g_nBojungFlag = 1;
 					}
 
+					//소용량
 					Card_Move("C6301_MTRCHG");
 				}
 			}
 			else if( MATCH(m_szPdaRepl, "20") )
 			{
 				g_nBojungFlag = 2;
+
+				//보정기
 				Card_Move("C6301_BOJUNGCHG");
 			}
 			else if (MATCH(m_szNoBillYn, "Y") )
 			{
+				//소용량
 				Card_Move("C6301_MTRCHG");
 			}
 		}
@@ -488,11 +493,13 @@ Finally:
 					default:
 						CREATE_GLOBAL_BUTTON (SysButRes_MAIN);
 
-						// #ifndef VER_RELEASE
-						// 	#error ">>>>>>>> [FIXME] PLS, Remove the below code for product build!!! <<<<<<<"
-						// 	//[FIXME] 테스트 코드 이므로, 최종 테스트나 배포시 제거하시오.
-						// 	g_nWorkFlag = 700;
-						// #endif
+						#ifndef VER_RELEASE
+							#error ">>>>>>>> [FIXME] PLS, Remove the below code for product build!!! <<<<<<<"
+							//[FIXME] 테스트 코드 이므로, 최종 테스트나 배포시 제거하시오.
+							g_nWorkFlag = 700;
+						#endif
+
+						PRINT(">>>>>> g_nGmKind => %d", g_nGmKind, 0, 0);
 
 						if( g_nWorkFlag > 699 && g_nWorkFlag < 710 )
 						{
@@ -505,7 +512,11 @@ Finally:
 							ListCtrl_AddItem (Get_hDlgCtrlByID(CMB_GMTYPE+2), "특수형"	, 2, ICON_NONE);
 
 							//조건과 코드에 따라 초기화 해 줘야 함.
-							EditCtrl_SetStr(Get_hDlgCtrlByID(CMB_GMTYPE), "전체");
+							{
+								handle h = Get_hDlgCtrlByID(CMB_GMTYPE+2);
+								ListCtrl_SelectItem(h, g_nGmKind);
+								EditCtrl_SetStr(Get_hDlgCtrlByID(CMB_GMTYPE), ListCtrl_GetSelStr(h));
+							}
 
 							//아래와 같이 변수가 필요 할 수 도 있다.
 							// Str_Cpy(m_szCobSel, "전체");
@@ -701,7 +712,7 @@ Finally:
 		char szSql[301];
 		char sztmp[301];
 
-		long type = 0;
+		long kind = 0;
 		BOOL gmTypeFlag = FALSE;
 
 		if( INIT_MAIN == m_bFirst )
@@ -850,18 +861,18 @@ Finally:
 				}
 			}
 
-			PRINT("m_nGmType = %d vs type = %d", m_nGmType, type, 0);
+			PRINT("m_nGmKind = %d vs kind = %d", g_nGmKind, kind, 0);
 
 			if (m_bChgGmFlag)
 			{
-				handle hCmb = Get_hDlgCtrlByID(CMB_GMTYPE+2);
-				long i = ListCtrl_GetSelIndex(hCmb);
-				type = ListCtrl_GetData(hCmb, i);
+				handle h = Get_hDlgCtrlByID(CMB_GMTYPE+2);
+				long i = ListCtrl_GetSelIndex(h);
+				kind = ListCtrl_GetData(h, i);
 
 				// PRINT("33333333333333333333 => %d, %s, %d", i, ListCtrl_GetStr(hCmb, i), m_nGmType);
-				if (type != m_nGmType)
+				if (kind != g_nGmKind)
 				{
-					m_nGmType = type;
+					g_nGmKind = kind;
 					gmTypeFlag = TRUE;
 
 					M("GM type changed....");
@@ -1330,7 +1341,7 @@ Finally:
 			memset(szTypeWhere, 0, sizeof(szTypeWhere));
 
 			//m_nGmType => 0: 전체, 1: 일반형, 2: 특수형
-			switch(m_nGmType)
+			switch(g_nGmKind)
 			{
 				default:
 				case 0:	//전체

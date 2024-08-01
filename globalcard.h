@@ -419,6 +419,7 @@ global  long    g_nTelFlag;                 //검침등록,점검시작 등 전화번호 flag
 global  long    g_nNameFlag;                //검침등록,점검시작 등 이름,상호명 flag , g_nNameFlag = 0 > 이름, g_nNameFlag = 1 > 회사,상호
 global  long    g_nGrpFlag;                 //검침 그룹,상세 리스트 인덱스 관련 flag
 global  long    g_nGmType;                  //검침 타입 = 0 : 정기점검, 1 : 재감
+global  long 	g_nGmKind;					//계량기노후교체 계량기종류 구분
 
 //g_lDataflag , 0 -> 호출, 1 -> 호출X, SetData를 다시 호출 안하도록하기위한 flag, 처음 화면 들어왔을 시에 1번, 이전&다음화면, 저장 할때만 실행.
 //검침 요금조회 대상 검색 -> SetData를 다시 호출 안하도록하기위한 flag, 1 -> 요금내역, 2 -> 요금계산
