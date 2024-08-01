@@ -20,7 +20,7 @@
 //	1.	버전 타입을 반드시 확인
 //-----------------------------------------------------------------------------
 	// Version Control dkjung 2003-6-15
-	#define VER_RELEASE			// 최종 릴리즈 버전
+	//#define VER_RELEASE			// 최종 릴리즈 버전
  
 	// Server Type Control Sanghyun Lee 2017-07-05
 	//#define TYPE_BASIC			// 서버 타입 설정 (define : 0.0.1 / undef : 0.0.2 )

@@ -69,6 +69,8 @@ card C6301_LST
 //리스트
 		DEF_OBJECT_ID ( ID_TBLLIST )	// 테이블 리스트
 		DEF_OBJECT_ID ( ID_TBLLIST2 )	// 테이블 리스트
+
+		DEF_OBJECT_ID ( CMB_GMTYPE )
 		
 	END_OBJECT_ID()
 
@@ -138,6 +140,7 @@ g_nWorkFlag = 742       계량기교체 무전표리스트(교체)
 	char m_szTitle[100];
 	char m_szCnt_page[20];		// 페이지 표시 변수
 	char m_szCobSel[20];
+	char m_szGmType[20];
 	char m_szSendYn[10];
 	char m_szMtrGrd[10];
 	char m_szPdaRepl[10];
@@ -147,6 +150,9 @@ g_nWorkFlag = 742       계량기교체 무전표리스트(교체)
 	char m_szSql[2][2600];
 	char m_szBarcode_Value[20];	//바코드 스캔 결과
 	handle m_hData = NULL;		//grid quick 데이터 핸들
+
+	bool m_bChgGmFlag = FALSE;
+	long m_nGmType = 0;
 	
 	long FS_GetSrchTotCnt(void);
 	void Set_Index(void); 	//선택한 대상 인덱스 저장
@@ -168,18 +174,18 @@ g_nWorkFlag = 742       계량기교체 무전표리스트(교체)
 
 	SysButCtrl SysButRes_MAIN[] =
 	 {
-		  SYS_BUT_IMG (  BTNX_1, BTNY_1, BTNWD_1, BTNHT_1, 0, 0, BUTSTY_BOLD , 0, 0, 0, OBJ_BUT, GID_HOME,  0),
-		  SYS_BUT_IMG (  BTNX_2, BTNY_1, BTNWD_1, BTNHT_1, 0, 0, BUTSTY_BOLD , 0, 0, 0, OBJ_BUT, GID_KEYBOARD,  0),
-		  SYS_BUT_IMG (  BTNX_3, BTNY_1, BTNWD_1, BTNHT_1, 0, 0, BUTSTY_BOLD , 0, 0, 0, OBJ_BUT, GID_SCREEN, 0),
-		  SYS_BUT_IMG (  BTNX_4, BTNY_1, BTNWD_1, BTNHT_1, 0, 0, BUTSTY_BOLD , 0, 0, 0, OBJ_BUT, GID_CMMNWK,  0),
-		  SYS_BUT_IMG (  BTNX_5, BTNY_1, BTNWD_1, BTNHT_1, 0, 0, BUTSTY_BOLD , 0, 0, 0, OBJ_BUT, GID_VMEXIT, 0),
-		  SYS_BUT_IMG (  BTNX_6, BTNY_2, BTNWD_2, BTNHT_2, 0, 0, BUTSTY_BOLD|BUTSTY_BORDER , 0, TRANSPARENT, TRANSPARENT, OBJ_BUT, GID_MENU, 0),
-		  SYS_BUT_IMG (  BTNX_7, BTNY_2, BTNWD_2, BTNHT_2, 0, 0, BUTSTY_BOLD|BUTSTY_BORDER , 0, TRANSPARENT, TRANSPARENT, OBJ_BUT, GID_PREV, 0),
+		SYS_BUT_IMG (  BTNX_1, BTNY_1, BTNWD_1, BTNHT_1, 0, 0, BUTSTY_BOLD , 0, 0, 0, OBJ_BUT, GID_HOME,  0),
+		SYS_BUT_IMG (  BTNX_2, BTNY_1, BTNWD_1, BTNHT_1, 0, 0, BUTSTY_BOLD , 0, 0, 0, OBJ_BUT, GID_KEYBOARD,  0),
+		SYS_BUT_IMG (  BTNX_3, BTNY_1, BTNWD_1, BTNHT_1, 0, 0, BUTSTY_BOLD , 0, 0, 0, OBJ_BUT, GID_SCREEN, 0),
+		SYS_BUT_IMG (  BTNX_4, BTNY_1, BTNWD_1, BTNHT_1, 0, 0, BUTSTY_BOLD , 0, 0, 0, OBJ_BUT, GID_CMMNWK,  0),
+		SYS_BUT_IMG (  BTNX_5, BTNY_1, BTNWD_1, BTNHT_1, 0, 0, BUTSTY_BOLD , 0, 0, 0, OBJ_BUT, GID_VMEXIT, 0),
+		SYS_BUT_IMG (  BTNX_6, BTNY_2, BTNWD_2, BTNHT_2, 0, 0, BUTSTY_BOLD|BUTSTY_BORDER , 0, TRANSPARENT, TRANSPARENT, OBJ_BUT, GID_MENU, 0),
+		SYS_BUT_IMG (  BTNX_7, BTNY_2, BTNWD_2, BTNHT_2, 0, 0, BUTSTY_BOLD|BUTSTY_BORDER , 0, TRANSPARENT, TRANSPARENT, OBJ_BUT, GID_PREV, 0),
 	 };
 	
 	// 메인 다이얼로그
 	//---------------------------------------------------------------
-	DlgObject	DlgRes[] = 
+	DlgObject DlgRes[] = 
 	{
 		NORM_DLG ("", "", DLGSTY_HSCROLLBAR|DLGSTY_VSCROLLBAR|DLGSTY_TITLE, 0, MAINBKCOLOR, WHITE, BLUE, TITLE_HEIGHT, 0),
 		DLG_ICON(0, BTNY_2, ICON_TITLE, ""),
@@ -187,12 +193,47 @@ g_nWorkFlag = 742       계량기교체 무전표리스트(교체)
 		DLG_TEXT(TX, TY, STWD, STHT, 0, 0, EDITSTY_BORDER, EDITSTY_BOLD, TTLCTRLFR, TTLCTRLBK, TXT_TITLE, m_szTitle),
 		
 		DLG_BUTTON(STARTX+230, STARTY+65, 200, 60, 0, 0, BUTSTY_BOLD, BUTSTY_BORDER, BTNMENUFRCOLOR, BTNCTRLBKCOLOR, CALL_FUNC , "", BID_ADDR, "지번"),
-		//DLG_BUTTON(STARTX+470, STARTY+70, 200, 60, 0, 0, BUTSTY_BORDER|BUTSTY_BOLD, 0, BTNMENUFRCOLOR, BTNCTRLBKCOLOR, CALL_FUNC , "", BID_NADDR, "도로명"),
+		DLG_BUTTON(STARTX+430,  STARTY+65, 135, 60, 0, 0, BUTSTY_BOLD, BUTSTY_BORDER, BTNMENUFRCOLOR, BTNCTRLBKCOLOR, CALL_FUNC , "", BID_UP, "▲"),
+		DLG_BUTTON(STARTX+565,  STARTY+65, 135, 60, 0, 0, BUTSTY_BOLD, BUTSTY_BORDER, BTNMENUFRCOLOR, BTNCTRLBKCOLOR, CALL_FUNC , "", BID_DOWN, "▼"),
+		DLG_BUTTON(STARTX+810, STARTY+185, 190, 55, 0, 0, BUTSTY_BOLD, BUTSTY_BORDER, BTNMENUFRCOLOR, BTNCTRLBKCOLOR, CALL_FUNC , "", BID_MEMO, "메모"),	
+		DLG_BUTTON(STARTX,  STARTY+65, 230, 60, 0, 0, BUTSTY_BOLD, BUTSTY_BORDER, BTNMENUFRCOLOR, BTNCTRLBKCOLOR, CALL_FUNC , "", BID_QUICK_ADDR, m_szCnt_page),
+		
+		DLG_TEXT(STARTX,      STARTY+125, 120, 60, 0, 0, 0, EDITSTY_BORDER|EDITSTY_BOLD, TXTFRCOLOR, TXTCTRLRSLTBK, TXT_DATA1, "전체"),
+		DLG_TEXT(STARTX+135-20,  STARTY+125, 120, 60, 0, 0, 0, EDITSTY_BORDER|EDITSTY_BOLD, TXTFRCOLOR, TXTINCTRLBK, TXT_DATA2, ""),
+
+		DLG_COMBO (STARTX+135-20+120, STARTY+125, 260, 250, 100, 60, TXTFRCOLOR, TXTINCTRLBK, CALL_FUNC, "", CMB_GMTYPE, 11),
+
+		DLG_TEXT(STARTX+315+55+40+20+60,  STARTY+125, 120, 60, 0, 0, 0, EDITSTY_BORDER|EDITSTY_BOLD, TXTFRCOLOR, TXTCTRLRSLTBK, TXT_DATA3, "교체"),
+		DLG_TEXT(STARTX+455+55+40+60,  STARTY+125, 110, 60, 0, 0, 0, EDITSTY_BORDER|EDITSTY_BOLD, TXTFRCOLOR, TXTINCTRLBK, TXT_DATA4, ""),
+		DLG_TEXT(STARTX+635+55+30,  STARTY+125, 170, 60, 0, 0, 0, EDITSTY_BORDER|EDITSTY_BOLD, TXTFRCOLOR, TXTCTRLRSLTBK, TXT_DATA5, "미교체"),
+		DLG_TEXT(STARTX+805+55+30,  STARTY+125, 110, 60, 0, 0, 0, EDITSTY_BORDER|EDITSTY_BOLD, TXTFRCOLOR, TXTINCTRLBK, TXT_DATA6, ""),
+		
+		DLG_TEXT(STARTX,  	  STARTY+185, 140, 55, 0, 0, 0, EDITSTY_BORDER|EDITSTY_BOLD, TXTFRCOLOR, TXTCTRLRSLTBK, TXT_DATA7, "등급"),
+		DLG_TEXT(STARTX+135,  STARTY+185, 180, 55, 0, 0, 0, EDITSTY_BORDER|EDITSTY_BOLD, TXTFRCOLOR, TXTINCTRLBK, TXT_DATA8, ""),
+		DLG_TEXT(STARTX+315,  STARTY+185, 140, 55, 0, 0, 0, EDITSTY_BORDER|EDITSTY_BOLD, TXTFRCOLOR, TXTCTRLRSLTBK, TXT_DATA9, "타입"),
+		DLG_TEXT(STARTX+455,  STARTY+185, 100, 55, 0, 0, 0, EDITSTY_BORDER|EDITSTY_BOLD, TXTFRCOLOR, TXTINCTRLBK, TXT_DATA10, ""),
+		DLG_TEXT(STARTX+555,  STARTY+185, 115, 55, 0, 0, 0, EDITSTY_BORDER|EDITSTY_BOLD, TXTFRCOLOR, TXTCTRLRSLTBK, TXT_DATA11, "위치"),
+		DLG_TEXT(STARTX+670,  STARTY+185, 140, 55, 0, 0, 0, EDITSTY_BORDER|EDITSTY_BOLD, TXTFRCOLOR, TXTINCTRLBK, TXT_DATA12, ""),
+	
+		DLG_COMBO (STARTX+700, STARTY+65, 300, 250, 100, 60, TXTFRCOLOR, TXTINCTRLBK, CALL_FUNC, "", CMB_SELECT, 11),	//
+		
+		// 리스트
+		DLG_TABLE (GRID_X, GRID_Y, ROW, COL, 0, GRID_H, 1, GRID_TITLEH, SEL_ROW, MAXCHAR, m_stGridTitle, ID_TBLLIST, m_szTableBuf),	
+		DLG_BUTTON(STARTX, STARTY+260, CWD*27+23, 58, 0, 0, 0, BUTSTY_BOLD|BUTSTY_BORDER, BTNMENUFRCOLOR, BTNCTRLBKCOLOR, CALL_FUNC , "", BID_TBL_BARCODE, "교체대상"),
+	};
+
+	//---------------------------------------------------------------
+	DlgObject DlgResBase[] = 
+	{
+		NORM_DLG ("", "", DLGSTY_HSCROLLBAR|DLGSTY_VSCROLLBAR|DLGSTY_TITLE, 0, MAINBKCOLOR, WHITE, BLUE, TITLE_HEIGHT, 0),
+		DLG_ICON(0, BTNY_2, ICON_TITLE, ""),
+		//타이틀
+		DLG_TEXT(TX, TY, STWD, STHT, 0, 0, EDITSTY_BORDER, EDITSTY_BOLD, TTLCTRLFR, TTLCTRLBK, TXT_TITLE, m_szTitle),
+		
+		DLG_BUTTON(STARTX+230, STARTY+65, 200, 60, 0, 0, BUTSTY_BOLD, BUTSTY_BORDER, BTNMENUFRCOLOR, BTNCTRLBKCOLOR, CALL_FUNC , "", BID_ADDR, "지번"),
 		DLG_BUTTON(STARTX+430,  STARTY+65, 135, 60, 0, 0, BUTSTY_BOLD, BUTSTY_BORDER, BTNMENUFRCOLOR, BTNCTRLBKCOLOR, CALL_FUNC , "", BID_UP, "▲"),
 		DLG_BUTTON(STARTX+565,  STARTY+65, 135, 60, 0, 0, BUTSTY_BOLD, BUTSTY_BORDER, BTNMENUFRCOLOR, BTNCTRLBKCOLOR, CALL_FUNC , "", BID_DOWN, "▼"),
 		DLG_BUTTON(STARTX+810, STARTY+185, 190, 55, 0, 0, BUTSTY_BOLD, BUTSTY_BORDER, BTNMENUFRCOLOR, BTNCTRLBKCOLOR, CALL_FUNC , "", BID_MEMO, "메모"),
-		
-		//DLG_TEXT(0,       STARTY+65, 230, 60, 0, 0, 0, EDITSTY_BORDER, TXTFRCOLOR, TXTINCTRLBK, TXT_PAGE, m_szCnt_page),
 		DLG_BUTTON(STARTX,  STARTY+65, 230, 60, 0, 0, BUTSTY_BOLD, BUTSTY_BORDER, BTNMENUFRCOLOR, BTNCTRLBKCOLOR, CALL_FUNC , "", BID_QUICK_ADDR, m_szCnt_page),
 		
 		DLG_TEXT(STARTX,      STARTY+125, 140, 60, 0, 0, 0, EDITSTY_BORDER|EDITSTY_BOLD, TXTFRCOLOR, TXTCTRLRSLTBK, TXT_DATA1, "전체"),
@@ -208,19 +249,13 @@ g_nWorkFlag = 742       계량기교체 무전표리스트(교체)
 		DLG_TEXT(STARTX+455,  STARTY+185, 100, 55, 0, 0, 0, EDITSTY_BORDER|EDITSTY_BOLD, TXTFRCOLOR, TXTINCTRLBK, TXT_DATA10, ""),
 		DLG_TEXT(STARTX+555,  STARTY+185, 115, 55, 0, 0, 0, EDITSTY_BORDER|EDITSTY_BOLD, TXTFRCOLOR, TXTCTRLRSLTBK, TXT_DATA11, "위치"),
 		DLG_TEXT(STARTX+670,  STARTY+185, 140, 55, 0, 0, 0, EDITSTY_BORDER|EDITSTY_BOLD, TXTFRCOLOR, TXTINCTRLBK, TXT_DATA12, ""),
-		//DLG_TEXT(STARTX,  	  STARTY+250, 985, 55, 0, 0, 0, EDITSTY_BORDER|EDITSTY_BOLD, TXTFRCOLOR, TXTINCTRLBK, TXT_DATA13, ""),
 
-		//DLG_BUTTON(STARTX+460, STARTY+270, 250, 60, 0, 0, BUTSTY_BOLD, BUTSTY_ROUNDBORDER , BTNMENUFRCOLOR, BTNCTRLBKCOLOR, CALL_FUNC , "", BID_QUICK_ADDR, "지번\n스크롤"),
-		//DLG_BUTTON(STARTX+730, STARTY+270, 250, 60, 0, 0, BUTSTY_BOLD, BUTSTY_ROUNDBORDER , BTNMENUFRCOLOR, BTNCTRLBKCOLOR, CALL_FUNC , "", BID_QUICK_NADDR, "도로명\n스크롤"),
-		
 		DLG_COMBO (STARTX+700, STARTY+65, 300, 250, 100, 60, TXTFRCOLOR, TXTINCTRLBK, CALL_FUNC, "", CMB_SELECT, 11),	//
 		
 		// 리스트
 		DLG_TABLE (GRID_X, GRID_Y, ROW, COL, 0, GRID_H, 1, GRID_TITLEH, SEL_ROW, MAXCHAR, m_stGridTitle, ID_TBLLIST, m_szTableBuf),	
-		
-		DLG_BUTTON(STARTX, STARTY+260, CWD*27+23, 58, 0, 0, 0, BUTSTY_BOLD|BUTSTY_BORDER, BTNMENUFRCOLOR, BTNCTRLBKCOLOR, CALL_FUNC , "", BID_TBL_BARCODE, "교체대상"),
 	};	
-	
+
 	// PDA 다이얼로그
 	//---------------------------------------------------------------
 	DlgObject	DlgRes_P[] = 
@@ -232,13 +267,11 @@ g_nWorkFlag = 742       계량기교체 무전표리스트(교체)
 		DLG_BUTTON(P_BTNX, P_BTNY, P_BTNWD, P_BTNHD, 0, 0, BUTSTY_BORDER, 0, BTNMENUFRCOLOR, BTNCTRLMNBKCOLOR, CALL_FUNC , "", GID_PREV, ""),
 		
 		DLG_BUTTON(STARTX+230,	STARTY-40, 200, 80, 0, 0, BUTSTY_BOLD, BUTSTY_BORDER, BTNMENUFRCOLOR, BTNCTRLBKCOLOR, CALL_FUNC , "", BID_ADDR, "지번"),
-		//DLG_BUTTON(STARTX+470, STARTY+70, 200, 60, 0, 0, BUTSTY_BORDER|BUTSTY_BOLD, 0, BTNMENUFRCOLOR, BTNCTRLBKCOLOR, CALL_FUNC , "", BID_NADDR, "도로명"),
 		DLG_BUTTON(STARTX+430,  STARTY-40, 135, 80, 0, 0, BUTSTY_BOLD, BUTSTY_BORDER, BTNMENUFRCOLOR, BTNCTRLBKCOLOR, CALL_FUNC , "", BID_UP, "▲"),
 		DLG_BUTTON(STARTX+565,  STARTY-40, 135, 80, 0, 0, BUTSTY_BOLD, BUTSTY_BORDER, BTNMENUFRCOLOR, BTNCTRLBKCOLOR, CALL_FUNC , "", BID_DOWN, "▼"),
 		DLG_BUTTON(STARTX+815, STARTY+120, 185, 80, 0, 0, BUTSTY_BOLD, BUTSTY_BORDER, BTNMENUFRCOLOR, BTNCTRLBKCOLOR, CALL_FUNC , "", BID_MEMO, "메모"),
 		
 		DLG_TEXT(STARTX,       STARTY-40, 230, 80, 0, 0, 0, EDITSTY_BORDER, TXTFRCOLOR, TXTINCTRLBK, TXT_PAGE, m_szCnt_page),
-		//DLG_BUTTON(STARTX,  STARTY+65, 230, 60, 0, 0, BUTSTY_BOLD, BUTSTY_BORDER, BTNMENUFRCOLOR, BTNCTRLBKCOLOR, CALL_FUNC , "", BID_QUICK_ADDR, m_szCnt_page),
 		
 		DLG_TEXT(STARTX,      STARTY+40, 140, 80, 0, 0, 0, EDITSTY_BORDER|EDITSTY_BOLD, TXTFRCOLOR, TXTCTRLRSLTBK, TXT_DATA1, "전체"),
 		DLG_TEXT(STARTX+140,  STARTY+40, 180, 80, 0, 0, 0, EDITSTY_BORDER|EDITSTY_BOLD, TXTFRCOLOR, TXTINCTRLBK, TXT_DATA2, ""),
@@ -253,16 +286,10 @@ g_nWorkFlag = 742       계량기교체 무전표리스트(교체)
 		DLG_TEXT(STARTX+460,  STARTY+120, 100, 80, 0, 0, 0, EDITSTY_BORDER|EDITSTY_BOLD, TXTFRCOLOR, TXTINCTRLBK, TXT_DATA10, ""),
 		DLG_TEXT(STARTX+560,  STARTY+120, 115, 80, 0, 0, 0, EDITSTY_BORDER|EDITSTY_BOLD, TXTFRCOLOR, TXTCTRLRSLTBK, TXT_DATA11, "위치"),
 		DLG_TEXT(STARTX+675,  STARTY+120, 140, 80, 0, 0, 0, EDITSTY_BORDER|EDITSTY_BOLD, TXTFRCOLOR, TXTINCTRLBK, TXT_DATA12, ""),
-		//DLG_TEXT(STARTX,  	  STARTY+250, 985, 55, 0, 0, 0, EDITSTY_BORDER|EDITSTY_BOLD, TXTFRCOLOR, TXTINCTRLBK, TXT_DATA13, ""),
-
-		//DLG_BUTTON(STARTX+460, STARTY+270, 250, 60, 0, 0, BUTSTY_BOLD, BUTSTY_ROUNDBORDER , BTNMENUFRCOLOR, BTNCTRLBKCOLOR, CALL_FUNC , "", BID_QUICK_ADDR, "지번\n스크롤"),
-		//DLG_BUTTON(STARTX+730, STARTY+270, 250, 60, 0, 0, BUTSTY_BOLD, BUTSTY_ROUNDBORDER , BTNMENUFRCOLOR, BTNCTRLBKCOLOR, CALL_FUNC , "", BID_QUICK_NADDR, "도로명\n스크롤"),
-		
 		DLG_COMBO (STARTX+700, STARTY-40, 300, 250, 100, 80, TXTFRCOLOR, TXTINCTRLBK, CALL_FUNC, "", CMB_SELECT, 11),	//
 		
 		// 리스트
-		DLG_TABLE (GRID_X, GRID_Y_P, ROW, COL, 0, GRID_H_P, 1, GRID_TITLEH, SEL_ROW, MAXCHAR, m_stGridTitle, ID_TBLLIST, m_szTableBuf),	
-		
+		DLG_TABLE (GRID_X, GRID_Y_P, ROW, COL, 0, GRID_H_P, 1, GRID_TITLEH, SEL_ROW, MAXCHAR, m_stGridTitle, ID_TBLLIST, m_szTableBuf),		
 		DLG_BUTTON(STARTX, STARTY+200, CWD*27+23, GRID_TITLEH, 0, 0, 0, BUTSTY_BOLD|BUTSTY_BORDER, BTNMENUFRCOLOR, BTNCTRLBKCOLOR, CALL_FUNC , "", BID_TBL_BARCODE, "교체대상"),
 	};	
 
@@ -289,12 +316,11 @@ g_nWorkFlag = 742       계량기교체 무전표리스트(교체)
 		handle hdb = NULL;
 		handle hstmt = NULL;
 		SQLITE sql = NewSqLite();
-		PRINT("22222222222222222222222222222" ,0,0,0);
+
 		i = lParam;
-//PRINT(">>>>>> lParam : %d , i : %d",lParam,i,0);
+
 		if( i > -1 )
 		{
-			PRINT("1111111111111111111111 : %d",g_nWorkFlag,0,0);
 			Mem_Set( (byte*)szSql, 0x00, sizeof(szSql) );
 			Mem_Set( (byte*)szWhere, 0x00, sizeof(szWhere) );
 			Str_Cpy(szSql, "SELECT ROWID FROM C6301_CHANGEDATA ");
@@ -324,7 +350,6 @@ g_nWorkFlag = 742       계량기교체 무전표리스트(교체)
 				Str_Cpy(szWhere, "WHERE ");
 				Str_Cat(szWhere, g_szSqlWhere);
 			}
-			
 
 			Str_Cat(szSql, szWhere);
 			Str_Cat(szSql, "ORDER BY ROWID");
@@ -391,7 +416,7 @@ g_nWorkFlag = 742       계량기교체 무전표리스트(교체)
 				goto Finally;
 			}
 	
-			if( Str_Cmp(m_szSendYn, "Y") == 0 )
+			if( MATCH(m_szSendYn, "Y") )
 			{
 				MessageBoxEx (CONFIRM_OK, "이미 송신한 자료 입니다.");
 				return;
@@ -401,11 +426,11 @@ g_nWorkFlag = 742       계량기교체 무전표리스트(교체)
 			g_lMoveFlag = 0;
 			Set_Index();
 			//g_nBojungFlag;    //계량기 보정기기 유무 Flag , Flag = 0 보정기없음, Flag = 1 보정기있음, Flag = 2 단일보정기
-			if( Str_Cmp(m_szPdaRepl, "10") == 0 || Str_Cmp(m_szPdaRepl, "30") == 0 )
+			if( MATCH(m_szPdaRepl, "10") || MATCH(m_szPdaRepl, "30") )
 			{
 				if( Str_AtoI(m_szMtrGrd) >= 10 )
 				{
-					if( Str_Cmp(m_szPdaRepl, "10") == 0 )
+					if( MATCH(m_szPdaRepl, "10") )
 					{
 						g_nBojungFlag = 0;
 					}
@@ -417,7 +442,7 @@ g_nWorkFlag = 742       계량기교체 무전표리스트(교체)
 				}
 				else if( Str_AtoI(m_szMtrGrd) < 10 )
 				{
-					if( Str_Cmp(m_szPdaRepl, "10") == 0 )
+					if( MATCH(m_szPdaRepl, "10") )
 					{
 						g_nBojungFlag = 0;
 					}
@@ -429,12 +454,12 @@ g_nWorkFlag = 742       계량기교체 무전표리스트(교체)
 					Card_Move("C6301_MTRCHG");
 				}
 			}
-			else if( Str_Cmp(m_szPdaRepl, "20") == 0 )
+			else if( MATCH(m_szPdaRepl, "20") )
 			{
 				g_nBojungFlag = 2;
 				Card_Move("C6301_BOJUNGCHG");
 			}
-			else if (Str_Cmp(m_szNoBillYn, "Y") == 0 )
+			else if (MATCH(m_szNoBillYn, "Y") )
 			{
 				Card_Move("C6301_MTRCHG");
 			}
@@ -445,10 +470,8 @@ Finally:
 		return;
 	}
 	
-//┌─────────────────────────────────────┐
-//│ 				   『	OnInit Function  』  				              │
-//└─────────────────────────────────────┘
-	void	OnInit(char bFirst)
+//------------------------------------------------------------------
+	void OnInit(char bFirst)
 	{
 		m_bFirst = bFirst;
 	
@@ -464,13 +487,44 @@ Finally:
 						break;
 					default:
 						CREATE_GLOBAL_BUTTON (SysButRes_MAIN);
-						CREATE_DIALOG_OBJECT (DlgRes, SIZEOF(DlgRes));
+
+						// #ifndef VER_RELEASE
+						// 	#error ">>>>>>>> [FIXME] PLS, Remove the below code for product build!!! <<<<<<<"
+						// 	//[FIXME] 테스트 코드 이므로, 최종 테스트나 배포시 제거하시오.
+						// 	g_nWorkFlag = 700;
+						// #endif
+
+						if( g_nWorkFlag > 699 && g_nWorkFlag < 710 )
+						{
+							M("DlgRes....");
+							//노후교체인 경우의 화면
+							CREATE_DIALOG_OBJECT (DlgRes, SIZEOF(DlgRes));
+
+							ListCtrl_AddItem (Get_hDlgCtrlByID(CMB_GMTYPE+2), "전체"	, 0, ICON_NONE);
+							ListCtrl_AddItem (Get_hDlgCtrlByID(CMB_GMTYPE+2), "일반형"	, 1, ICON_NONE);
+							ListCtrl_AddItem (Get_hDlgCtrlByID(CMB_GMTYPE+2), "특수형"	, 2, ICON_NONE);
+
+							//조건과 코드에 따라 초기화 해 줘야 함.
+							EditCtrl_SetStr(Get_hDlgCtrlByID(CMB_GMTYPE), "전체");
+
+							//아래와 같이 변수가 필요 할 수 도 있다.
+							// Str_Cpy(m_szCobSel, "전체");
+
+							m_bChgGmFlag = TRUE;
+						}
+						else
+						{
+							M("DlgResBase....");
+							CREATE_DIALOG_OBJECT (DlgResBase, SIZEOF(DlgResBase));
+						}
 						break;
 				}
 
-				ListCtrl_AddItem (Get_hDlgCtrlByID(CMB_SELECT+2), "전체", 0, ICON_NONE);
-				ListCtrl_AddItem (Get_hDlgCtrlByID(CMB_SELECT+2), "미실시", 0, ICON_NONE);
-				ListCtrl_AddItem (Get_hDlgCtrlByID(CMB_SELECT+2), "교체", 0, ICON_NONE);
+				PRINT("g_nWorkFlag => %d, m_bChgGmFlag => %d", g_nWorkFlag, m_bChgGmFlag, 0);
+
+				ListCtrl_AddItem (Get_hDlgCtrlByID(CMB_SELECT+2), "전체"	, 0, ICON_NONE);
+				ListCtrl_AddItem (Get_hDlgCtrlByID(CMB_SELECT+2), "미실시"	, 1, ICON_NONE);
+				ListCtrl_AddItem (Get_hDlgCtrlByID(CMB_SELECT+2), "교체"	, 2, ICON_NONE);
 				g_nAddrFlag = 0;
 				
 				SetBtnImg();
@@ -640,18 +694,21 @@ Finally:
 	}
 	
 //──────────────────────────────────────────────
-	void	OnSelect(long Index)
+	void OnSelect(long Index)
 	{
 		long index = -1;
 		char szcmb[20];
 		char szSql[301];
 		char sztmp[301];
 
+		long type = 0;
+		BOOL gmTypeFlag = FALSE;
+
 		if( INIT_MAIN == m_bFirst )
 		{
-			// PRINT("33333333333333333333",0,0,0);
-			// PRINT("m_szNoBillYn : %s",m_szNoBillYn,0,0);
-			// PRINT("m_szPdaRepl : %s",m_szPdaRepl,0,0);
+			//PRINT("m_szNoBillYn : %s",m_szNoBillYn,0,0);
+			//PRINT("m_szPdaRepl : %s",m_szPdaRepl,0,0);
+
 			//현재 TBL이 선택되었는지를 확인
 			if (DlgTbl_IsSelect(ID_TBLLIST))
 			{
@@ -660,7 +717,7 @@ Finally:
 				// 선택 인덱스와 기존 인덱스가 동일 할 경우
 				if ( index-1 == m_nActIndex )
 				{
-					if( Str_Cmp(m_szSendYn, "Y") == 0 )
+					if( MATCH(m_szSendYn, "Y") )
 					{
 						MessageBoxEx (CONFIRM_OK, "이미 송신한 자료 입니다.");
 						return;
@@ -672,11 +729,11 @@ Finally:
 					g_lMoveFlag = 0;
 					Set_Index();
 					//g_nBojungFlag;    //계량기 보정기기 유무 Flag , Flag = 0 보정기없음, Flag = 1 보정기있음, Flag = 2 단일보정기
-					if( Str_Cmp(m_szPdaRepl, "10") == 0 || Str_Cmp(m_szPdaRepl, "30") == 0 )
+					if( MATCH(m_szPdaRepl, "10") || MATCH(m_szPdaRepl, "30") )
 					{
 						if( Str_AtoI(m_szMtrGrd) >= 10 )
 						{
-							if( Str_Cmp(m_szPdaRepl, "10") == 0 )
+							if( MATCH(m_szPdaRepl, "10") )
 							{
 								g_nBojungFlag = 0;
 							}
@@ -688,7 +745,7 @@ Finally:
 						}
 						else if( Str_AtoI(m_szMtrGrd) < 10 )
 						{
-							if( Str_Cmp(m_szPdaRepl, "10") == 0 )
+							if( MATCH(m_szPdaRepl, "10") )
 							{
 								g_nBojungFlag = 0;
 							}
@@ -700,12 +757,12 @@ Finally:
 							Card_Move("C6301_MTRCHG");
 						}
 					}
-					else if( Str_Cmp(m_szPdaRepl, "20") == 0 )
+					else if( MATCH(m_szPdaRepl, "20") )
 					{
 						g_nBojungFlag = 2;
 						Card_Move("C6301_BOJUNGCHG");
 					}
-					else if ( Str_Cmp(m_szNoBillYn, "Y") == 0)
+					else if ( MATCH(m_szNoBillYn, "Y") )
 					{
 						Card_Move("C6301_MTRCHG");
 					}
@@ -722,15 +779,15 @@ Finally:
 					Mem_Set( (byte*)g_szOBJ_CRT_YMD, 0x00, sizeof(g_szOBJ_CRT_YMD) );
 					Mem_Set( (byte*)m_szMtrType, 0x00, sizeof(m_szMtrType) );
 					Mem_Set( (byte*)m_szMtrLoc, 0x00, sizeof(m_szMtrLoc) );
-					if( Str_Cmp(DlgTbl_GetStr( ID_TBLLIST, m_nActIndex, 2), "미") == 0 )
+					if( MATCH(DlgTbl_GetStr( ID_TBLLIST, m_nActIndex, 2), "미") )
 					{
 						Str_Cpy( m_szSendYn, "N");
 					}
-					else if( Str_Cmp(DlgTbl_GetStr( ID_TBLLIST, m_nActIndex, 2), "교체") == 0 )
+					else if( MATCH(DlgTbl_GetStr( ID_TBLLIST, m_nActIndex, 2), "교체") )
 					{
 						Str_Cpy( m_szSendYn, "S");
 					}
-					else if( Str_Cmp(DlgTbl_GetStr( ID_TBLLIST, m_nActIndex, 2), "완료") == 0 )
+					else if( MATCH(DlgTbl_GetStr( ID_TBLLIST, m_nActIndex, 2), "완료") )
 					{
 						Str_Cpy( m_szSendYn, "Y");
 					}
@@ -756,11 +813,11 @@ Finally:
 					
 					//위치
 					Str_Cpy( m_szMtrLoc, DlgTbl_GetStr( ID_TBLLIST, m_nActIndex, 8));
-					if( Str_Cmp(m_szMtrLoc, "10") == 0 )
+					if( MATCH(m_szMtrLoc, "10") )
 					{
 						EditCtrl_SetStr(Get_hDlgCtrlByID(TXT_DATA12), "내부");
 					}
-					else if( Str_Cmp(m_szMtrLoc, "20") == 0 )
+					else if( MATCH(m_szMtrLoc, "20") )
 					{
 						EditCtrl_SetStr(Get_hDlgCtrlByID(TXT_DATA12), "외부");
 					}
@@ -769,7 +826,7 @@ Finally:
 					//EditCtrl_SetStr( Get_hDlgCtrlByID(TXT_DATA13), DlgTbl_GetStr( ID_TBLLIST, m_nActIndex, 9));
 					
 					//메모
-					if( Str_Cmp(m_szPdaRepl, "20") == 0 )
+					if( MATCH(m_szPdaRepl, "20") )
 					{
 						DlgCtrl_SetEnable(this->m_hDlg, Get_iDlgCtrlByID(BID_MEMO), FALSE );
 						DlgCtrl_SetGray( this->m_hDlg, Get_iDlgCtrlByID(BID_MEMO), TRUE );
@@ -793,18 +850,41 @@ Finally:
 				}
 			}
 
+			PRINT("m_nGmType = %d vs type = %d", m_nGmType, type, 0);
+
+			if (m_bChgGmFlag)
+			{
+				handle hCmb = Get_hDlgCtrlByID(CMB_GMTYPE+2);
+				long i = ListCtrl_GetSelIndex(hCmb);
+				type = ListCtrl_GetData(hCmb, i);
+
+				// PRINT("33333333333333333333 => %d, %s, %d", i, ListCtrl_GetStr(hCmb, i), m_nGmType);
+				if (type != m_nGmType)
+				{
+					m_nGmType = type;
+					gmTypeFlag = TRUE;
+
+					M("GM type changed....");
+				}
+			}
+
 			Mem_Set((byte*)szcmb, 0x00, sizeof(szcmb));
-			Str_Cpy( szcmb ,EditCtrl_GetStr( Get_hDlgCtrlByID(CMB_SELECT) ) );
+			Str_Cpy( szcmb, EditCtrl_GetStr( Get_hDlgCtrlByID(CMB_SELECT) ) );
 			//콤보박스 선택으로 리스트 목록 필터링.(전체,미실시,교체)
-			if( Str_Cmp(m_szCobSel, szcmb ) != 0 )
+			// if( Str_Cmp(m_szCobSel, szcmb ) != 0 )
+			if( !MATCH(m_szCobSel, szcmb) || gmTypeFlag)
 			{
 				Str_Cpy(m_szCobSel, szcmb);
+
 				//업무 별 g_nWorkFlag 셋팅
 				SetWorkFlag();
+
 				//페이지를 초기화시킨다.
 				m_lpage = 0;
 				m_nActIndex = 0;
+
 				Cmb_Filter();
+
 				REDRAW();
 			}
 		}
@@ -832,7 +912,7 @@ Finally:
 //------------------------------------------------------------------------------------------
 	void SetWorkFlag(void)
 	{
-		if( Str_Cmp(m_szCobSel, "미실시" ) == 0 )
+		if( MATCH(m_szCobSel, "미실시" ) )
 		{
 			if( g_nWorkFlag > 699 && g_nWorkFlag < 710 )
 			{
@@ -855,7 +935,7 @@ Finally:
 				g_nWorkFlag = 741;
 			}
 		}
-		else if( Str_Cmp(m_szCobSel, "교체" ) == 0 )
+		else if( MATCH(m_szCobSel, "교체" ) )
 		{
 			if( g_nWorkFlag > 699 && g_nWorkFlag < 710 )
 			{
@@ -878,7 +958,7 @@ Finally:
 				g_nWorkFlag = 742;
 			}
 		}
-		else if( Str_Cmp(m_szCobSel, "전체" ) == 0 )
+		else if( MATCH(m_szCobSel, "전체" ) )
 		{
 			if( g_nWorkFlag > 699 && g_nWorkFlag < 710 )
 			{
@@ -1050,15 +1130,15 @@ Finally:
 				//송신여부
 				Mem_Set( (byte*)sztmp, 0x00, sizeof(sztmp) );
 				sql->GetValue(sql, idx++, 'U', (long*)sztmp, 2 +1, DECRYPT);
-				if( Str_Cmp(sztmp, "N") == 0 )
+				if( MATCH(sztmp, "N") )
 				{
 					DlgTbl_SetStr ( ID_TBLLIST, i, 2, "미" );
 				}
-				else if( Str_Cmp(sztmp, "S") == 0 )
+				else if( MATCH(sztmp, "S") )
 				{
 					DlgTbl_SetStr ( ID_TBLLIST, i, 2, "교체" );
 				}
-				else if( Str_Cmp(sztmp, "Y") == 0 )
+				else if( MATCH(sztmp, "Y") )
 				{
 					DlgTbl_SetStr ( ID_TBLLIST, i, 2, "완료" );
 				}
@@ -1102,11 +1182,9 @@ Finally:
 				Mem_Set( (byte*)sztmp, 0x00, sizeof(sztmp) );
 				sql->GetValue(sql, idx++, 'U', (long*)sztmp,  9 +1, DECRYPT);
 				DlgTbl_SetStr ( ID_TBLLIST, i, 11, sztmp );
-				
 			}
 		}
-		
-		
+
 Finally:
 		//sql->Commit(sql);
 		DelSqLite(sql);
@@ -1130,15 +1208,15 @@ Finally:
 			Mem_Set( (byte*)m_szMtrType, 0x00, sizeof(m_szMtrType) );
 			Mem_Set( (byte*)m_szMtrLoc, 0x00, sizeof(m_szMtrLoc) );
 
-			if( Str_Cmp(DlgTbl_GetStr( ID_TBLLIST, m_nActIndex, 2), "미") == 0 )
+			if( MATCH(DlgTbl_GetStr( ID_TBLLIST, m_nActIndex, 2), "미") )
 			{
 				Str_Cpy( m_szSendYn, "N");
 			}
-			else if( Str_Cmp(DlgTbl_GetStr( ID_TBLLIST, m_nActIndex, 2), "교체") == 0 )
+			else if( MATCH(DlgTbl_GetStr( ID_TBLLIST, m_nActIndex, 2), "교체") )
 			{
 				Str_Cpy( m_szSendYn, "S");
 			}
-			else if( Str_Cmp(DlgTbl_GetStr( ID_TBLLIST, m_nActIndex, 2), "완료") == 0 )
+			else if( MATCH(DlgTbl_GetStr( ID_TBLLIST, m_nActIndex, 2), "완료") )
 			{
 				Str_Cpy( m_szSendYn, "Y");
 			}
@@ -1165,11 +1243,11 @@ Finally:
 			
 			//위치
 			Str_Cpy( m_szMtrLoc, DlgTbl_GetStr( ID_TBLLIST, m_nActIndex, 8));
-			if( Str_Cmp(m_szMtrLoc, "10") == 0 )
+			if( MATCH(m_szMtrLoc, "10") )
 			{
 				EditCtrl_SetStr(Get_hDlgCtrlByID(TXT_DATA12), "내부");
 			}
-			else if( Str_Cmp(m_szMtrLoc, "20") == 0 )
+			else if( MATCH(m_szMtrLoc, "20") )
 			{
 				EditCtrl_SetStr(Get_hDlgCtrlByID(TXT_DATA12), "외부");
 			}
@@ -1178,7 +1256,7 @@ Finally:
 			//EditCtrl_SetStr( Get_hDlgCtrlByID(TXT_DATA13), DlgTbl_GetStr( ID_TBLLIST, m_nActIndex, 9));
 
 			//메모
-			if( Str_Cmp(m_szPdaRepl, "20") == 0 )
+			if( MATCH(m_szPdaRepl, "20") )
 			{
 				DlgCtrl_SetEnable(this->m_hDlg, Get_iDlgCtrlByID(BID_MEMO), FALSE );
 				DlgCtrl_SetGray( this->m_hDlg, Get_iDlgCtrlByID(BID_MEMO), TRUE );
@@ -1211,14 +1289,12 @@ Finally:
 			Mem_Set( (byte*)m_szMtrLoc, 0x00, sizeof(m_szMtrLoc) );
 			Mem_Set( (byte*)m_szNoBillYn, 0x00, sizeof(m_szNoBillYn) );
 
-
 			EditCtrl_SetStr( Get_hDlgCtrlByID(TXT_DATA8), "");
 			EditCtrl_SetStr( Get_hDlgCtrlByID(TXT_DATA10), "");
 			EditCtrl_SetStr(Get_hDlgCtrlByID(TXT_DATA12), "");
 			ButCtrl_SetBkColorEx(Get_hDlgCtrlByID(BID_MEMO), BTNCTRLBKCOLOR);
 		}
-		
-		
+
 		ON_DRAW();
 		return;
 	}
@@ -1241,6 +1317,7 @@ Finally:
 	//-----------------------------------------------------------------------------------------------
 	//콤보박스를 이용한 전체,점검,미점검 목록 필터m_szCobSel
 	//-----------------------------------------------------------------------------------------------
+	char szTypeWhere[200];
 	void Cmb_Filter(void)
 	{
 		char szRow[800];
@@ -1249,56 +1326,99 @@ Finally:
 		Mem_Set( (byte*)m_szSql, 0x00, sizeof(m_szSql) );
 
 		if( g_nWorkFlag > 699 && g_nWorkFlag < 710 )
-		{	
-			//노후교체
-			if( Str_Cmp(m_szCobSel, "미실시") == 0 )
+		{
+			memset(szTypeWhere, 0, sizeof(szTypeWhere));
+
+			//m_nGmType => 0: 전체, 1: 일반형, 2: 특수형
+			switch(m_nGmType)
 			{
-				Str_Cpy(szRow, "SELECT ROWID FROM C6301_CHANGEDATA WHERE REPL_OCCU_FLAG = '10' AND (SEND_YN == 'N' OR SEND_YN IS NULL) AND (LENGTH(REPL_NOT_PERMIT_WHY) == 0 OR REPL_STS != '30') AND NOBILL_YN ='N' ORDER BY ROWID");
+				default:
+				case 0:	//전체
+						M("All");
+						break;
+
+				case 1:	//일반형
+						M("Normal");
+						//필터링 쿼리조건이 추가되어야 함.
+						strcpy(szTypeWhere, " AND MTR_KIND IN (10,30,40,41,42,70,80)");
+						break;
+
+				case 2: //특수형
+						M("Special");
+						//미설치 아닐때만, 30은 포함되어야 한다.
+						strcpy(szTypeWhere, " AND case when MTR_REMOTE_FLAG <> 10 then MTR_KIND IN (20,21,30,50,60,61,65,66) else MTR_KIND IN (20,21,50,60,61,65,66) end");
+						break;
+			}
+
+			//노후교체
+			if( MATCH(m_szCobSel, "미실시") )
+			{
+				Str_Cpy(szRow, "SELECT ROWID FROM C6301_CHANGEDATA WHERE REPL_OCCU_FLAG = '10' AND (SEND_YN == 'N' OR SEND_YN IS NULL) AND (LENGTH(REPL_NOT_PERMIT_WHY) == 0 OR REPL_STS != '30') AND NOBILL_YN ='N'");
 				g_nWorkFlag = 701;
 			}
-			else if( Str_Cmp(m_szCobSel, "교체") == 0 )
+			else if( MATCH(m_szCobSel, "교체") )
 			{
-				Str_Cpy(szRow, "SELECT ROWID FROM C6301_CHANGEDATA WHERE REPL_OCCU_FLAG = '10' AND (SEND_YN == 'S' OR SEND_YN == 'Y') AND (LENGTH(REPL_NOT_PERMIT_WHY) == 0 OR REPL_STS != '30') AND NOBILL_YN ='N' ORDER BY ROWID");
+				Str_Cpy(szRow, "SELECT ROWID FROM C6301_CHANGEDATA WHERE REPL_OCCU_FLAG = '10' AND (SEND_YN == 'S' OR SEND_YN == 'Y') AND (LENGTH(REPL_NOT_PERMIT_WHY) == 0 OR REPL_STS != '30') AND NOBILL_YN ='N'");
 				g_nWorkFlag = 702;
 			}
-			else //if( Str_Cmp(m_szCobSel, "전체") == 0 )
+			else //if( MATCH(m_szCobSel, "전체") )
 			{
-				SPRINT(szRow, "SELECT ROWID FROM C6301_CHANGEDATA WHERE REPL_OCCU_FLAG = '10' AND (LENGTH(REPL_NOT_PERMIT_WHY) == 0 OR REPL_STS != '30') AND NOBILL_YN ='N' ORDER BY ROWID", m_szCobSel, 0, 0 );
+				SPRINT(szRow, "SELECT ROWID FROM C6301_CHANGEDATA WHERE REPL_OCCU_FLAG = '10' AND (LENGTH(REPL_NOT_PERMIT_WHY) == 0 OR REPL_STS != '30') AND NOBILL_YN ='N'", m_szCobSel, 0, 0 );
 				g_nWorkFlag = 700;
 			}
 
+			strcat(szRow, szTypeWhere);
+			strcat(szRow, " ORDER BY ROWID");
+
+			PRINT("sql => %s", szRow, 0, 0);
+
 			g_Sql_SaveSeq( szRow, SREACH_FILE);
 
-			if( Str_Cmp(m_szCobSel, "미실시") == 0 )
+			if( MATCH(m_szCobSel, "미실시") )
 			{
-				Str_Cpy( m_szSql[0], "SELECT IFNULL(TRIM(TOWN), '') ||' '|| IFNULL(TRIM(VILLAGE), '') ||' '|| IFNULL(ADDR1_M, '') ||'-'|| IFNULL(ADDR1_S, '') ||' '|| CASE WHEN LENGTH(IFNULL(TRIM(CO_LIVE_NM), '') ||''|| IFNULL(TRIM(BLD_NM), '')) > 0 THEN IFNULL(TRIM(CO_LIVE_NM), '') ||' '|| IFNULL(TRIM(BLD_NM), '') ||' '|| IFNULL(TRIM(HOUSE_CNT), '') ELSE IFNULL(TRIM(HOUSE_CNT), '') ||' '|| IFNULL(TRIM(LOT_NUM_SECOND_ADDR), '') END ||'('|| IFNULL(MTR_ID_NUM, '') ||')'|| CASE WHEN PDA_REPL_JOB_ITEM = '10' THEN '계량' WHEN PDA_REPL_JOB_ITEM = '20' THEN '보정' WHEN PDA_REPL_JOB_ITEM = '30' THEN '계+보'  ELSE '' END ||'-'|| IFNULL(MTR_GRD, '') ||' '|| CASE WHEN COMPENS_FLAG = '10' THEN '(저)' WHEN COMPENS_FLAG = '20' THEN '(중간)' WHEN COMPENS_FLAG = '30' THEN '(중)' ELSE '' END ||' '|| IFNULL(COMPENS_MAKER_NM, ''), CASE WHEN REPL_STS = '30' THEN '불' ELSE '' END, SEND_YN, MTR_GRD, PDA_REPL_JOB_ITEM, MTR_NUM, OBJ_CRT_YMD, MTR_TYPE, MTR_LOC_FLAG, IFNULL(TRIM(TOWN), '') ||' '|| IFNULL(TRIM(VILLAGE), '') ||' '|| IFNULL(ADDR1_M, '') ||'-'|| IFNULL(ADDR1_S, '') ||' '|| CASE WHEN LENGTH(IFNULL(TRIM(CO_LIVE_NM), '') ||''|| IFNULL(TRIM(BLD_NM), '')) > 0 THEN IFNULL(TRIM(CO_LIVE_NM), '') ||' '|| IFNULL(TRIM(BLD_NM), '') ||' '|| IFNULL(TRIM(HOUSE_CNT), '') ELSE IFNULL(TRIM(HOUSE_CNT), '') ||' '|| IFNULL(TRIM(LOT_NUM_SECOND_ADDR), '') END, MEMO , NOBILL_YN FROM C6301_CHANGEDATA WHERE REPL_OCCU_FLAG = '10' AND (SEND_YN == 'N' OR SEND_YN IS NULL) AND (LENGTH(REPL_NOT_PERMIT_WHY) == 0 OR REPL_STS != '30') AND NOBILL_YN ='N' ORDER BY ROWID LIMIT ? , ?");
-				Str_Cpy( m_szSql[1], "SELECT IFNULL(TRIM(NEW_ROAD_NM), '') ||' '|| IFNULL(NEW_ADDR_M, '') ||'-'|| IFNULL(NEW_ADDR_S, '') ||' '|| CASE WHEN LENGTH(IFNULL(TRIM(CO_LIVE_NM), '') ||''|| IFNULL(TRIM(BLD_NM), '')) > 0 THEN IFNULL(TRIM(CO_LIVE_NM), '') ||' '|| IFNULL(TRIM(BLD_NM), '') ||' '|| IFNULL(TRIM(HOUSE_CNT), '') ELSE IFNULL(TRIM(HOUSE_CNT), '') ||' '|| IFNULL(TRIM(LOT_NUM_SECOND_ADDR), '') END ||'('|| IFNULL(MTR_ID_NUM, '') ||')'|| CASE WHEN PDA_REPL_JOB_ITEM = '10' THEN '계량' WHEN PDA_REPL_JOB_ITEM = '20' THEN '보정' WHEN PDA_REPL_JOB_ITEM = '30' THEN '계+보' ELSE '' END ||'-'|| IFNULL(MTR_GRD, '') ||' '|| CASE WHEN COMPENS_FLAG = '10' THEN '(저)' WHEN COMPENS_FLAG = '20' THEN '(중간)' WHEN COMPENS_FLAG = '30' THEN '(중)' ELSE '' END ||' '|| IFNULL(COMPENS_MAKER_NM, ''), CASE WHEN REPL_STS == '30' THEN '불' ELSE '' END, SEND_YN, MTR_GRD, PDA_REPL_JOB_ITEM, MTR_NUM, OBJ_CRT_YMD, MTR_TYPE, MTR_LOC_FLAG, IFNULL(TRIM(TOWN), '') ||' '|| IFNULL(TRIM(VILLAGE), '') ||' '|| IFNULL(ADDR1_M, '') ||'-'|| IFNULL(ADDR1_S, '') ||' '|| CASE WHEN LENGTH(IFNULL(TRIM(CO_LIVE_NM), '') ||''|| IFNULL(TRIM(BLD_NM), '')) > 0 THEN IFNULL(TRIM(CO_LIVE_NM), '') ||' '|| IFNULL(TRIM(BLD_NM), '') ||' '|| IFNULL(TRIM(HOUSE_CNT), '') ELSE IFNULL(TRIM(HOUSE_CNT), '') ||' '|| IFNULL(TRIM(LOT_NUM_SECOND_ADDR), '') END, MEMO, NOBILL_YN FROM C6301_CHANGEDATA WHERE REPL_OCCU_FLAG = '10' AND (SEND_YN == 'N' OR SEND_YN IS NULL) AND (LENGTH(REPL_NOT_PERMIT_WHY) == 0 OR REPL_STS != '30') AND NOBILL_YN ='N' ORDER BY ROWID LIMIT ? , ?");
+				Str_Cpy( m_szSql[0], "SELECT IFNULL(TRIM(TOWN), '') ||' '|| IFNULL(TRIM(VILLAGE), '') ||' '|| IFNULL(ADDR1_M, '') ||'-'|| IFNULL(ADDR1_S, '') ||' '|| CASE WHEN LENGTH(IFNULL(TRIM(CO_LIVE_NM), '') ||''|| IFNULL(TRIM(BLD_NM), '')) > 0 THEN IFNULL(TRIM(CO_LIVE_NM), '') ||' '|| IFNULL(TRIM(BLD_NM), '') ||' '|| IFNULL(TRIM(HOUSE_CNT), '') ELSE IFNULL(TRIM(HOUSE_CNT), '') ||' '|| IFNULL(TRIM(LOT_NUM_SECOND_ADDR), '') END ||'('|| IFNULL(MTR_ID_NUM, '') ||')'|| CASE WHEN PDA_REPL_JOB_ITEM = '10' THEN '계량' WHEN PDA_REPL_JOB_ITEM = '20' THEN '보정' WHEN PDA_REPL_JOB_ITEM = '30' THEN '계+보'  ELSE '' END ||'-'|| IFNULL(MTR_GRD, '') ||' '|| CASE WHEN COMPENS_FLAG = '10' THEN '(저)' WHEN COMPENS_FLAG = '20' THEN '(중간)' WHEN COMPENS_FLAG = '30' THEN '(중)' ELSE '' END ||' '|| IFNULL(COMPENS_MAKER_NM, ''), CASE WHEN REPL_STS = '30' THEN '불' ELSE '' END, SEND_YN, MTR_GRD, PDA_REPL_JOB_ITEM, MTR_NUM, OBJ_CRT_YMD, MTR_TYPE, MTR_LOC_FLAG, IFNULL(TRIM(TOWN), '') ||' '|| IFNULL(TRIM(VILLAGE), '') ||' '|| IFNULL(ADDR1_M, '') ||'-'|| IFNULL(ADDR1_S, '') ||' '|| CASE WHEN LENGTH(IFNULL(TRIM(CO_LIVE_NM), '') ||''|| IFNULL(TRIM(BLD_NM), '')) > 0 THEN IFNULL(TRIM(CO_LIVE_NM), '') ||' '|| IFNULL(TRIM(BLD_NM), '') ||' '|| IFNULL(TRIM(HOUSE_CNT), '') ELSE IFNULL(TRIM(HOUSE_CNT), '') ||' '|| IFNULL(TRIM(LOT_NUM_SECOND_ADDR), '') END, MEMO , NOBILL_YN FROM C6301_CHANGEDATA WHERE REPL_OCCU_FLAG = '10' AND (SEND_YN == 'N' OR SEND_YN IS NULL) AND (LENGTH(REPL_NOT_PERMIT_WHY) == 0 OR REPL_STS != '30') AND NOBILL_YN ='N'");
+				strcat ( m_szSql[0], szTypeWhere);
+				strcat ( m_szSql[0], " ORDER BY ROWID LIMIT ? , ?");
+
+				Str_Cpy( m_szSql[1], "SELECT IFNULL(TRIM(NEW_ROAD_NM), '') ||' '|| IFNULL(NEW_ADDR_M, '') ||'-'|| IFNULL(NEW_ADDR_S, '') ||' '|| CASE WHEN LENGTH(IFNULL(TRIM(CO_LIVE_NM), '') ||''|| IFNULL(TRIM(BLD_NM), '')) > 0 THEN IFNULL(TRIM(CO_LIVE_NM), '') ||' '|| IFNULL(TRIM(BLD_NM), '') ||' '|| IFNULL(TRIM(HOUSE_CNT), '') ELSE IFNULL(TRIM(HOUSE_CNT), '') ||' '|| IFNULL(TRIM(LOT_NUM_SECOND_ADDR), '') END ||'('|| IFNULL(MTR_ID_NUM, '') ||')'|| CASE WHEN PDA_REPL_JOB_ITEM = '10' THEN '계량' WHEN PDA_REPL_JOB_ITEM = '20' THEN '보정' WHEN PDA_REPL_JOB_ITEM = '30' THEN '계+보' ELSE '' END ||'-'|| IFNULL(MTR_GRD, '') ||' '|| CASE WHEN COMPENS_FLAG = '10' THEN '(저)' WHEN COMPENS_FLAG = '20' THEN '(중간)' WHEN COMPENS_FLAG = '30' THEN '(중)' ELSE '' END ||' '|| IFNULL(COMPENS_MAKER_NM, ''), CASE WHEN REPL_STS == '30' THEN '불' ELSE '' END, SEND_YN, MTR_GRD, PDA_REPL_JOB_ITEM, MTR_NUM, OBJ_CRT_YMD, MTR_TYPE, MTR_LOC_FLAG, IFNULL(TRIM(TOWN), '') ||' '|| IFNULL(TRIM(VILLAGE), '') ||' '|| IFNULL(ADDR1_M, '') ||'-'|| IFNULL(ADDR1_S, '') ||' '|| CASE WHEN LENGTH(IFNULL(TRIM(CO_LIVE_NM), '') ||''|| IFNULL(TRIM(BLD_NM), '')) > 0 THEN IFNULL(TRIM(CO_LIVE_NM), '') ||' '|| IFNULL(TRIM(BLD_NM), '') ||' '|| IFNULL(TRIM(HOUSE_CNT), '') ELSE IFNULL(TRIM(HOUSE_CNT), '') ||' '|| IFNULL(TRIM(LOT_NUM_SECOND_ADDR), '') END, MEMO, NOBILL_YN FROM C6301_CHANGEDATA WHERE REPL_OCCU_FLAG = '10' AND (SEND_YN == 'N' OR SEND_YN IS NULL) AND (LENGTH(REPL_NOT_PERMIT_WHY) == 0 OR REPL_STS != '30') AND NOBILL_YN ='N'");
+				strcat ( m_szSql[1], szTypeWhere);
+				strcat ( m_szSql[1], " ORDER BY ROWID LIMIT ? , ?");
 			}
-			else if( Str_Cmp(m_szCobSel, "교체") == 0 )
+			else if( MATCH(m_szCobSel, "교체") )
 			{
-				Str_Cpy( m_szSql[0], "SELECT IFNULL(TRIM(TOWN), '') ||' '|| IFNULL(TRIM(VILLAGE), '') ||' '|| IFNULL(ADDR1_M, '') ||'-'|| IFNULL(ADDR1_S, '') ||' '|| CASE WHEN LENGTH(IFNULL(TRIM(CO_LIVE_NM), '') ||''|| IFNULL(TRIM(BLD_NM), '')) > 0 THEN IFNULL(TRIM(CO_LIVE_NM), '') ||' '|| IFNULL(TRIM(BLD_NM), '') ||' '|| IFNULL(TRIM(HOUSE_CNT), '') ELSE TRIM(HOUSE_CNT) ||' '|| IFNULL(TRIM(LOT_NUM_SECOND_ADDR), '') END ||'('|| IFNULL(MTR_ID_NUM, '') ||')'|| CASE WHEN PDA_REPL_JOB_ITEM = '10' THEN '계량' WHEN PDA_REPL_JOB_ITEM = '20' THEN '보정' WHEN PDA_REPL_JOB_ITEM = '30' THEN '계+보' ELSE '' END ||'-'|| IFNULL(MTR_GRD, '') ||' '|| CASE WHEN COMPENS_FLAG = '10' THEN '(저)' WHEN COMPENS_FLAG = '20' THEN '(중간)' WHEN COMPENS_FLAG = '30' THEN '(중)' ELSE '' END ||' '|| IFNULL(COMPENS_MAKER_NM, ''), CASE WHEN REPL_STS = '30' THEN '불' ELSE '' END, SEND_YN, MTR_GRD, PDA_REPL_JOB_ITEM, MTR_NUM, OBJ_CRT_YMD, MTR_TYPE, MTR_LOC_FLAG, IFNULL(TRIM(TOWN), '') ||' '|| IFNULL(TRIM(VILLAGE), '') ||' '|| IFNULL(ADDR1_M, '') ||'-'|| IFNULL(ADDR1_S, '') ||' '|| CASE WHEN LENGTH(IFNULL(TRIM(CO_LIVE_NM), '') ||''|| IFNULL(TRIM(BLD_NM), '')) > 0 THEN IFNULL(TRIM(CO_LIVE_NM), '') ||' '|| IFNULL(TRIM(BLD_NM), '') ||' '|| IFNULL(TRIM(HOUSE_CNT), '') ELSE IFNULL(TRIM(HOUSE_CNT), '') ||' '|| IFNULL(TRIM(LOT_NUM_SECOND_ADDR), '') END, MEMO , NOBILL_YN FROM C6301_CHANGEDATA WHERE REPL_OCCU_FLAG = '10' AND (SEND_YN == 'S' OR SEND_YN == 'Y') AND (LENGTH(REPL_NOT_PERMIT_WHY) == 0 OR REPL_STS != '30') AND NOBILL_YN ='N' ORDER BY ROWID LIMIT ? , ?");
-				Str_Cpy( m_szSql[1], "SELECT IFNULL(TRIM(NEW_ROAD_NM), '') ||' '|| IFNULL(NEW_ADDR_M, '') ||'-'|| IFNULL(NEW_ADDR_S, '') ||' '|| CASE WHEN LENGTH(IFNULL(TRIM(CO_LIVE_NM), '') ||''|| IFNULL(TRIM(BLD_NM), '')) > 0 THEN IFNULL(TRIM(CO_LIVE_NM), '') ||' '|| IFNULL(TRIM(BLD_NM), '') ||' '|| IFNULL(TRIM(HOUSE_CNT), '') ELSE IFNULL(TRIM(HOUSE_CNT), '') ||' '|| IFNULL(TRIM(LOT_NUM_SECOND_ADDR), '') END ||'('|| IFNULL(MTR_ID_NUM, '') ||')'|| CASE WHEN PDA_REPL_JOB_ITEM = '10' THEN '계량' WHEN PDA_REPL_JOB_ITEM = '20' THEN '보정' WHEN PDA_REPL_JOB_ITEM = '30' THEN '계+보' ELSE '' END ||'-'|| IFNULL(MTR_GRD, '') ||' '|| CASE WHEN COMPENS_FLAG = '10' THEN '(저)' WHEN COMPENS_FLAG = '20' THEN '(중간)' WHEN COMPENS_FLAG = '30' THEN '(중)' ELSE '' END ||' '|| IFNULL(COMPENS_MAKER_NM, ''), CASE WHEN REPL_STS == '30' THEN '불' ELSE '' END, SEND_YN, MTR_GRD, PDA_REPL_JOB_ITEM, MTR_NUM, OBJ_CRT_YMD, MTR_TYPE, MTR_LOC_FLAG, IFNULL(TRIM(TOWN), '') ||' '|| IFNULL(TRIM(VILLAGE), '') ||' '|| IFNULL(ADDR1_M, '') ||'-'|| IFNULL(ADDR1_S, '') ||' '|| CASE WHEN LENGTH(IFNULL(TRIM(CO_LIVE_NM), '') ||''|| IFNULL(TRIM(BLD_NM), '')) > 0 THEN IFNULL(TRIM(CO_LIVE_NM), '') ||' '|| IFNULL(TRIM(BLD_NM), '') ||' '|| IFNULL(TRIM(HOUSE_CNT), '') ELSE IFNULL(TRIM(HOUSE_CNT), '') ||' '|| IFNULL(TRIM(LOT_NUM_SECOND_ADDR), '') END, MEMO, NOBILL_YN FROM C6301_CHANGEDATA WHERE REPL_OCCU_FLAG = '10' AND (SEND_YN == 'S' OR SEND_YN == 'Y') AND (LENGTH(REPL_NOT_PERMIT_WHY) == 0 OR REPL_STS != '30') AND NOBILL_YN ='N' ORDER BY ROWID LIMIT ? , ?");
+				Str_Cpy( m_szSql[0], "SELECT IFNULL(TRIM(TOWN), '') ||' '|| IFNULL(TRIM(VILLAGE), '') ||' '|| IFNULL(ADDR1_M, '') ||'-'|| IFNULL(ADDR1_S, '') ||' '|| CASE WHEN LENGTH(IFNULL(TRIM(CO_LIVE_NM), '') ||''|| IFNULL(TRIM(BLD_NM), '')) > 0 THEN IFNULL(TRIM(CO_LIVE_NM), '') ||' '|| IFNULL(TRIM(BLD_NM), '') ||' '|| IFNULL(TRIM(HOUSE_CNT), '') ELSE TRIM(HOUSE_CNT) ||' '|| IFNULL(TRIM(LOT_NUM_SECOND_ADDR), '') END ||'('|| IFNULL(MTR_ID_NUM, '') ||')'|| CASE WHEN PDA_REPL_JOB_ITEM = '10' THEN '계량' WHEN PDA_REPL_JOB_ITEM = '20' THEN '보정' WHEN PDA_REPL_JOB_ITEM = '30' THEN '계+보' ELSE '' END ||'-'|| IFNULL(MTR_GRD, '') ||' '|| CASE WHEN COMPENS_FLAG = '10' THEN '(저)' WHEN COMPENS_FLAG = '20' THEN '(중간)' WHEN COMPENS_FLAG = '30' THEN '(중)' ELSE '' END ||' '|| IFNULL(COMPENS_MAKER_NM, ''), CASE WHEN REPL_STS = '30' THEN '불' ELSE '' END, SEND_YN, MTR_GRD, PDA_REPL_JOB_ITEM, MTR_NUM, OBJ_CRT_YMD, MTR_TYPE, MTR_LOC_FLAG, IFNULL(TRIM(TOWN), '') ||' '|| IFNULL(TRIM(VILLAGE), '') ||' '|| IFNULL(ADDR1_M, '') ||'-'|| IFNULL(ADDR1_S, '') ||' '|| CASE WHEN LENGTH(IFNULL(TRIM(CO_LIVE_NM), '') ||''|| IFNULL(TRIM(BLD_NM), '')) > 0 THEN IFNULL(TRIM(CO_LIVE_NM), '') ||' '|| IFNULL(TRIM(BLD_NM), '') ||' '|| IFNULL(TRIM(HOUSE_CNT), '') ELSE IFNULL(TRIM(HOUSE_CNT), '') ||' '|| IFNULL(TRIM(LOT_NUM_SECOND_ADDR), '') END, MEMO , NOBILL_YN FROM C6301_CHANGEDATA WHERE REPL_OCCU_FLAG = '10' AND (SEND_YN == 'S' OR SEND_YN == 'Y') AND (LENGTH(REPL_NOT_PERMIT_WHY) == 0 OR REPL_STS != '30') AND NOBILL_YN ='N'");
+				strcat ( m_szSql[0], szTypeWhere);
+				strcat ( m_szSql[0], " ORDER BY ROWID LIMIT ? , ?");
+
+				Str_Cpy( m_szSql[1], "SELECT IFNULL(TRIM(NEW_ROAD_NM), '') ||' '|| IFNULL(NEW_ADDR_M, '') ||'-'|| IFNULL(NEW_ADDR_S, '') ||' '|| CASE WHEN LENGTH(IFNULL(TRIM(CO_LIVE_NM), '') ||''|| IFNULL(TRIM(BLD_NM), '')) > 0 THEN IFNULL(TRIM(CO_LIVE_NM), '') ||' '|| IFNULL(TRIM(BLD_NM), '') ||' '|| IFNULL(TRIM(HOUSE_CNT), '') ELSE IFNULL(TRIM(HOUSE_CNT), '') ||' '|| IFNULL(TRIM(LOT_NUM_SECOND_ADDR), '') END ||'('|| IFNULL(MTR_ID_NUM, '') ||')'|| CASE WHEN PDA_REPL_JOB_ITEM = '10' THEN '계량' WHEN PDA_REPL_JOB_ITEM = '20' THEN '보정' WHEN PDA_REPL_JOB_ITEM = '30' THEN '계+보' ELSE '' END ||'-'|| IFNULL(MTR_GRD, '') ||' '|| CASE WHEN COMPENS_FLAG = '10' THEN '(저)' WHEN COMPENS_FLAG = '20' THEN '(중간)' WHEN COMPENS_FLAG = '30' THEN '(중)' ELSE '' END ||' '|| IFNULL(COMPENS_MAKER_NM, ''), CASE WHEN REPL_STS == '30' THEN '불' ELSE '' END, SEND_YN, MTR_GRD, PDA_REPL_JOB_ITEM, MTR_NUM, OBJ_CRT_YMD, MTR_TYPE, MTR_LOC_FLAG, IFNULL(TRIM(TOWN), '') ||' '|| IFNULL(TRIM(VILLAGE), '') ||' '|| IFNULL(ADDR1_M, '') ||'-'|| IFNULL(ADDR1_S, '') ||' '|| CASE WHEN LENGTH(IFNULL(TRIM(CO_LIVE_NM), '') ||''|| IFNULL(TRIM(BLD_NM), '')) > 0 THEN IFNULL(TRIM(CO_LIVE_NM), '') ||' '|| IFNULL(TRIM(BLD_NM), '') ||' '|| IFNULL(TRIM(HOUSE_CNT), '') ELSE IFNULL(TRIM(HOUSE_CNT), '') ||' '|| IFNULL(TRIM(LOT_NUM_SECOND_ADDR), '') END, MEMO, NOBILL_YN FROM C6301_CHANGEDATA WHERE REPL_OCCU_FLAG = '10' AND (SEND_YN == 'S' OR SEND_YN == 'Y') AND (LENGTH(REPL_NOT_PERMIT_WHY) == 0 OR REPL_STS != '30') AND NOBILL_YN ='N'");
+				strcat ( m_szSql[1], szTypeWhere);
+				strcat ( m_szSql[1], " ORDER BY ROWID LIMIT ? , ?");
 			}
-			else //if( Str_Cmp(m_szCobSel, "전체") == 0 )
+			else //if( MATCH(m_szCobSel, "전체") )
 			{
-				Str_Cpy( m_szSql[0], "SELECT IFNULL(TRIM(TOWN), '') ||' '|| IFNULL(TRIM(VILLAGE), '') ||' '|| IFNULL(ADDR1_M, '') ||'-'|| IFNULL(ADDR1_S, '') ||' '|| CASE WHEN LENGTH(IFNULL(TRIM(CO_LIVE_NM), '') ||''|| IFNULL(TRIM(BLD_NM), '')) > 0 THEN IFNULL(TRIM(CO_LIVE_NM), '') ||' '|| IFNULL(TRIM(BLD_NM), '') ||' '|| IFNULL(TRIM(HOUSE_CNT), '') ELSE IFNULL(TRIM(HOUSE_CNT), '') ||' '|| IFNULL(TRIM(LOT_NUM_SECOND_ADDR), '') END ||'('|| IFNULL(MTR_ID_NUM, '') ||')'|| CASE WHEN PDA_REPL_JOB_ITEM = '10' THEN '계량' WHEN PDA_REPL_JOB_ITEM = '20' THEN '보정' WHEN PDA_REPL_JOB_ITEM = '30' THEN '계+보' ELSE '' END ||'-'|| IFNULL(MTR_GRD, '') ||' '|| CASE WHEN COMPENS_FLAG = '10' THEN '(저)' WHEN COMPENS_FLAG = '20' THEN '(중간)' WHEN COMPENS_FLAG = '30' THEN '(중)' ELSE '' END ||' '|| IFNULL(COMPENS_MAKER_NM, ''), CASE WHEN REPL_STS = '30' THEN '불' ELSE '' END, SEND_YN, MTR_GRD, PDA_REPL_JOB_ITEM, MTR_NUM, OBJ_CRT_YMD, MTR_TYPE, MTR_LOC_FLAG, IFNULL(TRIM(TOWN), '') ||' '|| IFNULL(TRIM(VILLAGE), '') ||' '|| IFNULL(ADDR1_M, '') ||'-'|| IFNULL(ADDR1_S, '') ||' '|| CASE WHEN LENGTH(IFNULL(TRIM(CO_LIVE_NM), '') ||''|| IFNULL(TRIM(BLD_NM), '')) > 0 THEN IFNULL(TRIM(CO_LIVE_NM), '') ||' '|| IFNULL(TRIM(BLD_NM), '') ||' '|| IFNULL(TRIM(HOUSE_CNT), '') ELSE IFNULL(TRIM(HOUSE_CNT), '') ||' '|| IFNULL(TRIM(LOT_NUM_SECOND_ADDR), '') END, MEMO, NOBILL_YN FROM C6301_CHANGEDATA WHERE REPL_OCCU_FLAG = '10' AND (LENGTH(REPL_NOT_PERMIT_WHY) == 0 OR REPL_STS != '30') AND NOBILL_YN ='N' ORDER BY ROWID LIMIT ? , ?");
-				Str_Cpy( m_szSql[1], "SELECT IFNULL(TRIM(NEW_ROAD_NM), '') ||' '|| IFNULL(NEW_ADDR_M, '') ||'-'|| IFNULL(NEW_ADDR_S, '') ||' '|| CASE WHEN LENGTH(IFNULL(TRIM(CO_LIVE_NM), '') ||''|| IFNULL(TRIM(BLD_NM), '')) > 0 THEN IFNULL(TRIM(CO_LIVE_NM), '') ||' '|| IFNULL(TRIM(BLD_NM), '') ||' '|| IFNULL(TRIM(HOUSE_CNT), '') ELSE IFNULL(TRIM(HOUSE_CNT), '') ||' '|| IFNULL(TRIM(LOT_NUM_SECOND_ADDR), '') END ||'('|| IFNULL(MTR_ID_NUM, '') ||')'|| CASE WHEN PDA_REPL_JOB_ITEM = '10' THEN '계량' WHEN PDA_REPL_JOB_ITEM = '20' THEN '보정' WHEN PDA_REPL_JOB_ITEM = '30' THEN '계+보' ELSE '' END ||'-'|| IFNULL(MTR_GRD, '') ||' '|| CASE WHEN COMPENS_FLAG = '10' THEN '(저)' WHEN COMPENS_FLAG = '20' THEN '(중간)' WHEN COMPENS_FLAG = '30' THEN '(중)' ELSE '' END ||' '|| IFNULL(COMPENS_MAKER_NM, ''), CASE WHEN REPL_STS == '30' THEN '불' ELSE '' END, SEND_YN, MTR_GRD, PDA_REPL_JOB_ITEM, MTR_NUM, OBJ_CRT_YMD, MTR_TYPE, MTR_LOC_FLAG, IFNULL(TRIM(TOWN), '') ||' '|| IFNULL(TRIM(VILLAGE), '') ||' '|| IFNULL(ADDR1_M, '') ||'-'|| IFNULL(ADDR1_S, '') ||' '|| CASE WHEN LENGTH(IFNULL(TRIM(CO_LIVE_NM), '') ||''|| IFNULL(TRIM(BLD_NM), '')) > 0 THEN IFNULL(TRIM(CO_LIVE_NM), '') ||' '|| IFNULL(TRIM(BLD_NM), '') ||' '|| IFNULL(TRIM(HOUSE_CNT), '') ELSE IFNULL(TRIM(HOUSE_CNT), '') ||' '|| IFNULL(TRIM(LOT_NUM_SECOND_ADDR), '') END, MEMO, NOBILL_YN FROM C6301_CHANGEDATA WHERE REPL_OCCU_FLAG = '10' AND (LENGTH(REPL_NOT_PERMIT_WHY) == 0 OR REPL_STS != '30') AND NOBILL_YN ='N' ORDER BY ROWID LIMIT ? , ?");
+				Str_Cpy( m_szSql[0], "SELECT IFNULL(TRIM(TOWN), '') ||' '|| IFNULL(TRIM(VILLAGE), '') ||' '|| IFNULL(ADDR1_M, '') ||'-'|| IFNULL(ADDR1_S, '') ||' '|| CASE WHEN LENGTH(IFNULL(TRIM(CO_LIVE_NM), '') ||''|| IFNULL(TRIM(BLD_NM), '')) > 0 THEN IFNULL(TRIM(CO_LIVE_NM), '') ||' '|| IFNULL(TRIM(BLD_NM), '') ||' '|| IFNULL(TRIM(HOUSE_CNT), '') ELSE IFNULL(TRIM(HOUSE_CNT), '') ||' '|| IFNULL(TRIM(LOT_NUM_SECOND_ADDR), '') END ||'('|| IFNULL(MTR_ID_NUM, '') ||')'|| CASE WHEN PDA_REPL_JOB_ITEM = '10' THEN '계량' WHEN PDA_REPL_JOB_ITEM = '20' THEN '보정' WHEN PDA_REPL_JOB_ITEM = '30' THEN '계+보' ELSE '' END ||'-'|| IFNULL(MTR_GRD, '') ||' '|| CASE WHEN COMPENS_FLAG = '10' THEN '(저)' WHEN COMPENS_FLAG = '20' THEN '(중간)' WHEN COMPENS_FLAG = '30' THEN '(중)' ELSE '' END ||' '|| IFNULL(COMPENS_MAKER_NM, ''), CASE WHEN REPL_STS = '30' THEN '불' ELSE '' END, SEND_YN, MTR_GRD, PDA_REPL_JOB_ITEM, MTR_NUM, OBJ_CRT_YMD, MTR_TYPE, MTR_LOC_FLAG, IFNULL(TRIM(TOWN), '') ||' '|| IFNULL(TRIM(VILLAGE), '') ||' '|| IFNULL(ADDR1_M, '') ||'-'|| IFNULL(ADDR1_S, '') ||' '|| CASE WHEN LENGTH(IFNULL(TRIM(CO_LIVE_NM), '') ||''|| IFNULL(TRIM(BLD_NM), '')) > 0 THEN IFNULL(TRIM(CO_LIVE_NM), '') ||' '|| IFNULL(TRIM(BLD_NM), '') ||' '|| IFNULL(TRIM(HOUSE_CNT), '') ELSE IFNULL(TRIM(HOUSE_CNT), '') ||' '|| IFNULL(TRIM(LOT_NUM_SECOND_ADDR), '') END, MEMO, NOBILL_YN FROM C6301_CHANGEDATA WHERE REPL_OCCU_FLAG = '10' AND (LENGTH(REPL_NOT_PERMIT_WHY) == 0 OR REPL_STS != '30') AND NOBILL_YN ='N'");
+				strcat ( m_szSql[0], szTypeWhere);
+				strcat ( m_szSql[0], " ORDER BY ROWID LIMIT ? , ?");
+
+				Str_Cpy( m_szSql[1], "SELECT IFNULL(TRIM(NEW_ROAD_NM), '') ||' '|| IFNULL(NEW_ADDR_M, '') ||'-'|| IFNULL(NEW_ADDR_S, '') ||' '|| CASE WHEN LENGTH(IFNULL(TRIM(CO_LIVE_NM), '') ||''|| IFNULL(TRIM(BLD_NM), '')) > 0 THEN IFNULL(TRIM(CO_LIVE_NM), '') ||' '|| IFNULL(TRIM(BLD_NM), '') ||' '|| IFNULL(TRIM(HOUSE_CNT), '') ELSE IFNULL(TRIM(HOUSE_CNT), '') ||' '|| IFNULL(TRIM(LOT_NUM_SECOND_ADDR), '') END ||'('|| IFNULL(MTR_ID_NUM, '') ||')'|| CASE WHEN PDA_REPL_JOB_ITEM = '10' THEN '계량' WHEN PDA_REPL_JOB_ITEM = '20' THEN '보정' WHEN PDA_REPL_JOB_ITEM = '30' THEN '계+보' ELSE '' END ||'-'|| IFNULL(MTR_GRD, '') ||' '|| CASE WHEN COMPENS_FLAG = '10' THEN '(저)' WHEN COMPENS_FLAG = '20' THEN '(중간)' WHEN COMPENS_FLAG = '30' THEN '(중)' ELSE '' END ||' '|| IFNULL(COMPENS_MAKER_NM, ''), CASE WHEN REPL_STS == '30' THEN '불' ELSE '' END, SEND_YN, MTR_GRD, PDA_REPL_JOB_ITEM, MTR_NUM, OBJ_CRT_YMD, MTR_TYPE, MTR_LOC_FLAG, IFNULL(TRIM(TOWN), '') ||' '|| IFNULL(TRIM(VILLAGE), '') ||' '|| IFNULL(ADDR1_M, '') ||'-'|| IFNULL(ADDR1_S, '') ||' '|| CASE WHEN LENGTH(IFNULL(TRIM(CO_LIVE_NM), '') ||''|| IFNULL(TRIM(BLD_NM), '')) > 0 THEN IFNULL(TRIM(CO_LIVE_NM), '') ||' '|| IFNULL(TRIM(BLD_NM), '') ||' '|| IFNULL(TRIM(HOUSE_CNT), '') ELSE IFNULL(TRIM(HOUSE_CNT), '') ||' '|| IFNULL(TRIM(LOT_NUM_SECOND_ADDR), '') END, MEMO, NOBILL_YN FROM C6301_CHANGEDATA WHERE REPL_OCCU_FLAG = '10' AND (LENGTH(REPL_NOT_PERMIT_WHY) == 0 OR REPL_STS != '30') AND NOBILL_YN ='N'");
+				strcat ( m_szSql[1], szTypeWhere);
+				strcat ( m_szSql[1], " ORDER BY ROWID LIMIT ? , ?");
 			}
 		}
 		else if( g_nWorkFlag > 709 && g_nWorkFlag < 720 )
 		{
 			//민원교체
-			if( Str_Cmp(m_szCobSel, "미실시") == 0 )
+			if( MATCH(m_szCobSel, "미실시") )
 			{
 				Str_Cpy(szRow, "SELECT ROWID FROM C6301_CHANGEDATA WHERE REPL_OCCU_FLAG = '20' AND (SEND_YN == 'N' OR SEND_YN IS NULL) AND (LENGTH(REPL_NOT_PERMIT_WHY) == 0 OR REPL_STS != '30') AND NOBILL_YN ='N' ORDER BY ROWID");
 				g_nWorkFlag = 711;
 			}
-			else if( Str_Cmp(m_szCobSel, "교체") == 0 )
+			else if( MATCH(m_szCobSel, "교체") )
 			{
 				Str_Cpy(szRow, "SELECT ROWID FROM C6301_CHANGEDATA WHERE REPL_OCCU_FLAG = '20' AND (SEND_YN == 'S' OR SEND_YN == 'Y') AND (LENGTH(REPL_NOT_PERMIT_WHY) == 0 OR REPL_STS != '30') AND NOBILL_YN ='N' ORDER BY ROWID");
 				g_nWorkFlag = 712;
 			}
-			else //if( Str_Cmp(m_szCobSel, "전체") == 0 )
+			else //if( MATCH(m_szCobSel, "전체") )
 			{
 				SPRINT(szRow, "SELECT ROWID FROM C6301_CHANGEDATA WHERE REPL_OCCU_FLAG = '20' AND (LENGTH(REPL_NOT_PERMIT_WHY) == 0 OR REPL_STS != '30') AND NOBILL_YN ='N' ORDER BY ROWID", m_szCobSel, 0, 0 );
 				g_nWorkFlag = 710;
@@ -1306,17 +1426,17 @@ Finally:
 	
 			g_Sql_SaveSeq( szRow, SREACH_FILE);
 	
-			if( Str_Cmp(m_szCobSel, "미실시") == 0 )
+			if( MATCH(m_szCobSel, "미실시") )
 			{
 				Str_Cpy( m_szSql[0], "SELECT IFNULL(TRIM(TOWN), '') ||' '|| IFNULL(TRIM(VILLAGE), '') ||' '|| IFNULL(ADDR1_M, '') ||'-'|| IFNULL(ADDR1_S, '') ||' '|| CASE WHEN LENGTH(IFNULL(TRIM(CO_LIVE_NM), '') ||''|| IFNULL(TRIM(BLD_NM), '')) > 0 THEN IFNULL(TRIM(CO_LIVE_NM), '') ||' '|| IFNULL(TRIM(BLD_NM), '') ||' '|| IFNULL(TRIM(HOUSE_CNT), '') ELSE IFNULL(TRIM(HOUSE_CNT), '') ||' '|| IFNULL(TRIM(LOT_NUM_SECOND_ADDR), '') END ||'('|| IFNULL(MTR_ID_NUM, '') ||')'|| CASE WHEN PDA_REPL_JOB_ITEM = '10' THEN '계량' WHEN PDA_REPL_JOB_ITEM = '20' THEN '보정' WHEN PDA_REPL_JOB_ITEM = '30' THEN '계+보'  ELSE '' END ||'-'|| IFNULL(MTR_GRD, '') ||' '|| CASE WHEN COMPENS_FLAG = '10' THEN '(저)' WHEN COMPENS_FLAG = '20' THEN '(중간)' WHEN COMPENS_FLAG = '30' THEN '(중)' ELSE '' END ||' '|| IFNULL(COMPENS_MAKER_NM, ''), CASE WHEN REPL_STS = '30' THEN '불' ELSE '' END, SEND_YN, MTR_GRD, PDA_REPL_JOB_ITEM, MTR_NUM, OBJ_CRT_YMD, MTR_TYPE, MTR_LOC_FLAG, IFNULL(TRIM(TOWN), '') ||' '|| IFNULL(TRIM(VILLAGE), '') ||' '|| IFNULL(ADDR1_M, '') ||'-'|| IFNULL(ADDR1_S, '') ||' '|| CASE WHEN LENGTH(IFNULL(TRIM(CO_LIVE_NM), '') ||''|| IFNULL(TRIM(BLD_NM), '')) > 0 THEN IFNULL(TRIM(CO_LIVE_NM), '') ||' '|| IFNULL(TRIM(BLD_NM), '') ||' '|| IFNULL(TRIM(HOUSE_CNT), '') ELSE IFNULL(TRIM(HOUSE_CNT), '') ||' '|| IFNULL(TRIM(LOT_NUM_SECOND_ADDR), '') END, MEMO , NOBILL_YN FROM C6301_CHANGEDATA WHERE REPL_OCCU_FLAG = '20' AND (SEND_YN == 'N' OR SEND_YN IS NULL) AND (LENGTH(REPL_NOT_PERMIT_WHY) == 0 OR REPL_STS != '30') AND NOBILL_YN ='N' ORDER BY ROWID LIMIT ? , ?");
 				Str_Cpy( m_szSql[1], "SELECT IFNULL(TRIM(NEW_ROAD_NM), '') ||' '|| IFNULL(NEW_ADDR_M, '') ||'-'|| IFNULL(NEW_ADDR_S, '') ||' '|| CASE WHEN LENGTH(IFNULL(TRIM(CO_LIVE_NM), '') ||''|| IFNULL(TRIM(BLD_NM), '')) > 0 THEN IFNULL(TRIM(CO_LIVE_NM), '') ||' '|| IFNULL(TRIM(BLD_NM), '') ||' '|| IFNULL(TRIM(HOUSE_CNT), '') ELSE IFNULL(TRIM(HOUSE_CNT), '') ||' '|| IFNULL(TRIM(LOT_NUM_SECOND_ADDR), '') END ||'('|| IFNULL(MTR_ID_NUM, '') ||')'|| CASE WHEN PDA_REPL_JOB_ITEM = '10' THEN '계량' WHEN PDA_REPL_JOB_ITEM = '20' THEN '보정' WHEN PDA_REPL_JOB_ITEM = '30' THEN '계+보' ELSE '' END ||'-'|| IFNULL(MTR_GRD, '') ||' '|| CASE WHEN COMPENS_FLAG = '10' THEN '(저)' WHEN COMPENS_FLAG = '20' THEN '(중간)' WHEN COMPENS_FLAG = '30' THEN '(중)' ELSE '' END ||' '|| IFNULL(COMPENS_MAKER_NM, ''), CASE WHEN REPL_STS == '30' THEN '불' ELSE '' END, SEND_YN, MTR_GRD, PDA_REPL_JOB_ITEM, MTR_NUM, OBJ_CRT_YMD, MTR_TYPE, MTR_LOC_FLAG, IFNULL(TRIM(TOWN), '') ||' '|| IFNULL(TRIM(VILLAGE), '') ||' '|| IFNULL(ADDR1_M, '') ||'-'|| IFNULL(ADDR1_S, '') ||' '|| CASE WHEN LENGTH(IFNULL(TRIM(CO_LIVE_NM), '') ||''|| IFNULL(TRIM(BLD_NM), '')) > 0 THEN IFNULL(TRIM(CO_LIVE_NM), '') ||' '|| IFNULL(TRIM(BLD_NM), '') ||' '|| IFNULL(TRIM(HOUSE_CNT), '') ELSE IFNULL(TRIM(HOUSE_CNT), '') ||' '|| IFNULL(TRIM(LOT_NUM_SECOND_ADDR), '') END, MEMO, NOBILL_YN FROM C6301_CHANGEDATA WHERE REPL_OCCU_FLAG = '20' AND (SEND_YN == 'N' OR SEND_YN IS NULL) AND (LENGTH(REPL_NOT_PERMIT_WHY) == 0 OR REPL_STS != '30') AND NOBILL_YN ='N' ORDER BY ROWID LIMIT ? , ?");
 			}
-			else if( Str_Cmp(m_szCobSel, "교체") == 0 )
+			else if( MATCH(m_szCobSel, "교체") )
 			{
 				Str_Cpy( m_szSql[0], "SELECT IFNULL(TRIM(TOWN), '') ||' '|| IFNULL(TRIM(VILLAGE), '') ||' '|| IFNULL(ADDR1_M, '') ||'-'|| IFNULL(ADDR1_S, '') ||' '|| CASE WHEN LENGTH(IFNULL(TRIM(CO_LIVE_NM), '') ||''|| IFNULL(TRIM(BLD_NM), '')) > 0 THEN IFNULL(TRIM(CO_LIVE_NM), '') ||' '|| IFNULL(TRIM(BLD_NM), '') ||' '|| IFNULL(TRIM(HOUSE_CNT), '') ELSE TRIM(HOUSE_CNT) ||' '|| IFNULL(TRIM(LOT_NUM_SECOND_ADDR), '') END ||'('|| IFNULL(MTR_ID_NUM, '') ||')'|| CASE WHEN PDA_REPL_JOB_ITEM = '10' THEN '계량' WHEN PDA_REPL_JOB_ITEM = '20' THEN '보정' WHEN PDA_REPL_JOB_ITEM = '30' THEN '계+보' ELSE '' END ||'-'|| IFNULL(MTR_GRD, '') ||' '|| CASE WHEN COMPENS_FLAG = '10' THEN '(저)' WHEN COMPENS_FLAG = '20' THEN '(중간)' WHEN COMPENS_FLAG = '30' THEN '(중)' ELSE '' END ||' '|| IFNULL(COMPENS_MAKER_NM, ''), CASE WHEN REPL_STS = '30' THEN '불' ELSE '' END, SEND_YN, MTR_GRD, PDA_REPL_JOB_ITEM, MTR_NUM, OBJ_CRT_YMD, MTR_TYPE, MTR_LOC_FLAG, IFNULL(TRIM(TOWN), '') ||' '|| IFNULL(TRIM(VILLAGE), '') ||' '|| IFNULL(ADDR1_M, '') ||'-'|| IFNULL(ADDR1_S, '') ||' '|| CASE WHEN LENGTH(IFNULL(TRIM(CO_LIVE_NM), '') ||''|| IFNULL(TRIM(BLD_NM), '')) > 0 THEN IFNULL(TRIM(CO_LIVE_NM), '') ||' '|| IFNULL(TRIM(BLD_NM), '') ||' '|| IFNULL(TRIM(HOUSE_CNT), '') ELSE IFNULL(TRIM(HOUSE_CNT), '') ||' '|| IFNULL(TRIM(LOT_NUM_SECOND_ADDR), '') END, MEMO, NOBILL_YN FROM C6301_CHANGEDATA WHERE REPL_OCCU_FLAG = '20' AND (SEND_YN == 'S' OR SEND_YN == 'Y') AND (LENGTH(REPL_NOT_PERMIT_WHY) == 0 OR REPL_STS != '30') AND NOBILL_YN ='N' ORDER BY ROWID LIMIT ? , ?");
 				Str_Cpy( m_szSql[1], "SELECT IFNULL(TRIM(NEW_ROAD_NM), '') ||' '|| IFNULL(NEW_ADDR_M, '') ||'-'|| IFNULL(NEW_ADDR_S, '') ||' '|| CASE WHEN LENGTH(IFNULL(TRIM(CO_LIVE_NM), '') ||''|| IFNULL(TRIM(BLD_NM), '')) > 0 THEN IFNULL(TRIM(CO_LIVE_NM), '') ||' '|| IFNULL(TRIM(BLD_NM), '') ||' '|| IFNULL(TRIM(HOUSE_CNT), '') ELSE IFNULL(TRIM(HOUSE_CNT), '') ||' '|| IFNULL(TRIM(LOT_NUM_SECOND_ADDR), '') END ||'('|| IFNULL(MTR_ID_NUM, '') ||')'|| CASE WHEN PDA_REPL_JOB_ITEM = '10' THEN '계량' WHEN PDA_REPL_JOB_ITEM = '20' THEN '보정' WHEN PDA_REPL_JOB_ITEM = '30' THEN '계+보' ELSE '' END ||'-'|| IFNULL(MTR_GRD, '') ||' '|| CASE WHEN COMPENS_FLAG = '10' THEN '(저)' WHEN COMPENS_FLAG = '20' THEN '(중간)' WHEN COMPENS_FLAG = '30' THEN '(중)' ELSE '' END ||' '|| IFNULL(COMPENS_MAKER_NM, ''), CASE WHEN REPL_STS == '30' THEN '불' ELSE '' END, SEND_YN, MTR_GRD, PDA_REPL_JOB_ITEM, MTR_NUM, OBJ_CRT_YMD, MTR_TYPE, MTR_LOC_FLAG, IFNULL(TRIM(TOWN), '') ||' '|| IFNULL(TRIM(VILLAGE), '') ||' '|| IFNULL(ADDR1_M, '') ||'-'|| IFNULL(ADDR1_S, '') ||' '|| CASE WHEN LENGTH(IFNULL(TRIM(CO_LIVE_NM), '') ||''|| IFNULL(TRIM(BLD_NM), '')) > 0 THEN IFNULL(TRIM(CO_LIVE_NM), '') ||' '|| IFNULL(TRIM(BLD_NM), '') ||' '|| IFNULL(TRIM(HOUSE_CNT), '') ELSE IFNULL(TRIM(HOUSE_CNT), '') ||' '|| IFNULL(TRIM(LOT_NUM_SECOND_ADDR), '') END, MEMO, NOBILL_YN FROM C6301_CHANGEDATA WHERE REPL_OCCU_FLAG = '20' AND (SEND_YN == 'S' OR SEND_YN == 'Y') AND (LENGTH(REPL_NOT_PERMIT_WHY) == 0 OR REPL_STS != '30') AND NOBILL_YN ='N' ORDER BY ROWID LIMIT ? , ?");
 			}
-			else //if( Str_Cmp(m_szCobSel, "전체") == 0 )
+			else //if( MATCH(m_szCobSel, "전체") )
 			{
 				Str_Cpy( m_szSql[0], "SELECT IFNULL(TRIM(TOWN), '') ||' '|| IFNULL(TRIM(VILLAGE), '') ||' '|| IFNULL(ADDR1_M, '') ||'-'|| IFNULL(ADDR1_S, '') ||' '|| CASE WHEN LENGTH(IFNULL(TRIM(CO_LIVE_NM), '') ||''|| IFNULL(TRIM(BLD_NM), '')) > 0 THEN IFNULL(TRIM(CO_LIVE_NM), '') ||' '|| IFNULL(TRIM(BLD_NM), '') ||' '|| IFNULL(TRIM(HOUSE_CNT), '') ELSE IFNULL(TRIM(HOUSE_CNT), '') ||' '|| IFNULL(TRIM(LOT_NUM_SECOND_ADDR), '') END ||'('|| IFNULL(MTR_ID_NUM, '') ||')'|| CASE WHEN PDA_REPL_JOB_ITEM = '10' THEN '계량' WHEN PDA_REPL_JOB_ITEM = '20' THEN '보정' WHEN PDA_REPL_JOB_ITEM = '30' THEN '계+보' ELSE '' END ||'-'|| IFNULL(MTR_GRD, '') ||' '|| CASE WHEN COMPENS_FLAG = '10' THEN '(저)' WHEN COMPENS_FLAG = '20' THEN '(중간)' WHEN COMPENS_FLAG = '30' THEN '(중)' ELSE '' END ||' '|| IFNULL(COMPENS_MAKER_NM, ''), CASE WHEN REPL_STS = '30' THEN '불' ELSE '' END, SEND_YN, MTR_GRD, PDA_REPL_JOB_ITEM, MTR_NUM, OBJ_CRT_YMD, MTR_TYPE, MTR_LOC_FLAG, IFNULL(TRIM(TOWN), '') ||' '|| IFNULL(TRIM(VILLAGE), '') ||' '|| IFNULL(ADDR1_M, '') ||'-'|| IFNULL(ADDR1_S, '') ||' '|| CASE WHEN LENGTH(IFNULL(TRIM(CO_LIVE_NM), '') ||''|| IFNULL(TRIM(BLD_NM), '')) > 0 THEN IFNULL(TRIM(CO_LIVE_NM), '') ||' '|| IFNULL(TRIM(BLD_NM), '') ||' '|| IFNULL(TRIM(HOUSE_CNT), '') ELSE IFNULL(TRIM(HOUSE_CNT), '') ||' '|| IFNULL(TRIM(LOT_NUM_SECOND_ADDR), '') END, MEMO, NOBILL_YN FROM C6301_CHANGEDATA WHERE REPL_OCCU_FLAG = '20' AND (LENGTH(REPL_NOT_PERMIT_WHY) == 0 OR REPL_STS != '30') AND NOBILL_YN ='N' ORDER BY ROWID LIMIT ? , ?");
 				Str_Cpy( m_szSql[1], "SELECT IFNULL(TRIM(NEW_ROAD_NM), '') ||' '|| IFNULL(NEW_ADDR_M, '') ||'-'|| IFNULL(NEW_ADDR_S, '') ||' '|| CASE WHEN LENGTH(IFNULL(TRIM(CO_LIVE_NM), '') ||''|| IFNULL(TRIM(BLD_NM), '')) > 0 THEN IFNULL(TRIM(CO_LIVE_NM), '') ||' '|| IFNULL(TRIM(BLD_NM), '') ||' '|| IFNULL(TRIM(HOUSE_CNT), '') ELSE IFNULL(TRIM(HOUSE_CNT), '') ||' '|| IFNULL(TRIM(LOT_NUM_SECOND_ADDR), '') END ||'('|| IFNULL(MTR_ID_NUM, '') ||')'|| CASE WHEN PDA_REPL_JOB_ITEM = '10' THEN '계량' WHEN PDA_REPL_JOB_ITEM = '20' THEN '보정' WHEN PDA_REPL_JOB_ITEM = '30' THEN '계+보' ELSE '' END ||'-'|| IFNULL(MTR_GRD, '') ||' '|| CASE WHEN COMPENS_FLAG = '10' THEN '(저)' WHEN COMPENS_FLAG = '20' THEN '(중간)' WHEN COMPENS_FLAG = '30' THEN '(중)' ELSE '' END ||' '|| IFNULL(COMPENS_MAKER_NM, ''), CASE WHEN REPL_STS == '30' THEN '불' ELSE '' END, SEND_YN, MTR_GRD, PDA_REPL_JOB_ITEM, MTR_NUM, OBJ_CRT_YMD, MTR_TYPE, MTR_LOC_FLAG, IFNULL(TRIM(TOWN), '') ||' '|| IFNULL(TRIM(VILLAGE), '') ||' '|| IFNULL(ADDR1_M, '') ||'-'|| IFNULL(ADDR1_S, '') ||' '|| CASE WHEN LENGTH(IFNULL(TRIM(CO_LIVE_NM), '') ||''|| IFNULL(TRIM(BLD_NM), '')) > 0 THEN IFNULL(TRIM(CO_LIVE_NM), '') ||' '|| IFNULL(TRIM(BLD_NM), '') ||' '|| IFNULL(TRIM(HOUSE_CNT), '') ELSE IFNULL(TRIM(HOUSE_CNT), '') ||' '|| IFNULL(TRIM(LOT_NUM_SECOND_ADDR), '') END, MEMO, NOBILL_YN FROM C6301_CHANGEDATA WHERE REPL_OCCU_FLAG = '20' AND (LENGTH(REPL_NOT_PERMIT_WHY) == 0 OR REPL_STS != '30') AND NOBILL_YN ='N' ORDER BY ROWID LIMIT ? , ?");
@@ -1325,17 +1445,17 @@ Finally:
 		else if( g_nWorkFlag > 719 && g_nWorkFlag < 730 )
 		{
 			//교체불가
-			if( Str_Cmp(m_szCobSel, "미실시") == 0 )
+			if( MATCH(m_szCobSel, "미실시") )
 			{
 				Str_Cpy(szRow, "SELECT ROWID FROM C6301_CHANGEDATA WHERE (LENGTH(REPL_NOT_PERMIT_WHY) > 0 OR REPL_STS = '30') AND (SEND_YN == 'N' OR SEND_YN IS NULL) AND NOBILL_YN ='N' ORDER BY ROWID");
 				g_nWorkFlag = 721;
 			}
-			else if( Str_Cmp(m_szCobSel, "교체") == 0 )
+			else if( MATCH(m_szCobSel, "교체") )
 			{
 				Str_Cpy(szRow, "SELECT ROWID FROM C6301_CHANGEDATA WHERE (LENGTH(REPL_NOT_PERMIT_WHY) > 0 OR REPL_STS = '30') AND (SEND_YN == 'S' OR SEND_YN == 'Y') AND NOBILL_YN ='N' ORDER BY ROWID");
 				g_nWorkFlag = 722;
 			}
-			else //if( Str_Cmp(m_szCobSel, "전체") == 0 )
+			else //if( MATCH(m_szCobSel, "전체") )
 			{
 				SPRINT(szRow, "SELECT ROWID FROM C6301_CHANGEDATA WHERE (LENGTH(REPL_NOT_PERMIT_WHY) > 0 OR REPL_STS = '30') AND NOBILL_YN ='N' ORDER BY ROWID", m_szCobSel, 0, 0 );
 				g_nWorkFlag = 720;
@@ -1343,17 +1463,17 @@ Finally:
 	
 			g_Sql_SaveSeq( szRow, SREACH_FILE);
 	
-			if( Str_Cmp(m_szCobSel, "미실시") == 0 )
+			if( MATCH(m_szCobSel, "미실시") )
 			{
 				Str_Cpy( m_szSql[0], "SELECT IFNULL(TRIM(TOWN), '') ||' '|| IFNULL(TRIM(VILLAGE), '') ||' '|| IFNULL(ADDR1_M, '') ||'-'|| IFNULL(ADDR1_S, '') ||' '|| CASE WHEN LENGTH(IFNULL(TRIM(CO_LIVE_NM), '') ||''|| IFNULL(TRIM(BLD_NM), '')) > 0 THEN IFNULL(TRIM(CO_LIVE_NM), '') ||' '|| IFNULL(TRIM(BLD_NM), '') ||' '|| IFNULL(TRIM(HOUSE_CNT), '') ELSE IFNULL(TRIM(HOUSE_CNT), '') ||' '|| IFNULL(TRIM(LOT_NUM_SECOND_ADDR), '') END ||'('|| IFNULL(MTR_ID_NUM, '') ||')'|| CASE WHEN PDA_REPL_JOB_ITEM = '10' THEN '계량' WHEN PDA_REPL_JOB_ITEM = '20' THEN '보정' WHEN PDA_REPL_JOB_ITEM = '30' THEN '계+보'  ELSE '' END ||'-'|| IFNULL(MTR_GRD, '') ||' '|| CASE WHEN COMPENS_FLAG = '10' THEN '(저)' WHEN COMPENS_FLAG = '20' THEN '(중간)' WHEN COMPENS_FLAG = '30' THEN '(중)' ELSE '' END ||' '|| IFNULL(COMPENS_MAKER_NM, ''), CASE WHEN REPL_STS = '30' THEN '불' ELSE '' END, SEND_YN, MTR_GRD, PDA_REPL_JOB_ITEM, MTR_NUM, OBJ_CRT_YMD, MTR_TYPE, MTR_LOC_FLAG, IFNULL(TRIM(TOWN), '') ||' '|| IFNULL(TRIM(VILLAGE), '') ||' '|| IFNULL(ADDR1_M, '') ||'-'|| IFNULL(ADDR1_S, '') ||' '|| CASE WHEN LENGTH(IFNULL(TRIM(CO_LIVE_NM), '') ||''|| IFNULL(TRIM(BLD_NM), '')) > 0 THEN IFNULL(TRIM(CO_LIVE_NM), '') ||' '|| IFNULL(TRIM(BLD_NM), '') ||' '|| IFNULL(TRIM(HOUSE_CNT), '') ELSE IFNULL(TRIM(HOUSE_CNT), '') ||' '|| IFNULL(TRIM(LOT_NUM_SECOND_ADDR), '') END, MEMO, NOBILL_YN FROM C6301_CHANGEDATA WHERE (LENGTH(REPL_NOT_PERMIT_WHY) > 0 OR REPL_STS = '30') AND (SEND_YN == 'N' OR SEND_YN IS NULL) AND NOBILL_YN ='N' ORDER BY ROWID LIMIT ? , ?");
 				Str_Cpy( m_szSql[1], "SELECT IFNULL(TRIM(NEW_ROAD_NM), '') ||' '|| IFNULL(NEW_ADDR_M, '') ||'-'|| IFNULL(NEW_ADDR_S, '') ||' '|| CASE WHEN LENGTH(IFNULL(TRIM(CO_LIVE_NM), '') ||''|| IFNULL(TRIM(BLD_NM), '')) > 0 THEN IFNULL(TRIM(CO_LIVE_NM), '') ||' '|| IFNULL(TRIM(BLD_NM), '') ||' '|| IFNULL(TRIM(HOUSE_CNT), '') ELSE IFNULL(TRIM(HOUSE_CNT), '') ||' '|| IFNULL(TRIM(LOT_NUM_SECOND_ADDR), '') END ||'('|| IFNULL(MTR_ID_NUM, '') ||')'|| CASE WHEN PDA_REPL_JOB_ITEM = '10' THEN '계량' WHEN PDA_REPL_JOB_ITEM = '20' THEN '보정' WHEN PDA_REPL_JOB_ITEM = '30' THEN '계+보' ELSE '' END ||'-'|| IFNULL(MTR_GRD, '') ||' '|| CASE WHEN COMPENS_FLAG = '10' THEN '(저)' WHEN COMPENS_FLAG = '20' THEN '(중간)' WHEN COMPENS_FLAG = '30' THEN '(중)' ELSE '' END ||' '|| IFNULL(COMPENS_MAKER_NM, ''), CASE WHEN REPL_STS == '30' THEN '불' ELSE '' END, SEND_YN, MTR_GRD, PDA_REPL_JOB_ITEM, MTR_NUM, OBJ_CRT_YMD, MTR_TYPE, MTR_LOC_FLAG, IFNULL(TRIM(TOWN), '') ||' '|| IFNULL(TRIM(VILLAGE), '') ||' '|| IFNULL(ADDR1_M, '') ||'-'|| IFNULL(ADDR1_S, '') ||' '|| CASE WHEN LENGTH(IFNULL(TRIM(CO_LIVE_NM), '') ||''|| IFNULL(TRIM(BLD_NM), '')) > 0 THEN IFNULL(TRIM(CO_LIVE_NM), '') ||' '|| IFNULL(TRIM(BLD_NM), '') ||' '|| IFNULL(TRIM(HOUSE_CNT), '') ELSE IFNULL(TRIM(HOUSE_CNT), '') ||' '|| IFNULL(TRIM(LOT_NUM_SECOND_ADDR), '') END, MEMO, NOBILL_YN FROM C6301_CHANGEDATA WHERE (LENGTH(REPL_NOT_PERMIT_WHY) > 0 OR REPL_STS = '30') AND (SEND_YN == 'N' OR SEND_YN IS NULL) AND NOBILL_YN ='N' ORDER BY ROWID LIMIT ? , ?");
 			}
-			else if( Str_Cmp(m_szCobSel, "교체") == 0 )
+			else if( MATCH(m_szCobSel, "교체") )
 			{
 				Str_Cpy( m_szSql[0], "SELECT IFNULL(TRIM(TOWN), '') ||' '|| IFNULL(TRIM(VILLAGE), '') ||' '|| IFNULL(ADDR1_M, '') ||'-'|| IFNULL(ADDR1_S, '') ||' '|| CASE WHEN LENGTH(IFNULL(TRIM(CO_LIVE_NM), '') ||''|| IFNULL(TRIM(BLD_NM), '')) > 0 THEN IFNULL(TRIM(CO_LIVE_NM), '') ||' '|| IFNULL(TRIM(BLD_NM), '') ||' '|| IFNULL(TRIM(HOUSE_CNT), '') ELSE TRIM(HOUSE_CNT) ||' '|| IFNULL(TRIM(LOT_NUM_SECOND_ADDR), '') END ||'('|| IFNULL(MTR_ID_NUM, '') ||')'|| CASE WHEN PDA_REPL_JOB_ITEM = '10' THEN '계량' WHEN PDA_REPL_JOB_ITEM = '20' THEN '보정' WHEN PDA_REPL_JOB_ITEM = '30' THEN '계+보' ELSE '' END ||'-'|| IFNULL(MTR_GRD, '') ||' '|| CASE WHEN COMPENS_FLAG = '10' THEN '(저)' WHEN COMPENS_FLAG = '20' THEN '(중간)' WHEN COMPENS_FLAG = '30' THEN '(중)' ELSE '' END ||' '|| IFNULL(COMPENS_MAKER_NM, ''), CASE WHEN REPL_STS = '30' THEN '불' ELSE '' END, SEND_YN, MTR_GRD, PDA_REPL_JOB_ITEM, MTR_NUM, OBJ_CRT_YMD, MTR_TYPE, MTR_LOC_FLAG, IFNULL(TRIM(TOWN), '') ||' '|| IFNULL(TRIM(VILLAGE), '') ||' '|| IFNULL(ADDR1_M, '') ||'-'|| IFNULL(ADDR1_S, '') ||' '|| CASE WHEN LENGTH(IFNULL(TRIM(CO_LIVE_NM), '') ||''|| IFNULL(TRIM(BLD_NM), '')) > 0 THEN IFNULL(TRIM(CO_LIVE_NM), '') ||' '|| IFNULL(TRIM(BLD_NM), '') ||' '|| IFNULL(TRIM(HOUSE_CNT), '') ELSE IFNULL(TRIM(HOUSE_CNT), '') ||' '|| IFNULL(TRIM(LOT_NUM_SECOND_ADDR), '') END, MEMO, NOBILL_YN FROM C6301_CHANGEDATA WHERE (LENGTH(REPL_NOT_PERMIT_WHY) > 0 OR REPL_STS = '30') AND (SEND_YN == 'S' OR SEND_YN == 'Y') AND NOBILL_YN ='N' ORDER BY ROWID LIMIT ? , ?");
 				Str_Cpy( m_szSql[1], "SELECT IFNULL(TRIM(NEW_ROAD_NM), '') ||' '|| IFNULL(NEW_ADDR_M, '') ||'-'|| IFNULL(NEW_ADDR_S, '') ||' '|| CASE WHEN LENGTH(IFNULL(TRIM(CO_LIVE_NM), '') ||''|| IFNULL(TRIM(BLD_NM), '')) > 0 THEN IFNULL(TRIM(CO_LIVE_NM), '') ||' '|| IFNULL(TRIM(BLD_NM), '') ||' '|| IFNULL(TRIM(HOUSE_CNT), '') ELSE IFNULL(TRIM(HOUSE_CNT), '') ||' '|| IFNULL(TRIM(LOT_NUM_SECOND_ADDR), '') END ||'('|| IFNULL(MTR_ID_NUM, '') ||')'|| CASE WHEN PDA_REPL_JOB_ITEM = '10' THEN '계량' WHEN PDA_REPL_JOB_ITEM = '20' THEN '보정' WHEN PDA_REPL_JOB_ITEM = '30' THEN '계+보' ELSE '' END ||'-'|| IFNULL(MTR_GRD, '') ||' '|| CASE WHEN COMPENS_FLAG = '10' THEN '(저)' WHEN COMPENS_FLAG = '20' THEN '(중간)' WHEN COMPENS_FLAG = '30' THEN '(중)' ELSE '' END ||' '|| IFNULL(COMPENS_MAKER_NM, ''), CASE WHEN REPL_STS == '30' THEN '불' ELSE '' END, SEND_YN, MTR_GRD, PDA_REPL_JOB_ITEM, MTR_NUM, OBJ_CRT_YMD, MTR_TYPE, MTR_LOC_FLAG, IFNULL(TRIM(TOWN), '') ||' '|| IFNULL(TRIM(VILLAGE), '') ||' '|| IFNULL(ADDR1_M, '') ||'-'|| IFNULL(ADDR1_S, '') ||' '|| CASE WHEN LENGTH(IFNULL(TRIM(CO_LIVE_NM), '') ||''|| IFNULL(TRIM(BLD_NM), '')) > 0 THEN IFNULL(TRIM(CO_LIVE_NM), '') ||' '|| IFNULL(TRIM(BLD_NM), '') ||' '|| IFNULL(TRIM(HOUSE_CNT), '') ELSE IFNULL(TRIM(HOUSE_CNT), '') ||' '|| IFNULL(TRIM(LOT_NUM_SECOND_ADDR), '') END, MEMO, NOBILL_YN FROM C6301_CHANGEDATA WHERE (LENGTH(REPL_NOT_PERMIT_WHY) > 0 OR REPL_STS = '30') AND (SEND_YN == 'S' OR SEND_YN == 'Y') AND NOBILL_YN ='N' ORDER BY ROWID LIMIT ? , ?");
 			}
-			else //if( Str_Cmp(m_szCobSel, "전체") == 0 )
+			else //if( MATCH(m_szCobSel, "전체") )
 			{
 				Str_Cpy( m_szSql[0], "SELECT IFNULL(TRIM(TOWN), '') ||' '|| IFNULL(TRIM(VILLAGE), '') ||' '|| IFNULL(ADDR1_M, '') ||'-'|| IFNULL(ADDR1_S, '') ||' '|| CASE WHEN LENGTH(IFNULL(TRIM(CO_LIVE_NM), '') ||''|| IFNULL(TRIM(BLD_NM), '')) > 0 THEN IFNULL(TRIM(CO_LIVE_NM), '') ||' '|| IFNULL(TRIM(BLD_NM), '') ||' '|| IFNULL(TRIM(HOUSE_CNT), '') ELSE IFNULL(TRIM(HOUSE_CNT), '') ||' '|| IFNULL(TRIM(LOT_NUM_SECOND_ADDR), '') END ||'('|| IFNULL(MTR_ID_NUM, '') ||')'|| CASE WHEN PDA_REPL_JOB_ITEM = '10' THEN '계량' WHEN PDA_REPL_JOB_ITEM = '20' THEN '보정' WHEN PDA_REPL_JOB_ITEM = '30' THEN '계+보' ELSE '' END ||'-'|| IFNULL(MTR_GRD, '') ||' '|| CASE WHEN COMPENS_FLAG = '10' THEN '(저)' WHEN COMPENS_FLAG = '20' THEN '(중간)' WHEN COMPENS_FLAG = '30' THEN '(중)' ELSE '' END ||' '|| IFNULL(COMPENS_MAKER_NM, ''), CASE WHEN REPL_STS = '30' THEN '불' ELSE '' END, SEND_YN, MTR_GRD, PDA_REPL_JOB_ITEM, MTR_NUM, OBJ_CRT_YMD, MTR_TYPE, MTR_LOC_FLAG, IFNULL(TRIM(TOWN), '') ||' '|| IFNULL(TRIM(VILLAGE), '') ||' '|| IFNULL(ADDR1_M, '') ||'-'|| IFNULL(ADDR1_S, '') ||' '|| CASE WHEN LENGTH(IFNULL(TRIM(CO_LIVE_NM), '') ||''|| IFNULL(TRIM(BLD_NM), '')) > 0 THEN IFNULL(TRIM(CO_LIVE_NM), '') ||' '|| IFNULL(TRIM(BLD_NM), '') ||' '|| IFNULL(TRIM(HOUSE_CNT), '') ELSE IFNULL(TRIM(HOUSE_CNT), '') ||' '|| IFNULL(TRIM(LOT_NUM_SECOND_ADDR), '') END, MEMO, NOBILL_YN FROM C6301_CHANGEDATA WHERE (LENGTH(REPL_NOT_PERMIT_WHY) > 0 OR REPL_STS = '30') AND NOBILL_YN ='N' ORDER BY ROWID LIMIT ? , ?");
 				Str_Cpy( m_szSql[1], "SELECT IFNULL(TRIM(NEW_ROAD_NM), '') ||' '|| IFNULL(NEW_ADDR_M, '') ||'-'|| IFNULL(NEW_ADDR_S, '') ||' '|| CASE WHEN LENGTH(IFNULL(TRIM(CO_LIVE_NM), '') ||''|| IFNULL(TRIM(BLD_NM), '')) > 0 THEN IFNULL(TRIM(CO_LIVE_NM), '') ||' '|| IFNULL(TRIM(BLD_NM), '') ||' '|| IFNULL(TRIM(HOUSE_CNT), '') ELSE IFNULL(TRIM(HOUSE_CNT), '') ||' '|| IFNULL(TRIM(LOT_NUM_SECOND_ADDR), '') END ||'('|| IFNULL(MTR_ID_NUM, '') ||')'|| CASE WHEN PDA_REPL_JOB_ITEM = '10' THEN '계량' WHEN PDA_REPL_JOB_ITEM = '20' THEN '보정' WHEN PDA_REPL_JOB_ITEM = '30' THEN '계+보' ELSE '' END ||'-'|| IFNULL(MTR_GRD, '') ||' '|| CASE WHEN COMPENS_FLAG = '10' THEN '(저)' WHEN COMPENS_FLAG = '20' THEN '(중간)' WHEN COMPENS_FLAG = '30' THEN '(중)' ELSE '' END ||' '|| IFNULL(COMPENS_MAKER_NM, ''), CASE WHEN REPL_STS == '30' THEN '불' ELSE '' END, SEND_YN, MTR_GRD, PDA_REPL_JOB_ITEM, MTR_NUM, OBJ_CRT_YMD, MTR_TYPE, MTR_LOC_FLAG, IFNULL(TRIM(TOWN), '') ||' '|| IFNULL(TRIM(VILLAGE), '') ||' '|| IFNULL(ADDR1_M, '') ||'-'|| IFNULL(ADDR1_S, '') ||' '|| CASE WHEN LENGTH(IFNULL(TRIM(CO_LIVE_NM), '') ||''|| IFNULL(TRIM(BLD_NM), '')) > 0 THEN IFNULL(TRIM(CO_LIVE_NM), '') ||' '|| IFNULL(TRIM(BLD_NM), '') ||' '|| IFNULL(TRIM(HOUSE_CNT), '') ELSE IFNULL(TRIM(HOUSE_CNT), '') ||' '|| IFNULL(TRIM(LOT_NUM_SECOND_ADDR), '') END, MEMO, NOBILL_YN FROM C6301_CHANGEDATA WHERE (LENGTH(REPL_NOT_PERMIT_WHY) > 0 OR REPL_STS = '30') AND NOBILL_YN ='N' ORDER BY ROWID LIMIT ? , ?");
@@ -1362,17 +1482,17 @@ Finally:
 		else if( g_nWorkFlag > 729 && g_nWorkFlag < 739 )
 		{
 			//선택교체
-			if( Str_Cmp(m_szCobSel, "미실시") == 0 )
+			if( MATCH(m_szCobSel, "미실시") )
 			{
 				Str_Cpy(szRow, "SELECT ROWID FROM C6301_CHANGEDATA WHERE (SEND_YN == 'N' OR SEND_YN IS NULL) AND ");
 				g_nWorkFlag = 731;
 			}
-			else if( Str_Cmp(m_szCobSel, "교체") == 0 )
+			else if( MATCH(m_szCobSel, "교체") )
 			{
 				Str_Cpy(szRow, "SELECT ROWID FROM C6301_CHANGEDATA WHERE (SEND_YN == 'S' OR SEND_YN == 'Y') AND ");
 				g_nWorkFlag = 732;
 			}
-			else //if( Str_Cmp(m_szCobSel, "전체") == 0 )
+			else //if( MATCH(m_szCobSel, "전체") )
 			{
 				SPRINT(szRow, "SELECT ROWID FROM C6301_CHANGEDATA WHERE ", 0, 0, 0 );
 				g_nWorkFlag = 730;
@@ -1383,17 +1503,17 @@ Finally:
 
 			g_Sql_SaveSeq( szRow, SREACH_FILE);
 	
-			if( Str_Cmp(m_szCobSel, "미실시") == 0 )
+			if( MATCH(m_szCobSel, "미실시") )
 			{
 				Str_Cpy( m_szSql[0], "SELECT IFNULL(TRIM(TOWN), '') ||' '|| IFNULL(TRIM(VILLAGE), '') ||' '|| IFNULL(ADDR1_M, '') ||'-'|| IFNULL(ADDR1_S, '') ||' '|| CASE WHEN LENGTH(IFNULL(TRIM(CO_LIVE_NM), '') ||''|| IFNULL(TRIM(BLD_NM), '')) > 0 THEN IFNULL(TRIM(CO_LIVE_NM), '') ||' '|| IFNULL(TRIM(BLD_NM), '') ||' '|| IFNULL(TRIM(HOUSE_CNT), '') ELSE IFNULL(TRIM(HOUSE_CNT), '') ||' '|| IFNULL(TRIM(LOT_NUM_SECOND_ADDR), '') END ||'('|| IFNULL(MTR_ID_NUM, '') ||')'|| CASE WHEN PDA_REPL_JOB_ITEM = '10' THEN '계량' WHEN PDA_REPL_JOB_ITEM = '20' THEN '보정' WHEN PDA_REPL_JOB_ITEM = '30' THEN '계+보'  ELSE '' END ||'-'|| IFNULL(MTR_GRD, '') ||' '|| CASE WHEN COMPENS_FLAG = '10' THEN '(저)' WHEN COMPENS_FLAG = '20' THEN '(중간)' WHEN COMPENS_FLAG = '30' THEN '(중)' ELSE '' END ||' '|| IFNULL(COMPENS_MAKER_NM, ''), CASE WHEN REPL_STS = '30' THEN '불' ELSE '' END, SEND_YN, MTR_GRD, PDA_REPL_JOB_ITEM, MTR_NUM, OBJ_CRT_YMD, MTR_TYPE, MTR_LOC_FLAG, IFNULL(TRIM(TOWN), '') ||' '|| IFNULL(TRIM(VILLAGE), '') ||' '|| IFNULL(ADDR1_M, '') ||'-'|| IFNULL(ADDR1_S, '') ||' '|| CASE WHEN LENGTH(IFNULL(TRIM(CO_LIVE_NM), '') ||''|| IFNULL(TRIM(BLD_NM), '')) > 0 THEN IFNULL(TRIM(CO_LIVE_NM), '') ||' '|| IFNULL(TRIM(BLD_NM), '') ||' '|| IFNULL(TRIM(HOUSE_CNT), '') ELSE IFNULL(TRIM(HOUSE_CNT), '') ||' '|| IFNULL(TRIM(LOT_NUM_SECOND_ADDR), '') END, MEMO, NOBILL_YN FROM C6301_CHANGEDATA WHERE (SEND_YN == 'N' OR SEND_YN IS NULL) AND ");
 				Str_Cpy( m_szSql[1], "SELECT IFNULL(TRIM(NEW_ROAD_NM), '') ||' '|| IFNULL(NEW_ADDR_M, '') ||'-'|| IFNULL(NEW_ADDR_S, '') ||' '|| CASE WHEN LENGTH(IFNULL(TRIM(CO_LIVE_NM), '') ||''|| IFNULL(TRIM(BLD_NM), '')) > 0 THEN IFNULL(TRIM(CO_LIVE_NM), '') ||' '|| IFNULL(TRIM(BLD_NM), '') ||' '|| IFNULL(TRIM(HOUSE_CNT), '') ELSE IFNULL(TRIM(HOUSE_CNT), '') ||' '|| IFNULL(TRIM(LOT_NUM_SECOND_ADDR), '') END ||'('|| IFNULL(MTR_ID_NUM, '') ||')'|| CASE WHEN PDA_REPL_JOB_ITEM = '10' THEN '계량' WHEN PDA_REPL_JOB_ITEM = '20' THEN '보정' WHEN PDA_REPL_JOB_ITEM = '30' THEN '계+보' ELSE '' END ||'-'|| IFNULL(MTR_GRD, '') ||' '|| CASE WHEN COMPENS_FLAG = '10' THEN '(저)' WHEN COMPENS_FLAG = '20' THEN '(중간)' WHEN COMPENS_FLAG = '30' THEN '(중)' ELSE '' END ||' '|| IFNULL(COMPENS_MAKER_NM, ''), CASE WHEN REPL_STS == '30' THEN '불' ELSE '' END, SEND_YN, MTR_GRD, PDA_REPL_JOB_ITEM, MTR_NUM, OBJ_CRT_YMD, MTR_TYPE, MTR_LOC_FLAG, IFNULL(TRIM(TOWN), '') ||' '|| IFNULL(TRIM(VILLAGE), '') ||' '|| IFNULL(ADDR1_M, '') ||'-'|| IFNULL(ADDR1_S, '') ||' '|| CASE WHEN LENGTH(IFNULL(TRIM(CO_LIVE_NM), '') ||''|| IFNULL(TRIM(BLD_NM), '')) > 0 THEN IFNULL(TRIM(CO_LIVE_NM), '') ||' '|| IFNULL(TRIM(BLD_NM), '') ||' '|| IFNULL(TRIM(HOUSE_CNT), '') ELSE IFNULL(TRIM(HOUSE_CNT), '') ||' '|| IFNULL(TRIM(LOT_NUM_SECOND_ADDR), '') END, MEMO, NOBILL_YN FROM C6301_CHANGEDATA WHERE (SEND_YN == 'N' OR SEND_YN IS NULL) AND ");
 			}
-			else if( Str_Cmp(m_szCobSel, "교체") == 0 )
+			else if( MATCH(m_szCobSel, "교체") )
 			{
 				Str_Cpy( m_szSql[0], "SELECT IFNULL(TRIM(TOWN), '') ||' '|| IFNULL(TRIM(VILLAGE), '') ||' '|| IFNULL(ADDR1_M, '') ||'-'|| IFNULL(ADDR1_S, '') ||' '|| CASE WHEN LENGTH(IFNULL(TRIM(CO_LIVE_NM), '') ||''|| IFNULL(TRIM(BLD_NM), '')) > 0 THEN IFNULL(TRIM(CO_LIVE_NM), '') ||' '|| IFNULL(TRIM(BLD_NM), '') ||' '|| IFNULL(TRIM(HOUSE_CNT), '') ELSE TRIM(HOUSE_CNT) ||' '|| IFNULL(TRIM(LOT_NUM_SECOND_ADDR), '') END ||'('|| IFNULL(MTR_ID_NUM, '') ||')'|| CASE WHEN PDA_REPL_JOB_ITEM = '10' THEN '계량' WHEN PDA_REPL_JOB_ITEM = '20' THEN '보정' WHEN PDA_REPL_JOB_ITEM = '30' THEN '계+보' ELSE '' END ||'-'|| IFNULL(MTR_GRD, '') ||' '|| CASE WHEN COMPENS_FLAG = '10' THEN '(저)' WHEN COMPENS_FLAG = '20' THEN '(중간)' WHEN COMPENS_FLAG = '30' THEN '(중)' ELSE '' END ||' '|| IFNULL(COMPENS_MAKER_NM, ''), CASE WHEN REPL_STS = '30' THEN '불' ELSE '' END, SEND_YN, MTR_GRD, PDA_REPL_JOB_ITEM, MTR_NUM, OBJ_CRT_YMD, MTR_TYPE, MTR_LOC_FLAG, IFNULL(TRIM(TOWN), '') ||' '|| IFNULL(TRIM(VILLAGE), '') ||' '|| IFNULL(ADDR1_M, '') ||'-'|| IFNULL(ADDR1_S, '') ||' '|| CASE WHEN LENGTH(IFNULL(TRIM(CO_LIVE_NM), '') ||''|| IFNULL(TRIM(BLD_NM), '')) > 0 THEN IFNULL(TRIM(CO_LIVE_NM), '') ||' '|| IFNULL(TRIM(BLD_NM), '') ||' '|| IFNULL(TRIM(HOUSE_CNT), '') ELSE IFNULL(TRIM(HOUSE_CNT), '') ||' '|| IFNULL(TRIM(LOT_NUM_SECOND_ADDR), '') END, MEMO, NOBILL_YN FROM C6301_CHANGEDATA WHERE (SEND_YN == 'S' OR SEND_YN == 'Y') AND ");
 				Str_Cpy( m_szSql[1], "SELECT IFNULL(TRIM(NEW_ROAD_NM), '') ||' '|| IFNULL(NEW_ADDR_M, '') ||'-'|| IFNULL(NEW_ADDR_S, '') ||' '|| CASE WHEN LENGTH(IFNULL(TRIM(CO_LIVE_NM), '') ||''|| IFNULL(TRIM(BLD_NM), '')) > 0 THEN IFNULL(TRIM(CO_LIVE_NM), '') ||' '|| IFNULL(TRIM(BLD_NM), '') ||' '|| IFNULL(TRIM(HOUSE_CNT), '') ELSE IFNULL(TRIM(HOUSE_CNT), '') ||' '|| IFNULL(TRIM(LOT_NUM_SECOND_ADDR), '') END ||'('|| IFNULL(MTR_ID_NUM, '') ||')'|| CASE WHEN PDA_REPL_JOB_ITEM = '10' THEN '계량' WHEN PDA_REPL_JOB_ITEM = '20' THEN '보정' WHEN PDA_REPL_JOB_ITEM = '30' THEN '계+보' ELSE '' END ||'-'|| IFNULL(MTR_GRD, '') ||' '|| CASE WHEN COMPENS_FLAG = '10' THEN '(저)' WHEN COMPENS_FLAG = '20' THEN '(중간)' WHEN COMPENS_FLAG = '30' THEN '(중)' ELSE '' END ||' '|| IFNULL(COMPENS_MAKER_NM, ''), CASE WHEN REPL_STS == '30' THEN '불' ELSE '' END, SEND_YN, MTR_GRD, PDA_REPL_JOB_ITEM, MTR_NUM, OBJ_CRT_YMD, MTR_TYPE, MTR_LOC_FLAG, IFNULL(TRIM(TOWN), '') ||' '|| IFNULL(TRIM(VILLAGE), '') ||' '|| IFNULL(ADDR1_M, '') ||'-'|| IFNULL(ADDR1_S, '') ||' '|| CASE WHEN LENGTH(IFNULL(TRIM(CO_LIVE_NM), '') ||''|| IFNULL(TRIM(BLD_NM), '')) > 0 THEN IFNULL(TRIM(CO_LIVE_NM), '') ||' '|| IFNULL(TRIM(BLD_NM), '') ||' '|| IFNULL(TRIM(HOUSE_CNT), '') ELSE IFNULL(TRIM(HOUSE_CNT), '') ||' '|| IFNULL(TRIM(LOT_NUM_SECOND_ADDR), '') END, MEMO, NOBILL_YN FROM C6301_CHANGEDATA WHERE (SEND_YN == 'S' OR SEND_YN == 'Y') AND ");
 			}
-			else //if( Str_Cmp(m_szCobSel, "전체") == 0 )
+			else //if( MATCH(m_szCobSel, "전체") )
 			{
 				Str_Cpy( m_szSql[0], "SELECT IFNULL(TRIM(TOWN), '') ||' '|| IFNULL(TRIM(VILLAGE), '') ||' '|| IFNULL(ADDR1_M, '') ||'-'|| IFNULL(ADDR1_S, '') ||' '|| CASE WHEN LENGTH(IFNULL(TRIM(CO_LIVE_NM), '') ||''|| IFNULL(TRIM(BLD_NM), '')) > 0 THEN IFNULL(TRIM(CO_LIVE_NM), '') ||' '|| IFNULL(TRIM(BLD_NM), '') ||' '|| IFNULL(TRIM(HOUSE_CNT), '') ELSE IFNULL(TRIM(HOUSE_CNT), '') ||' '|| IFNULL(TRIM(LOT_NUM_SECOND_ADDR), '') END ||'('|| IFNULL(MTR_ID_NUM, '') ||')'|| CASE WHEN PDA_REPL_JOB_ITEM = '10' THEN '계량' WHEN PDA_REPL_JOB_ITEM = '20' THEN '보정' WHEN PDA_REPL_JOB_ITEM = '30' THEN '계+보' ELSE '' END ||'-'|| IFNULL(MTR_GRD, '') ||' '|| CASE WHEN COMPENS_FLAG = '10' THEN '(저)' WHEN COMPENS_FLAG = '20' THEN '(중간)' WHEN COMPENS_FLAG = '30' THEN '(중)' ELSE '' END ||' '|| IFNULL(COMPENS_MAKER_NM, ''), CASE WHEN REPL_STS = '30' THEN '불' ELSE '' END, SEND_YN, MTR_GRD, PDA_REPL_JOB_ITEM, MTR_NUM, OBJ_CRT_YMD, MTR_TYPE, MTR_LOC_FLAG, IFNULL(TRIM(TOWN), '') ||' '|| IFNULL(TRIM(VILLAGE), '') ||' '|| IFNULL(ADDR1_M, '') ||'-'|| IFNULL(ADDR1_S, '') ||' '|| CASE WHEN LENGTH(IFNULL(TRIM(CO_LIVE_NM), '') ||''|| IFNULL(TRIM(BLD_NM), '')) > 0 THEN IFNULL(TRIM(CO_LIVE_NM), '') ||' '|| IFNULL(TRIM(BLD_NM), '') ||' '|| IFNULL(TRIM(HOUSE_CNT), '') ELSE IFNULL(TRIM(HOUSE_CNT), '') ||' '|| IFNULL(TRIM(LOT_NUM_SECOND_ADDR), '') END, MEMO, NOBILL_YN FROM C6301_CHANGEDATA WHERE ");
 				Str_Cpy( m_szSql[1], "SELECT IFNULL(TRIM(NEW_ROAD_NM), '') ||' '|| IFNULL(NEW_ADDR_M, '') ||'-'|| IFNULL(NEW_ADDR_S, '') ||' '|| CASE WHEN LENGTH(IFNULL(TRIM(CO_LIVE_NM), '') ||''|| IFNULL(TRIM(BLD_NM), '')) > 0 THEN IFNULL(TRIM(CO_LIVE_NM), '') ||' '|| IFNULL(TRIM(BLD_NM), '') ||' '|| IFNULL(TRIM(HOUSE_CNT), '') ELSE IFNULL(TRIM(HOUSE_CNT), '') ||' '|| IFNULL(TRIM(LOT_NUM_SECOND_ADDR), '') END ||'('|| IFNULL(MTR_ID_NUM, '') ||')'|| CASE WHEN PDA_REPL_JOB_ITEM = '10' THEN '계량' WHEN PDA_REPL_JOB_ITEM = '20' THEN '보정' WHEN PDA_REPL_JOB_ITEM = '30' THEN '계+보' ELSE '' END ||'-'|| IFNULL(MTR_GRD, '') ||' '|| CASE WHEN COMPENS_FLAG = '10' THEN '(저)' WHEN COMPENS_FLAG = '20' THEN '(중간)' WHEN COMPENS_FLAG = '30' THEN '(중)' ELSE '' END ||' '|| IFNULL(COMPENS_MAKER_NM, ''), CASE WHEN REPL_STS == '30' THEN '불' ELSE '' END, SEND_YN, MTR_GRD, PDA_REPL_JOB_ITEM, MTR_NUM, OBJ_CRT_YMD, MTR_TYPE, MTR_LOC_FLAG, IFNULL(TRIM(TOWN), '') ||' '|| IFNULL(TRIM(VILLAGE), '') ||' '|| IFNULL(ADDR1_M, '') ||'-'|| IFNULL(ADDR1_S, '') ||' '|| CASE WHEN LENGTH(IFNULL(TRIM(CO_LIVE_NM), '') ||''|| IFNULL(TRIM(BLD_NM), '')) > 0 THEN IFNULL(TRIM(CO_LIVE_NM), '') ||' '|| IFNULL(TRIM(BLD_NM), '') ||' '|| IFNULL(TRIM(HOUSE_CNT), '') ELSE IFNULL(TRIM(HOUSE_CNT), '') ||' '|| IFNULL(TRIM(LOT_NUM_SECOND_ADDR), '') END, MEMO, NOBILL_YN FROM C6301_CHANGEDATA WHERE ");
@@ -1408,17 +1528,17 @@ Finally:
 		else if( g_nWorkFlag > 739 )
 		{
 			//무전표교체
-			if( Str_Cmp(m_szCobSel, "미실시") == 0 )
+			if( MATCH(m_szCobSel, "미실시") )
 			{
 				Str_Cpy(szRow, "SELECT ROWID FROM C6301_CHANGEDATA WHERE NOBILL_YN ='Y' AND (SEND_YN == 'N' OR SEND_YN IS NULL) AND (LENGTH(REPL_NOT_PERMIT_WHY) == 0 OR REPL_STS != '30') ORDER BY ROWID");
 				g_nWorkFlag = 741;
 			}
-			else if( Str_Cmp(m_szCobSel, "교체") == 0 )
+			else if( MATCH(m_szCobSel, "교체") )
 			{
 				Str_Cpy(szRow, "SELECT ROWID FROM C6301_CHANGEDATA WHERE NOBILL_YN ='Y' AND (SEND_YN == 'S' OR SEND_YN == 'Y') AND (LENGTH(REPL_NOT_PERMIT_WHY) == 0 OR REPL_STS != '30') ORDER BY ROWID");
 				g_nWorkFlag = 742;
 			}
-			else //if( Str_Cmp(m_szCobSel, "전체") == 0 )
+			else //if( MATCH(m_szCobSel, "전체") )
 			{
 				SPRINT(szRow, "SELECT ROWID FROM C6301_CHANGEDATA WHERE NOBILL_YN ='Y' AND (LENGTH(REPL_NOT_PERMIT_WHY) == 0 OR REPL_STS != '30') ORDER BY ROWID", m_szCobSel, 0, 0 );
 				g_nWorkFlag = 740;
@@ -1426,17 +1546,17 @@ Finally:
 	
 			g_Sql_SaveSeq( szRow, SREACH_FILE);
 	
-			if( Str_Cmp(m_szCobSel, "미실시") == 0 )
+			if( MATCH(m_szCobSel, "미실시") )
 			{
 				Str_Cpy( m_szSql[0], "SELECT IFNULL(TRIM(TOWN), '') ||' '|| IFNULL(TRIM(VILLAGE), '') ||' '|| IFNULL(ADDR1_M, '') ||'-'|| IFNULL(ADDR1_S, '') ||' '|| CASE WHEN LENGTH(IFNULL(TRIM(CO_LIVE_NM), '') ||''|| IFNULL(TRIM(BLD_NM), '')) > 0 THEN IFNULL(TRIM(CO_LIVE_NM), '') ||' '|| IFNULL(TRIM(BLD_NM), '') ||' '|| IFNULL(TRIM(HOUSE_CNT), '') ELSE IFNULL(TRIM(HOUSE_CNT), '') ||' '|| IFNULL(TRIM(LOT_NUM_SECOND_ADDR), '') END ||'('|| IFNULL(MTR_ID_NUM, '') ||')'|| CASE WHEN PDA_REPL_JOB_ITEM = '10' THEN '계량' WHEN PDA_REPL_JOB_ITEM = '20' THEN '보정' WHEN PDA_REPL_JOB_ITEM = '30' THEN '계+보'  ELSE '' END ||'-'|| IFNULL(MTR_GRD, '') ||' '|| CASE WHEN COMPENS_FLAG = '10' THEN '(저)' WHEN COMPENS_FLAG = '20' THEN '(중간)' WHEN COMPENS_FLAG = '30' THEN '(중)' ELSE '' END ||' '|| IFNULL(COMPENS_MAKER_NM, ''), CASE WHEN REPL_STS = '30' THEN '불' ELSE '' END, SEND_YN, MTR_GRD, PDA_REPL_JOB_ITEM, MTR_NUM, OBJ_CRT_YMD, MTR_TYPE, MTR_LOC_FLAG, IFNULL(TRIM(TOWN), '') ||' '|| IFNULL(TRIM(VILLAGE), '') ||' '|| IFNULL(ADDR1_M, '') ||'-'|| IFNULL(ADDR1_S, '') ||' '|| CASE WHEN LENGTH(IFNULL(TRIM(CO_LIVE_NM), '') ||''|| IFNULL(TRIM(BLD_NM), '')) > 0 THEN IFNULL(TRIM(CO_LIVE_NM), '') ||' '|| IFNULL(TRIM(BLD_NM), '') ||' '|| IFNULL(TRIM(HOUSE_CNT), '') ELSE IFNULL(TRIM(HOUSE_CNT), '') ||' '|| IFNULL(TRIM(LOT_NUM_SECOND_ADDR), '') END, MEMO, NOBILL_YN FROM C6301_CHANGEDATA WHERE NOBILL_YN ='Y' AND (SEND_YN == 'N' OR SEND_YN IS NULL) AND (LENGTH(REPL_NOT_PERMIT_WHY) == 0 OR REPL_STS != '30') ORDER BY ROWID LIMIT ? , ?");
 				Str_Cpy( m_szSql[1], "SELECT IFNULL(TRIM(NEW_ROAD_NM), '') ||' '|| IFNULL(NEW_ADDR_M, '') ||'-'|| IFNULL(NEW_ADDR_S, '') ||' '|| CASE WHEN LENGTH(IFNULL(TRIM(CO_LIVE_NM), '') ||''|| IFNULL(TRIM(BLD_NM), '')) > 0 THEN IFNULL(TRIM(CO_LIVE_NM), '') ||' '|| IFNULL(TRIM(BLD_NM), '') ||' '|| IFNULL(TRIM(HOUSE_CNT), '') ELSE IFNULL(TRIM(HOUSE_CNT), '') ||' '|| IFNULL(TRIM(LOT_NUM_SECOND_ADDR), '') END ||'('|| IFNULL(MTR_ID_NUM, '') ||')'|| CASE WHEN PDA_REPL_JOB_ITEM = '10' THEN '계량' WHEN PDA_REPL_JOB_ITEM = '20' THEN '보정' WHEN PDA_REPL_JOB_ITEM = '30' THEN '계+보' ELSE '' END ||'-'|| IFNULL(MTR_GRD, '') ||' '|| CASE WHEN COMPENS_FLAG = '10' THEN '(저)' WHEN COMPENS_FLAG = '20' THEN '(중간)' WHEN COMPENS_FLAG = '30' THEN '(중)' ELSE '' END ||' '|| IFNULL(COMPENS_MAKER_NM, ''), CASE WHEN REPL_STS == '30' THEN '불' ELSE '' END, SEND_YN, MTR_GRD, PDA_REPL_JOB_ITEM, MTR_NUM, OBJ_CRT_YMD, MTR_TYPE, MTR_LOC_FLAG, IFNULL(TRIM(TOWN), '') ||' '|| IFNULL(TRIM(VILLAGE), '') ||' '|| IFNULL(ADDR1_M, '') ||'-'|| IFNULL(ADDR1_S, '') ||' '|| CASE WHEN LENGTH(IFNULL(TRIM(CO_LIVE_NM), '') ||''|| IFNULL(TRIM(BLD_NM), '')) > 0 THEN IFNULL(TRIM(CO_LIVE_NM), '') ||' '|| IFNULL(TRIM(BLD_NM), '') ||' '|| IFNULL(TRIM(HOUSE_CNT), '') ELSE IFNULL(TRIM(HOUSE_CNT), '') ||' '|| IFNULL(TRIM(LOT_NUM_SECOND_ADDR), '') END, MEMO, NOBILL_YN FROM C6301_CHANGEDATA WHERE NOBILL_YN ='Y' AND (SEND_YN == 'N' OR SEND_YN IS NULL) AND (LENGTH(REPL_NOT_PERMIT_WHY) == 0 OR REPL_STS != '30') ORDER BY ROWID LIMIT ? , ?");
 			}
-			else if( Str_Cmp(m_szCobSel, "교체") == 0 )
+			else if( MATCH(m_szCobSel, "교체") )
 			{
 				Str_Cpy( m_szSql[0], "SELECT IFNULL(TRIM(TOWN), '') ||' '|| IFNULL(TRIM(VILLAGE), '') ||' '|| IFNULL(ADDR1_M, '') ||'-'|| IFNULL(ADDR1_S, '') ||' '|| CASE WHEN LENGTH(IFNULL(TRIM(CO_LIVE_NM), '') ||''|| IFNULL(TRIM(BLD_NM), '')) > 0 THEN IFNULL(TRIM(CO_LIVE_NM), '') ||' '|| IFNULL(TRIM(BLD_NM), '') ||' '|| IFNULL(TRIM(HOUSE_CNT), '') ELSE TRIM(HOUSE_CNT) ||' '|| IFNULL(TRIM(LOT_NUM_SECOND_ADDR), '') END ||'('|| IFNULL(MTR_ID_NUM, '') ||')'|| CASE WHEN PDA_REPL_JOB_ITEM = '10' THEN '계량' WHEN PDA_REPL_JOB_ITEM = '20' THEN '보정' WHEN PDA_REPL_JOB_ITEM = '30' THEN '계+보' ELSE '' END ||'-'|| IFNULL(MTR_GRD, '') ||' '|| CASE WHEN COMPENS_FLAG = '10' THEN '(저)' WHEN COMPENS_FLAG = '20' THEN '(중간)' WHEN COMPENS_FLAG = '30' THEN '(중)' ELSE '' END ||' '|| IFNULL(COMPENS_MAKER_NM, ''), CASE WHEN REPL_STS = '30' THEN '불' ELSE '' END, SEND_YN, MTR_GRD, PDA_REPL_JOB_ITEM, MTR_NUM, OBJ_CRT_YMD, MTR_TYPE, MTR_LOC_FLAG, IFNULL(TRIM(TOWN), '') ||' '|| IFNULL(TRIM(VILLAGE), '') ||' '|| IFNULL(ADDR1_M, '') ||'-'|| IFNULL(ADDR1_S, '') ||' '|| CASE WHEN LENGTH(IFNULL(TRIM(CO_LIVE_NM), '') ||''|| IFNULL(TRIM(BLD_NM), '')) > 0 THEN IFNULL(TRIM(CO_LIVE_NM), '') ||' '|| IFNULL(TRIM(BLD_NM), '') ||' '|| IFNULL(TRIM(HOUSE_CNT), '') ELSE IFNULL(TRIM(HOUSE_CNT), '') ||' '|| IFNULL(TRIM(LOT_NUM_SECOND_ADDR), '') END, MEMO, NOBILL_YN FROM C6301_CHANGEDATA WHERE NOBILL_YN ='Y' AND (SEND_YN == 'S' OR SEND_YN == 'Y') AND (LENGTH(REPL_NOT_PERMIT_WHY) == 0 OR REPL_STS != '30') ORDER BY ROWID LIMIT ? , ?");
 				Str_Cpy( m_szSql[1], "SELECT IFNULL(TRIM(NEW_ROAD_NM), '') ||' '|| IFNULL(NEW_ADDR_M, '') ||'-'|| IFNULL(NEW_ADDR_S, '') ||' '|| CASE WHEN LENGTH(IFNULL(TRIM(CO_LIVE_NM), '') ||''|| IFNULL(TRIM(BLD_NM), '')) > 0 THEN IFNULL(TRIM(CO_LIVE_NM), '') ||' '|| IFNULL(TRIM(BLD_NM), '') ||' '|| IFNULL(TRIM(HOUSE_CNT), '') ELSE IFNULL(TRIM(HOUSE_CNT), '') ||' '|| IFNULL(TRIM(LOT_NUM_SECOND_ADDR), '') END ||'('|| IFNULL(MTR_ID_NUM, '') ||')'|| CASE WHEN PDA_REPL_JOB_ITEM = '10' THEN '계량' WHEN PDA_REPL_JOB_ITEM = '20' THEN '보정' WHEN PDA_REPL_JOB_ITEM = '30' THEN '계+보' ELSE '' END ||'-'|| IFNULL(MTR_GRD, '') ||' '|| CASE WHEN COMPENS_FLAG = '10' THEN '(저)' WHEN COMPENS_FLAG = '20' THEN '(중간)' WHEN COMPENS_FLAG = '30' THEN '(중)' ELSE '' END ||' '|| IFNULL(COMPENS_MAKER_NM, ''), CASE WHEN REPL_STS == '30' THEN '불' ELSE '' END, SEND_YN, MTR_GRD, PDA_REPL_JOB_ITEM, MTR_NUM, OBJ_CRT_YMD, MTR_TYPE, MTR_LOC_FLAG, IFNULL(TRIM(TOWN), '') ||' '|| IFNULL(TRIM(VILLAGE), '') ||' '|| IFNULL(ADDR1_M, '') ||'-'|| IFNULL(ADDR1_S, '') ||' '|| CASE WHEN LENGTH(IFNULL(TRIM(CO_LIVE_NM), '') ||''|| IFNULL(TRIM(BLD_NM), '')) > 0 THEN IFNULL(TRIM(CO_LIVE_NM), '') ||' '|| IFNULL(TRIM(BLD_NM), '') ||' '|| IFNULL(TRIM(HOUSE_CNT), '') ELSE IFNULL(TRIM(HOUSE_CNT), '') ||' '|| IFNULL(TRIM(LOT_NUM_SECOND_ADDR), '') END, MEMO, NOBILL_YN FROM C6301_CHANGEDATA WHERE NOBILL_YN ='Y' AND (SEND_YN == 'S' OR SEND_YN == 'Y') AND (LENGTH(REPL_NOT_PERMIT_WHY) == 0 OR REPL_STS != '30') ORDER BY ROWID LIMIT ? , ?");
 			}
-			else //if( Str_Cmp(m_szCobSel, "전체") == 0 )
+			else //if( MATCH(m_szCobSel, "전체") )
 			{
 				Str_Cpy( m_szSql[0], "SELECT IFNULL(TRIM(TOWN), '') ||' '|| IFNULL(TRIM(VILLAGE), '') ||' '|| IFNULL(ADDR1_M, '') ||'-'|| IFNULL(ADDR1_S, '') ||' '|| CASE WHEN LENGTH(IFNULL(TRIM(CO_LIVE_NM), '') ||''|| IFNULL(TRIM(BLD_NM), '')) > 0 THEN IFNULL(TRIM(CO_LIVE_NM), '') ||' '|| IFNULL(TRIM(BLD_NM), '') ||' '|| IFNULL(TRIM(HOUSE_CNT), '') ELSE IFNULL(TRIM(HOUSE_CNT), '') ||' '|| IFNULL(TRIM(LOT_NUM_SECOND_ADDR), '') END ||'('|| IFNULL(MTR_ID_NUM, '') ||')'|| CASE WHEN PDA_REPL_JOB_ITEM = '10' THEN '계량' WHEN PDA_REPL_JOB_ITEM = '20' THEN '보정' WHEN PDA_REPL_JOB_ITEM = '30' THEN '계+보' ELSE '' END ||'-'|| IFNULL(MTR_GRD, '') ||' '|| CASE WHEN COMPENS_FLAG = '10' THEN '(저)' WHEN COMPENS_FLAG = '20' THEN '(중간)' WHEN COMPENS_FLAG = '30' THEN '(중)' ELSE '' END ||' '|| IFNULL(COMPENS_MAKER_NM, ''), CASE WHEN REPL_STS = '30' THEN '불' ELSE '' END, SEND_YN, MTR_GRD, PDA_REPL_JOB_ITEM, MTR_NUM, OBJ_CRT_YMD, MTR_TYPE, MTR_LOC_FLAG, IFNULL(TRIM(TOWN), '') ||' '|| IFNULL(TRIM(VILLAGE), '') ||' '|| IFNULL(ADDR1_M, '') ||'-'|| IFNULL(ADDR1_S, '') ||' '|| CASE WHEN LENGTH(IFNULL(TRIM(CO_LIVE_NM), '') ||''|| IFNULL(TRIM(BLD_NM), '')) > 0 THEN IFNULL(TRIM(CO_LIVE_NM), '') ||' '|| IFNULL(TRIM(BLD_NM), '') ||' '|| IFNULL(TRIM(HOUSE_CNT), '') ELSE IFNULL(TRIM(HOUSE_CNT), '') ||' '|| IFNULL(TRIM(LOT_NUM_SECOND_ADDR), '') END, MEMO, NOBILL_YN FROM C6301_CHANGEDATA WHERE NOBILL_YN ='Y' AND (LENGTH(REPL_NOT_PERMIT_WHY) == 0 OR REPL_STS != '30') ORDER BY ROWID LIMIT ? , ?");
 				Str_Cpy( m_szSql[1], "SELECT IFNULL(TRIM(NEW_ROAD_NM), '') ||' '|| IFNULL(NEW_ADDR_M, '') ||'-'|| IFNULL(NEW_ADDR_S, '') ||' '|| CASE WHEN LENGTH(IFNULL(TRIM(CO_LIVE_NM), '') ||''|| IFNULL(TRIM(BLD_NM), '')) > 0 THEN IFNULL(TRIM(CO_LIVE_NM), '') ||' '|| IFNULL(TRIM(BLD_NM), '') ||' '|| IFNULL(TRIM(HOUSE_CNT), '') ELSE IFNULL(TRIM(HOUSE_CNT), '') ||' '|| IFNULL(TRIM(LOT_NUM_SECOND_ADDR), '') END ||'('|| IFNULL(MTR_ID_NUM, '') ||')'|| CASE WHEN PDA_REPL_JOB_ITEM = '10' THEN '계량' WHEN PDA_REPL_JOB_ITEM = '20' THEN '보정' WHEN PDA_REPL_JOB_ITEM = '30' THEN '계+보' ELSE '' END ||'-'|| IFNULL(MTR_GRD, '') ||' '|| CASE WHEN COMPENS_FLAG = '10' THEN '(저)' WHEN COMPENS_FLAG = '20' THEN '(중간)' WHEN COMPENS_FLAG = '30' THEN '(중)' ELSE '' END ||' '|| IFNULL(COMPENS_MAKER_NM, ''), CASE WHEN REPL_STS == '30' THEN '불' ELSE '' END, SEND_YN, MTR_GRD, PDA_REPL_JOB_ITEM, MTR_NUM, OBJ_CRT_YMD, MTR_TYPE, MTR_LOC_FLAG, IFNULL(TRIM(TOWN), '') ||' '|| IFNULL(TRIM(VILLAGE), '') ||' '|| IFNULL(ADDR1_M, '') ||'-'|| IFNULL(ADDR1_S, '') ||' '|| CASE WHEN LENGTH(IFNULL(TRIM(CO_LIVE_NM), '') ||''|| IFNULL(TRIM(BLD_NM), '')) > 0 THEN IFNULL(TRIM(CO_LIVE_NM), '') ||' '|| IFNULL(TRIM(BLD_NM), '') ||' '|| IFNULL(TRIM(HOUSE_CNT), '') ELSE IFNULL(TRIM(HOUSE_CNT), '') ||' '|| IFNULL(TRIM(LOT_NUM_SECOND_ADDR), '') END, MEMO, NOBILL_YN FROM C6301_CHANGEDATA WHERE NOBILL_YN ='Y' AND (LENGTH(REPL_NOT_PERMIT_WHY) == 0 OR REPL_STS != '30') ORDER BY ROWID LIMIT ? , ?");
@@ -1462,54 +1582,100 @@ Finally:
 		
 		if( g_nWorkFlag > 699 && g_nWorkFlag < 710 )
 		{
-			//노후교체
-			if( Str_Cmp(m_szCobSel, "미실시") == 0 )
+			//노후교체 => 노후교체만 작업해야 한다.
+			if( MATCH(m_szCobSel, "미실시") )
 			{
+				//전체 카운트 표시
 				Mem_Set( (byte*)sztmp, 0x00, sizeof(sztmp) );
-				g_Sql_RetStr( "SELECT COUNT(*) FROM C6301_CHANGEDATA WHERE REPL_OCCU_FLAG = '10' AND (SEND_YN == 'N' OR SEND_YN IS NULL) AND (LENGTH(REPL_NOT_PERMIT_WHY) == 0 OR REPL_STS != '30') AND NOBILL_YN ='N' ", 4, sztmp );
+				memset(szSql, 0x00, sizeof(szSql));
+				strcpy(szSql, "SELECT COUNT(*) FROM C6301_CHANGEDATA WHERE REPL_OCCU_FLAG = '10' AND (SEND_YN == 'N' OR SEND_YN IS NULL) AND (LENGTH(REPL_NOT_PERMIT_WHY) == 0 OR REPL_STS != '30') AND NOBILL_YN ='N'");
+				strcat(szSql, szTypeWhere);
+
+				PRINT("total : szSql => %s", szSql,0,0);
+
+				g_Sql_RetStr( szSql, 4, sztmp );
 				EditCtrl_SetStr(Get_hDlgCtrlByID(TXT_DATA2), sztmp); 
 				
+				//교체 카운트 표시
 				Mem_Set( (byte*)sztmp, 0x00, sizeof(sztmp) );
-				g_Sql_RetStr( "SELECT COUNT(*) FROM C6301_CHANGEDATA WHERE REPL_OCCU_FLAG = '10' AND (SEND_YN == 'N' OR SEND_YN IS NULL) AND (SEND_YN == 'S' OR SEND_YN == 'Y') AND (LENGTH(REPL_NOT_PERMIT_WHY) == 0 OR REPL_STS != '30') AND NOBILL_YN ='N'", 4, sztmp );
+				memset(szSql, 0x00, sizeof(szSql));
+				strcpy(szSql, "SELECT COUNT(*) FROM C6301_CHANGEDATA WHERE REPL_OCCU_FLAG = '10' AND (SEND_YN == 'S' OR SEND_YN == 'Y') AND (LENGTH(REPL_NOT_PERMIT_WHY) == 0 OR REPL_STS != '30') AND NOBILL_YN ='N'");
+				strcat(szSql, szTypeWhere);
+
+				PRINT("replaced : szSql => %s", szSql,0,0);
+
+				// g_Sql_RetStr( "SELECT COUNT(*) FROM C6301_CHANGEDATA WHERE REPL_OCCU_FLAG = '10' AND (SEND_YN == 'N' OR SEND_YN IS NULL) AND (SEND_YN == 'S' OR SEND_YN == 'Y') AND (LENGTH(REPL_NOT_PERMIT_WHY) == 0 OR REPL_STS != '30') AND NOBILL_YN ='N'", 4, sztmp );
+				g_Sql_RetStr( szSql, 4, sztmp );
 				EditCtrl_SetStr(Get_hDlgCtrlByID(TXT_DATA4), sztmp); 
 				
+				//미교체 카운트 표시
 				Mem_Set( (byte*)sztmp, 0x00, sizeof(sztmp) );
-				g_Sql_RetStr( "SELECT COUNT(*) FROM C6301_CHANGEDATA WHERE REPL_OCCU_FLAG = '10' AND (SEND_YN == 'N' OR SEND_YN IS NULL) AND (LENGTH(REPL_NOT_PERMIT_WHY) == 0 OR REPL_STS != '30') AND NOBILL_YN ='N'", 4, sztmp );
+				memset(szSql, 0x00, sizeof(szSql));
+				strcpy(szSql, "SELECT COUNT(*) FROM C6301_CHANGEDATA WHERE REPL_OCCU_FLAG = '10' AND (SEND_YN == 'N' OR SEND_YN IS NULL) AND (LENGTH(REPL_NOT_PERMIT_WHY) == 0 OR REPL_STS != '30') AND NOBILL_YN ='N'");
+				strcat(szSql, szTypeWhere);
+
+				PRINT("not replaced : szSql => %s", szSql,0,0);
+
+				g_Sql_RetStr( szSql, 4, sztmp );
 				EditCtrl_SetStr(Get_hDlgCtrlByID(TXT_DATA6), sztmp); 
 			}
-			else if( Str_Cmp(m_szCobSel, "교체") == 0 )
+			else if( MATCH(m_szCobSel, "교체") )
 			{
 				Mem_Set( (byte*)sztmp, 0x00, sizeof(sztmp) );
-				g_Sql_RetStr( "SELECT COUNT(*) FROM C6301_CHANGEDATA WHERE REPL_OCCU_FLAG = '10' AND (SEND_YN == 'S' OR SEND_YN == 'Y') AND (LENGTH(REPL_NOT_PERMIT_WHY) == 0 OR REPL_STS != '30') AND NOBILL_YN ='N'", 4, sztmp );
+				memset(szSql, 0x00, sizeof(szSql));
+				strcpy(szSql, "SELECT COUNT(*) FROM C6301_CHANGEDATA WHERE REPL_OCCU_FLAG = '10' AND (SEND_YN == 'S' OR SEND_YN == 'Y') AND (LENGTH(REPL_NOT_PERMIT_WHY) == 0 OR REPL_STS != '30') AND NOBILL_YN ='N'");
+				strcat(szSql, szTypeWhere);
+
+				g_Sql_RetStr( szSql, 4, sztmp );
 				EditCtrl_SetStr(Get_hDlgCtrlByID(TXT_DATA2), sztmp); 
 				
 				Mem_Set( (byte*)sztmp, 0x00, sizeof(sztmp) );
-				g_Sql_RetStr( "SELECT COUNT(*) FROM C6301_CHANGEDATA WHERE REPL_OCCU_FLAG = '10' AND (SEND_YN == 'S' OR SEND_YN == 'Y') AND (LENGTH(REPL_NOT_PERMIT_WHY) == 0 OR REPL_STS != '30') AND NOBILL_YN ='N'", 4, sztmp );
+				memset(szSql, 0x00, sizeof(szSql));
+				strcpy(szSql, "SELECT COUNT(*) FROM C6301_CHANGEDATA WHERE REPL_OCCU_FLAG = '10' AND (SEND_YN == 'S' OR SEND_YN == 'Y') AND (LENGTH(REPL_NOT_PERMIT_WHY) == 0 OR REPL_STS != '30') AND NOBILL_YN ='N'");
+				strcat(szSql, szTypeWhere);
+
+				g_Sql_RetStr( szSql, 4, sztmp );
 				EditCtrl_SetStr(Get_hDlgCtrlByID(TXT_DATA4), sztmp); 
 				
 				Mem_Set( (byte*)sztmp, 0x00, sizeof(sztmp) );
-				g_Sql_RetStr( "SELECT COUNT(*) FROM C6301_CHANGEDATA WHERE REPL_OCCU_FLAG = '10' AND (SEND_YN == 'S' OR SEND_YN == 'Y') AND (SEND_YN == 'N' OR SEND_YN IS NULL) AND (LENGTH(REPL_NOT_PERMIT_WHY) == 0 OR REPL_STS != '30') AND NOBILL_YN ='N'", 4, sztmp );
+				memset(szSql, 0x00, sizeof(szSql));
+				strcpy(szSql, "SELECT COUNT(*) FROM C6301_CHANGEDATA WHERE REPL_OCCU_FLAG = '10' AND (SEND_YN == 'S' OR SEND_YN == 'Y') AND (SEND_YN == 'N' OR SEND_YN IS NULL) AND (LENGTH(REPL_NOT_PERMIT_WHY) == 0 OR REPL_STS != '30') AND NOBILL_YN ='N'");
+				strcat(szSql, szTypeWhere);
+
+				g_Sql_RetStr( szSql, 4, sztmp );
 				EditCtrl_SetStr(Get_hDlgCtrlByID(TXT_DATA6), sztmp); 
 			}
-			else //if( Str_Cmp(m_szCobSel, "전체") == 0 )
+			else //if( MATCH(m_szCobSel, "전체") )
 			{
 				Mem_Set( (byte*)sztmp, 0x00, sizeof(sztmp) );
-				g_Sql_RetStr( "SELECT COUNT(*) FROM C6301_CHANGEDATA WHERE REPL_OCCU_FLAG = '10' AND (LENGTH(REPL_NOT_PERMIT_WHY) == 0 OR REPL_STS != '30') AND NOBILL_YN ='N'", 4, sztmp );
+				memset(szSql, 0x00, sizeof(szSql));
+				strcpy(szSql, "SELECT COUNT(*) FROM C6301_CHANGEDATA WHERE REPL_OCCU_FLAG = '10' AND (LENGTH(REPL_NOT_PERMIT_WHY) == 0 OR REPL_STS != '30') AND NOBILL_YN ='N'");
+				strcat(szSql, szTypeWhere);
+
+				g_Sql_RetStr( szSql, 4, sztmp );
 				EditCtrl_SetStr(Get_hDlgCtrlByID(TXT_DATA2), sztmp); 
 				
 				Mem_Set( (byte*)sztmp, 0x00, sizeof(sztmp) );
-				g_Sql_RetStr( "SELECT COUNT(*) FROM C6301_CHANGEDATA WHERE REPL_OCCU_FLAG = '10' AND (SEND_YN == 'S' OR SEND_YN == 'Y') AND (LENGTH(REPL_NOT_PERMIT_WHY) == 0 OR REPL_STS != '30') AND NOBILL_YN ='N'", 4, sztmp );
+				memset(szSql, 0x00, sizeof(szSql));
+				strcpy(szSql, "SELECT COUNT(*) FROM C6301_CHANGEDATA WHERE REPL_OCCU_FLAG = '10' AND (SEND_YN == 'S' OR SEND_YN == 'Y') AND (LENGTH(REPL_NOT_PERMIT_WHY) == 0 OR REPL_STS != '30') AND NOBILL_YN ='N'");
+				strcat(szSql, szTypeWhere);
+
+				g_Sql_RetStr( szSql, 4, sztmp );
 				EditCtrl_SetStr(Get_hDlgCtrlByID(TXT_DATA4), sztmp); 
 				
 				Mem_Set( (byte*)sztmp, 0x00, sizeof(sztmp) );
-				g_Sql_RetStr( "SELECT COUNT(*) FROM C6301_CHANGEDATA WHERE REPL_OCCU_FLAG = '10' AND (SEND_YN == 'N' OR SEND_YN IS NULL) AND (LENGTH(REPL_NOT_PERMIT_WHY) == 0 OR REPL_STS != '30') AND NOBILL_YN ='N'", 4, sztmp );
+				memset(szSql, 0x00, sizeof(szSql));
+				strcpy(szSql, "SELECT COUNT(*) FROM C6301_CHANGEDATA WHERE REPL_OCCU_FLAG = '10' AND (SEND_YN == 'N' OR SEND_YN IS NULL) AND (LENGTH(REPL_NOT_PERMIT_WHY) == 0 OR REPL_STS != '30') AND NOBILL_YN ='N'");
+				strcat(szSql, szTypeWhere);
+
+				g_Sql_RetStr( szSql, 4, sztmp );
 				EditCtrl_SetStr(Get_hDlgCtrlByID(TXT_DATA6), sztmp); 
 			}
 		}
 		else if( g_nWorkFlag > 709 && g_nWorkFlag < 720 )
 		{
 			//민원교체
-			if( Str_Cmp(m_szCobSel, "미실시") == 0 )
+			if( MATCH(m_szCobSel, "미실시") )
 			{
 				Mem_Set( (byte*)sztmp, 0x00, sizeof(sztmp) );
 				g_Sql_RetStr( "SELECT COUNT(*) FROM C6301_CHANGEDATA WHERE REPL_OCCU_FLAG = '20' AND (SEND_YN == 'N' OR SEND_YN IS NULL) AND (LENGTH(REPL_NOT_PERMIT_WHY) == 0 OR REPL_STS != '30') AND NOBILL_YN ='N'", 4, sztmp );
@@ -1523,7 +1689,7 @@ Finally:
 				g_Sql_RetStr( "SELECT COUNT(*) FROM C6301_CHANGEDATA WHERE REPL_OCCU_FLAG = '20' AND (SEND_YN == 'N' OR SEND_YN IS NULL) AND (LENGTH(REPL_NOT_PERMIT_WHY) == 0 OR REPL_STS != '30') AND NOBILL_YN ='N'", 4, sztmp );
 				EditCtrl_SetStr(Get_hDlgCtrlByID(TXT_DATA6), sztmp); 
 			}
-			else if( Str_Cmp(m_szCobSel, "교체") == 0 )
+			else if( MATCH(m_szCobSel, "교체") )
 			{
 				Mem_Set( (byte*)sztmp, 0x00, sizeof(sztmp) );
 				g_Sql_RetStr( "SELECT COUNT(*) FROM C6301_CHANGEDATA WHERE REPL_OCCU_FLAG = '20' AND (SEND_YN == 'S' OR SEND_YN == 'Y') AND (LENGTH(REPL_NOT_PERMIT_WHY) == 0 OR REPL_STS != '30') AND NOBILL_YN ='N'", 4, sztmp );
@@ -1537,7 +1703,7 @@ Finally:
 				g_Sql_RetStr( "SELECT COUNT(*) FROM C6301_CHANGEDATA WHERE REPL_OCCU_FLAG = '20' AND (SEND_YN == 'S' OR SEND_YN == 'Y') AND (SEND_YN == 'N' OR SEND_YN IS NULL) AND (LENGTH(REPL_NOT_PERMIT_WHY) == 0 OR REPL_STS != '30') AND NOBILL_YN ='N'", 4, sztmp );
 				EditCtrl_SetStr(Get_hDlgCtrlByID(TXT_DATA6), sztmp); 
 			}
-			else //if( Str_Cmp(m_szCobSel, "전체") == 0 )
+			else //if( MATCH(m_szCobSel, "전체") )
 			{
 				Mem_Set( (byte*)sztmp, 0x00, sizeof(sztmp) );
 				g_Sql_RetStr( "SELECT COUNT(*) FROM C6301_CHANGEDATA WHERE REPL_OCCU_FLAG = '20' AND (LENGTH(REPL_NOT_PERMIT_WHY) == 0 OR REPL_STS != '30') AND NOBILL_YN ='N'", 4, sztmp );
@@ -1555,7 +1721,7 @@ Finally:
 		else if( g_nWorkFlag > 719 && g_nWorkFlag < 730 )
 		{
 			//교체불가
-			if( Str_Cmp(m_szCobSel, "미실시") == 0 )
+			if( MATCH(m_szCobSel, "미실시") )
 			{
 				Mem_Set( (byte*)sztmp, 0x00, sizeof(sztmp) );
 				g_Sql_RetStr( "SELECT COUNT(*) FROM C6301_CHANGEDATA WHERE (LENGTH(REPL_NOT_PERMIT_WHY) > 0 OR REPL_STS = '30') AND (SEND_YN == 'N' OR SEND_YN IS NULL) AND NOBILL_YN ='N'", 4, sztmp );
@@ -1569,7 +1735,7 @@ Finally:
 				g_Sql_RetStr( "SELECT COUNT(*) FROM C6301_CHANGEDATA WHERE (LENGTH(REPL_NOT_PERMIT_WHY) > 0 OR REPL_STS = '30') AND (SEND_YN == 'N' OR SEND_YN IS NULL) AND NOBILL_YN ='N'", 4, sztmp );
 				EditCtrl_SetStr(Get_hDlgCtrlByID(TXT_DATA6), sztmp); 
 			}
-			else if( Str_Cmp(m_szCobSel, "교체") == 0 )
+			else if( MATCH(m_szCobSel, "교체") )
 			{
 				Mem_Set( (byte*)sztmp, 0x00, sizeof(sztmp) );
 				g_Sql_RetStr( "SELECT COUNT(*) FROM C6301_CHANGEDATA WHERE (LENGTH(REPL_NOT_PERMIT_WHY) > 0 OR REPL_STS = '30') AND (SEND_YN == 'S' OR SEND_YN == 'Y') AND NOBILL_YN ='N'", 4, sztmp );
@@ -1583,7 +1749,7 @@ Finally:
 				g_Sql_RetStr( "SELECT COUNT(*) FROM C6301_CHANGEDATA WHERE (LENGTH(REPL_NOT_PERMIT_WHY) > 0 OR REPL_STS = '30') AND (SEND_YN == 'S' OR SEND_YN == 'Y') AND (SEND_YN == 'N' OR SEND_YN IS NULL) AND NOBILL_YN ='N'", 4, sztmp );
 				EditCtrl_SetStr(Get_hDlgCtrlByID(TXT_DATA6), sztmp); 
 			}
-			else //if( Str_Cmp(m_szCobSel, "전체") == 0 )
+			else //if( MATCH(m_szCobSel, "전체") )
 			{
 				Mem_Set( (byte*)sztmp, 0x00, sizeof(sztmp) );
 				g_Sql_RetStr( "SELECT COUNT(*) FROM C6301_CHANGEDATA WHERE (LENGTH(REPL_NOT_PERMIT_WHY) > 0 OR REPL_STS = '30') AND NOBILL_YN ='N'", 4, sztmp );
@@ -1601,7 +1767,7 @@ Finally:
 		else if( g_nWorkFlag > 729 && g_nWorkFlag < 740 )
 		{
 			//선택교체
-			if( Str_Cmp(m_szCobSel, "미실시") == 0 )
+			if( MATCH(m_szCobSel, "미실시") )
 			{
 				Mem_Set( (byte*)szSql, 0x00, sizeof(szSql) );
 				Mem_Set( (byte*)sztmp, 0x00, sizeof(sztmp) );
@@ -1622,7 +1788,7 @@ Finally:
 				g_Sql_RetStr( szSql, 4, sztmp );
 				EditCtrl_SetStr(Get_hDlgCtrlByID(TXT_DATA6), sztmp); 
 			}
-			else if( Str_Cmp(m_szCobSel, "교체") == 0 )
+			else if( MATCH(m_szCobSel, "교체") )
 			{
 				Mem_Set( (byte*)szSql, 0x00, sizeof(szSql) );
 				Mem_Set( (byte*)sztmp, 0x00, sizeof(sztmp) );
@@ -1642,7 +1808,7 @@ Finally:
 				g_Sql_RetStr( szSql, 4, sztmp );
 				EditCtrl_SetStr(Get_hDlgCtrlByID(TXT_DATA6), sztmp); 
 			}
-			else //if( Str_Cmp(m_szCobSel, "전체") == 0 )
+			else //if( MATCH(m_szCobSel, "전체") )
 			{
 				Mem_Set( (byte*)szSql, 0x00, sizeof(szSql) );
 				Mem_Set( (byte*)sztmp, 0x00, sizeof(sztmp) );
@@ -1666,7 +1832,7 @@ Finally:
 		else if( g_nWorkFlag > 739)
 		{
 			//무전표교체
-			if( Str_Cmp(m_szCobSel, "미실시") == 0 )
+			if( MATCH(m_szCobSel, "미실시") )
 			{
 				Mem_Set( (byte*)sztmp, 0x00, sizeof(sztmp) );
 				g_Sql_RetStr( "SELECT COUNT(*) FROM C6301_CHANGEDATA WHERE NOBILL_YN ='Y' AND (SEND_YN == 'N' OR SEND_YN IS NULL) AND (LENGTH(REPL_NOT_PERMIT_WHY) == 0 OR REPL_STS != '30')", 4, sztmp );
@@ -1680,7 +1846,7 @@ Finally:
 				g_Sql_RetStr( "SELECT COUNT(*) FROM C6301_CHANGEDATA WHERE NOBILL_YN ='Y' AND (SEND_YN == 'N' OR SEND_YN IS NULL) AND (LENGTH(REPL_NOT_PERMIT_WHY) == 0 OR REPL_STS != '30')", 4, sztmp );
 				EditCtrl_SetStr(Get_hDlgCtrlByID(TXT_DATA6), sztmp); 
 			}
-			else if( Str_Cmp(m_szCobSel, "교체") == 0 )
+			else if( MATCH(m_szCobSel, "교체") )
 			{
 				Mem_Set( (byte*)sztmp, 0x00, sizeof(sztmp) );
 				g_Sql_RetStr( "SELECT COUNT(*) FROM C6301_CHANGEDATA WHERE NOBILL_YN ='Y' AND (SEND_YN == 'S' OR SEND_YN == 'Y') AND (LENGTH(REPL_NOT_PERMIT_WHY) == 0 OR REPL_STS != '30')", 4, sztmp );
@@ -1694,7 +1860,7 @@ Finally:
 				g_Sql_RetStr( "SELECT COUNT(*) FROM C6301_CHANGEDATA WHERE NOBILL_YN ='Y' AND (SEND_YN == 'S' OR SEND_YN == 'Y') AND (SEND_YN == 'N' OR SEND_YN IS NULL) AND (LENGTH(REPL_NOT_PERMIT_WHY) == 0 OR REPL_STS != '30')", 4, sztmp );
 				EditCtrl_SetStr(Get_hDlgCtrlByID(TXT_DATA6), sztmp); 
 			}
-			else //if( Str_Cmp(m_szCobSel, "전체") == 0 )
+			else //if( MATCH(m_szCobSel, "전체") )
 			{
 				Mem_Set( (byte*)sztmp, 0x00, sizeof(sztmp) );
 				g_Sql_RetStr( "SELECT COUNT(*) FROM C6301_CHANGEDATA WHERE NOBILL_YN ='Y' AND (LENGTH(REPL_NOT_PERMIT_WHY) == 0 OR REPL_STS != '30')", 4, sztmp );
@@ -1752,7 +1918,6 @@ Finally:
 		{
 			g_lMoveFlag = 1;
 		}
-		
 	}
 
 	/*=======================================================================================
@@ -1786,7 +1951,6 @@ Finally:
 		{
 			SPRINT(szSql, "SELECT PARAM11 FROM RCV_LOG  WHERE GUBUN = '8' ", 0, 0, 0);
 		}
-		
 
 		g_Sql_RetStr(szSql, 4, szbuf);
 
@@ -1843,7 +2007,7 @@ Finally:
 
 		//2017-08-22 Sanghyun Lee
 		//카메라 바코드(스마트폰 전용) & 빔 바코드 구분 사용 추가(설정은 공통메뉴에서 진행)
-		if( Str_Cmp(g_szBarcodeSet, PHOTO_BARCODE) == 0 && theDevInfo.m_nType > FAMILY_PDA )
+		if( MATCH(g_szBarcodeSet, PHOTO_BARCODE) && theDevInfo.m_nType > FAMILY_PDA )
 		{
 			h = JSON_Create( JSON_Object );
 			if (h)
@@ -1900,7 +2064,7 @@ Finally:
 	long RetFlag = -1;
 	long ret = 0;
 
-		if( Str_Cmp(g_szBarcodeSet, BEAM_BARCODE) == 0 )
+		if( MATCH(g_szBarcodeSet, BEAM_BARCODE) )
 		{
 			Mem_Set( (byte*)m_szBarcode_Value, 0x00, sizeof(m_szBarcode_Value) );
 			ret = Barcode_Read( m_szBarcode_Value );	
@@ -1925,7 +2089,7 @@ Finally:
 
 Finally:
 		
-		if( theDevInfo.m_nType > FAMILY_PDA && Str_Cmp(g_szBarcodeSet, BEAM_BARCODE) == 0 )
+		if( theDevInfo.m_nType > FAMILY_PDA && MATCH(g_szBarcodeSet, BEAM_BARCODE) )
 		{
 			Barcode_Exit();
 		}
@@ -2052,7 +2216,7 @@ Finally:
 		
 		if( lRet > 0 )
 		{
-			if( Str_Cmp(m_szSendYn, "Y") == 0 )
+			if( MATCH(m_szSendYn, "Y") )
 			{
 				MessageBoxEx (CONFIRM_OK, "이미 송신한 자료 입니다.");
 				return;
@@ -2065,11 +2229,11 @@ Finally:
 			Set_Index();
 	
 			//g_nBojungFlag;    //계량기 보정기기 유무 Flag , Flag = 0 보정기없음, Flag = 1 보정기있음, Flag = 2 단일보정기
-			if( Str_Cmp(m_szPdaRepl, "10") == 0 || Str_Cmp(m_szPdaRepl, "30") == 0 )
+			if( MATCH(m_szPdaRepl, "10") || MATCH(m_szPdaRepl, "30") )
 			{
 				if( Str_AtoI(m_szMtrGrd) >= 10 )
 				{
-					if( Str_Cmp(m_szPdaRepl, "10") == 0 )
+					if( MATCH(m_szPdaRepl, "10") )
 					{
 						g_nBojungFlag = 0;
 					}
@@ -2081,7 +2245,7 @@ Finally:
 				}
 				else if( Str_AtoI(m_szMtrGrd) < 10 )
 				{
-					if( Str_Cmp(m_szPdaRepl, "10") == 0 )
+					if( MATCH(m_szPdaRepl, "10") )
 					{
 						g_nBojungFlag = 0;
 					}
@@ -2093,7 +2257,7 @@ Finally:
 					Card_Move("C6301_MTRCHG");
 				}
 			}
-			else if( Str_Cmp(m_szPdaRepl, "20") == 0 )
+			else if( MATCH(m_szPdaRepl, "20") )
 			{
 				g_nBojungFlag = 2;
 				Card_Move("C6301_BOJUNGCHG");

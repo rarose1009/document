@@ -108,28 +108,21 @@ card globalcard
 	
 	#endif //__TYPE_BASIC__
 
-	
 	//WAS main url
-	//#define G_WAS_BASE_URL 	"https://smart-test.seoulgas.co.kr/scgas-0.0.2-SNAPSHOT/services/neptune"
-	//#define G_WAS_BASE_URL 	"http://localhost:8081/scgas-0.0.2-SNAPSHOT/services/neptune"
 	#define G_WAS_BASE_URL 	"https://smart" 	KEY_URL ".seoulgas.co.kr/scgas-" KEY_TYPE "-SNAPSHOT/services/neptune"
-	//#define G_WAS_BASE_URL 	"http://10.20.1.22:8080/scgas-" KEY_TYPE "-SNAPSHOT/services/neptune"
 
 	//OZ main url
-	//#define G_OZ_BASE_URL 	"https://smart-test.seoulgas.co.kr/oz70/server/"
-	//#define G_OZ_BASE_URL 	"https://smart.seoulgas.co.kr/oz70/server/"
-	#define G_OZ_BASE_URL 	"https://smart" 	KEY_URL ".seoulgas.co.kr/oz70/server/"
+	#define G_OZ_BASE_URL 	"https://smart.seoulgas.co.kr/oz70/server/"
+	//#define G_OZ_BASE_URL 	"https://smart" 	KEY_URL ".seoulgas.co.kr/oz70/server/"
 	
 	//MDM main url
 	#define G_MDM_BASE_URL 	"https://smartver" 	KEY_URL ".seoulgas.co.kr/main/get/jsonrpc"
-	//#define G_MDM_BASE_URL 	"https://smartver-test.seoulgas.co.kr/main/get/jsonrpc"
 
 	//-----------------------------------------------------------------
 	//디바이스 PUSH 관련
 	//-----------------------------------------------------------------
 	//PUSH Service main url (tcp://이 앞에 자동으로 추가되기 때문에...)
 	#define G_PUSH_BASE_URL "smart" KEY_URL ".seoulgas.co.kr"
-	//#define G_PUSH_BASE_URL "smart-test.seoulgas.co.kr"
 	#define G_PUSH_PORT "1883"
  
 	//-----------------------------------------------------------------
