@@ -92,7 +92,6 @@ card BS_MTRINFO
 		DEF_OBJECT_ID ( TXT_DATA10 )
 		DEF_OBJECT_ID ( TXT_PAGE   )		//계량기페이지
 		DEF_OBJECT_ID ( TXT_PAGELST)		//리스트페이지
-		DEF_OBJECT_ID ( TXT_BUILT)		
 //보일러 수정
 		DEF_OBJECT_ID ( TXT_DATA11 )
 		DEF_OBJECT_ID ( TXT_DATA12 )
@@ -172,7 +171,6 @@ card BS_MTRINFO
 		DEF_OBJECT_ID ( CMB_DATA9 = CMB_DATA8+3 )
 //사회복지시설
 		DEF_OBJECT_ID ( CMB_DATA10 = CMB_DATA9+3 )
-		DEF_OBJECT_ID ( CMB_DATA11 = CMB_DATA10+3 )
 	END_OBJECT_ID()
 	
 	//-------------------------------------------------------------------------------------------------	
@@ -285,7 +283,6 @@ card BS_MTRINFO
 		DLG_BUTTON(STARTX+750, STARTY+830, 250, 70, 0, 0, BUTSTY_BOLD, BUTSTY_BORDER, BTNMENUFRCOLOR, BTNCTRLBKCOLOR, CALL_FUNC , "", BID_COMPLETE, "완료"),
 		// DLG_BUTTON(STARTX,     STARTY+830, 500, 69, 0, 0, BUTSTY_BOLD, BUTSTY_BORDER, BTNMENUFRCOLOR, ORANGE        , CALL_FUNC , "", BID_DELCANCEL, "삭제취소"),
 		// DLG_BUTTON(STARTX+500, STARTY+830, 250, 69, 0, 0, BUTSTY_BOLD, BUTSTY_BORDER, BTNMENUFRCOLOR, BTNCTRLBKCOLOR, CALL_FUNC , "", BID_DELETE, "삭제"),
-		DLG_TEXT(STARTX,     STARTY+760, 250, 70, 0, 0, 0, EDITSTY_BORDER, TXTTTLFRCOLOR, TXTCTRLBK,   TXT_BUILT, "빌트인"),
 		DLG_BUTTON(STARTX+750, STARTY+760, 250, 70, 0, 0, BUTSTY_BOLD, BUTSTY_BORDER, BTNMENUFRCOLOR, BTNCTRLBKCOLOR, CALL_FUNC , "", BID_CHANGE, "수정"),
 		// DLG_BUTTON(STARTX+750, STARTY+830, 250, 69, 0, 0, BUTSTY_BOLD, BUTSTY_BORDER, BTNMENUFRCOLOR, BTNCTRLBKCOLOR, CALL_FUNC , "", BID_NEW, "신규"),
 		
@@ -315,11 +312,9 @@ card BS_MTRINFO
 		
 		DLG_TEXT(STARTX+300, STARTY+450, 200, 55, 0, 0, 0, EDITSTY_BORDER, TXTTTLFRCOLOR, BRIGHTPINK,  TXT_GR, "계량기"),
 		DLG_TEXT(STARTX+500, STARTY+450, 200, 55, 0, 0, 0, EDITSTY_BORDER, TXTFRCOLOR, TXTINCTRLBK, TXT_RSLT, "미점검"),
-		// DLG_TEXT(STARTX,     STARTY+760, 250, 70, 0, 0, 0, EDITSTY_BORDER, TXTTTLFRCOLOR, TXTCTRLBK,   TXT_BUILT, "빌트인"),
 		
 		DLG_COMBO(STARTX+500, STARTY+65, 500, 290, 130, 60, TXTFRCOLOR, TXTINCTRLBK, CALL_FUNC, "", CMB_DATA1, 10),
 		DLG_COMBO(STARTX+500, STARTY+400, 500, 290, 130, 50, TXTFRCOLOR, TXTINCTRLBK, CALL_FUNC, "", CMB_DATA10, 10),
-		DLG_COMBO(STARTX+250, STARTY+760, 500, 290, 130, 70, TXTFRCOLOR, TXTINCTRLBK, CALL_FUNC, "", CMB_DATA11, 10),
 		
 		DLG_TEXT(STARTX,       STARTY+505, 250, 55, 0, 0, 0, EDITSTY_BORDER, TXTFRCOLOR, TXTINCTRLBK, TXT_PAGELST, m_szLstCnt_page),
 		DLG_BUTTON(STARTX+250, STARTY+505, 250, 55, 0, 0, BUTSTY_BOLD, BUTSTY_BORDER, BTNMENUFRCOLOR, BTNCTRLBKCOLOR, CALL_FUNC , "", BID_MEMO, "메모"),
@@ -825,16 +820,9 @@ void	SetStyle(void)
 		EditCtrl_SetAlign( Get_hDlgCtrlByID(TXT_DATA8), EDITALIGN_CENTER|EDITALIGN_MIDDLE);
 		EditCtrl_SetAlign( Get_hDlgCtrlByID(TXT_DATA9), EDITALIGN_CENTER|EDITALIGN_MIDDLE);
 		EditCtrl_SetAlign( Get_hDlgCtrlByID(TXT_DATA10), EDITALIGN_CENTER|EDITALIGN_MIDDLE);
-		EditCtrl_SetAlign( Get_hDlgCtrlByID(TXT_BUILT), EDITALIGN_CENTER|EDITALIGN_MIDDLE);
-		
 		
 		EditCtrl_SetAlign( Get_hDlgCtrlByID(CMB_DATA1), EDITALIGN_CENTER|EDITALIGN_MIDDLE);
 		EditCtrl_SetAlign( Get_hDlgCtrlByID(CMB_DATA10), EDITALIGN_CENTER|EDITALIGN_MIDDLE);
-
-		ListCtrl_AddItem (Get_hDlgCtrlByID(CMB_DATA11+2), "해당없음", 0, ICON_NONE);
-		ListCtrl_AddItem (Get_hDlgCtrlByID(CMB_DATA11+2), "설치", 0, ICON_NONE);
-
-		EditCtrl_SetAlign( Get_hDlgCtrlByID(CMB_DATA11), EDITALIGN_MIDDLE|EDITALIGN_CENTER);
 		
 		// 사회복지시설
 		if( Str_Cmp(stBsMtr.SOCIAL_WELF_FACI_YN, "Y") == 0 )
@@ -1326,7 +1314,7 @@ void	SetStyle(void)
 						STRING_Finalize(sql);
 					}
 				}
-				else if( m_lActiveIndex == Get_iDlgCtrlByID(CMB_DATA1+1) )
+				else
 				{
 					//점검제외
 					Mem_Set( (byte*)szSql, 0x00, sizeof(szSql) );
@@ -1334,35 +1322,7 @@ void	SetStyle(void)
 					Str_Cpy(sztmp , EditCtrl_GetStr(Get_hDlgCtrlByID(CMB_DATA1)) );
 					SPRINT(szSql, "SELECT CODE_ITEM FROM COMMONCODE WHERE CODE_ID = 'C30016' AND ITEM_KNAME = '%s' AND CODE_ITEM NOT IN('40','50','60','70','90') ",sztmp, 0, 0 );
 					g_Sql_RetStr( szSql, 10, g_szCHK_EXCEP_WHY );
-
-					if( Str_Cmp(g_szCHK_EXCEP_WHY, "10") != 0 && Str_Cmp(g_szCHK_EXCEP_WHY, "11") != 0)
-					{
-						// Str_Cpy(stBsMtr.CHK_RSLT, "E");
-	    				// Str_Cpy(stBsMtr.MRT_RSLT, "N");
-						DlgCtrl_SetVisible(this->m_hDlg, Get_iDlgCtrlByID(BID_BS), FALSE);
-					}
-					else
-					{
-						DlgCtrl_SetVisible(this->m_hDlg, Get_iDlgCtrlByID(BID_BS), TRUE);
-					}
-				}
-				else
-				{
-					//빌트인
-					Mem_Set( (byte*)sztmp, 0x00, sizeof(sztmp) );
-					Str_Cpy(sztmp , EditCtrl_GetStr(Get_hDlgCtrlByID(CMB_DATA11)) );
-					PRINT("sztmpsztmpsztmpsztmpsztmp :%s",sztmp,0,0);
-					if( Str_Cmp(sztmp, "해당없음") == 0)
-					{
-						Str_Cpy(stBsMtr.BUILT_IN_YN, "N");
-	    				// Str_Cpy(stBsMtr.MRT_RSLT, "N");
-						// DlgCtrl_SetGray( this->m_hDlg, Get_iDlgCtrlByID(BID_BS), TRUE );
-					}
-					else
-					{
-						Str_Cpy(stBsMtr.BUILT_IN_YN, "Y");	
-					}
-
+					
 				}
 			}
 		}
@@ -1863,7 +1823,7 @@ void	SetStyle(void)
 		, MTR_GRD, MTR_VALID_YM, COMPENS_YN, COMPENS_NUM, COMPENS_ID_NUM, COMPENS_MODEL_NM \
 		, COMPENS_VALID_YM, MTR_INDI, INDI_VA, INDI_VC, MRT_RSLT, Trim(CHK_EXCEP_WHY), CHK_RSLT \
 		, SEND_YN, MTR_INDI_CUR, INDI_VA_CUR, INDI_VC_CUR, UPD_EMPID, VISIT_DTM, PDA_IP, CHK_YEAR \
-		, CHK_ORDER, SPECIAL_NUM, CHK_TYPE, OBJ_YM, PLAN_YM, MEMO, SOCIAL_WELF_FACI_YN, FACI_STS_CD, MTR_DETA_LOC ,BUILT_IN_YN \
+		, CHK_ORDER, SPECIAL_NUM, CHK_TYPE, OBJ_YM, PLAN_YM, MEMO, SOCIAL_WELF_FACI_YN, FACI_STS_CD, MTR_DETA_LOC \
 		FROM SPECIAL_MTR WHERE CHK_EXEC_NUM = ? AND MTR_NUM = ?"
 		);
 		if( hstmt == NULL )
@@ -1941,7 +1901,6 @@ void	SetStyle(void)
 			sql->GetValue( sql, i++, 'U', (long*) stBsMtr.SOCIAL_WELF_FACI_YN, 1   + 1, DECRYPT );
 			sql->GetValue( sql, i++, 'U', (long*) stBsMtr.FACI_STS_CD        , 1   + 1, DECRYPT );
 			sql->GetValue( sql, i++, 'U', (long*) stBsMtr.MTR_DETA_LOC       , 30  + 1, DECRYPT );
-			sql->GetValue( sql, i++, 'U', (long*) stBsMtr.BUILT_IN_YN        , 1  + 1, DECRYPT );
 		}
 
 		if( Str_Cmp(stBsMtr.MRT_RSLT, "Y") == 0 || Str_Cmp(stBsMtr.MRT_RSLT, "N") == 0 )
@@ -2268,9 +2227,6 @@ Finally:
 		long i;
 		
 		//점검제외
-		PRINT("33333333333333333333%d",g_szCHK_EXCEP_WHY,0,0);
-		PRINT("33444444444444443%s",g_szCHK_EXCEP_WHY,0,0);
-
 		if( Str_Len(g_szCHK_EXCEP_WHY) > 0 )
 		{
 			Mem_Set( (byte*)szSql, 0x00, sizeof(szSql) );
@@ -2278,8 +2234,6 @@ Finally:
 			SPRINT(szSql, "SELECT ITEM_KNAME FROM COMMONCODE WHERE CODE_ID = 'C30016' AND CODE_ITEM = '%s' AND CODE_ITEM NOT IN('40','50','60','70','90') ",g_szCHK_EXCEP_WHY, 0, 0   );
 			g_Sql_RetStr( szSql, 30, szTmp );
 			EditCtrl_SetStr( Get_hDlgCtrlByID(CMB_DATA1)   , szTmp);
-
-			PRINT("777777777777777777777777 :%s",szTmp,0,0);
 		}
 		else
 		{
@@ -2291,21 +2245,6 @@ Finally:
 			SPRINT(szSql, "SELECT ITEM_KNAME FROM COMMONCODE WHERE CODE_ID = 'C30016' AND CODE_ITEM = '%s' AND CODE_ITEM NOT IN('40','50','60','70','90') ",stBsMtr.CHK_EXCEP_WHY, 0, 0   );
 			g_Sql_RetStr( szSql, 30, szTmp );
 			EditCtrl_SetStr( Get_hDlgCtrlByID(CMB_DATA1)   , szTmp);
-
-			
-			if( Str_Cmp(stBsMtr.CHK_EXCEP_WHY, "10") != 0 && Str_Cmp(stBsMtr.CHK_EXCEP_WHY, "11") != 0)
-			{
-				// Str_Cpy(stBsMtr.CHK_RSLT, "E");
-				// Str_Cpy(stBsMtr.MRT_RSLT, "N");
-				DlgCtrl_SetVisible(this->m_hDlg, Get_iDlgCtrlByID(BID_BS), FALSE);
-				// DlgCtrl_SetGray( this->m_hDlg, Get_iDlgCtrlByID(BID_BS), TRUE );
-			}
-			else
-			{
-				DlgCtrl_SetVisible(this->m_hDlg, Get_iDlgCtrlByID(BID_BS), TRUE);
-			}
-
-			PRINT("666666666666666666666666 :%s",szTmp,0,0);
 		}
 		
 		//사회복지시설
@@ -2365,18 +2304,6 @@ Finally:
 		{
 			ButCtrl_SetForeColorEx(Get_hDlgCtrlByID(BID_MEMO), BTNMENUFRCOLOR);
 		}		
-
-		PRINT("111111111111111111111111111111111",0,0,0);
-		PRINT("BUILT_IN_YNBUILT_IN_YNBUILT_IN_YN : %s",stBsMtr.BUILT_IN_YN,0,0);
-		if( Str_Cmp(stBsMtr.BUILT_IN_YN, "N") == 0 )
-		{
-			PRINT("22222222222222222222222",0,0,0);
-			EditCtrl_SetStr(Get_hDlgCtrlByID(CMB_DATA11), "해당없음");
-		}
-		else if( Str_Cmp(stBsMtr.BUILT_IN_YN, "Y") == 0 )
-		{
-			EditCtrl_SetStr(Get_hDlgCtrlByID(CMB_DATA11), "설치");
-		}
 	}
 
 //------------------------------------------------------------------		
@@ -3013,7 +2940,7 @@ Finally:
 			Str_Cpy(stBsMtr.CHK_EXCEP_WHY, g_szCHK_EXCEP_WHY);
 		}
 
-		if( Str_Cmp(stBsMtr.CHK_EXCEP_WHY, "10") != 0 && Str_Cmp(stBsMtr.CHK_EXCEP_WHY, "11") != 0 )
+		if( Str_Cmp(stBsMtr.CHK_EXCEP_WHY, "10") != 0 )
 		{
 			Mem_Set((byte*)szSql ,0x00, sizeof(szSql) );
 /*
@@ -3041,8 +2968,6 @@ Finally:
 	        Str_Cat(szDate, sztmp2);
 	        
 	    	Str_Cpy(stBsMtr.VISIT_DTM, szDate);
-
-			Del_PipeData();
 	    	
 	    	ret = Save_Result();
 	    	
@@ -3052,15 +2977,6 @@ Finally:
 		if( Str_Cmp(stBsMtr.MRT_RSLT, "N") != 0 && Str_Cmp(stBsMtr.MRT_RSLT, "Y") != 0 )
 		{
 			MessageBoxEx (CONFIRM_OK, "계량기를 점검하세요.");
-			ret = FALSE;
-			return ret;
-		}
-
-		if( Str_Cmp(stBsMtr.BUILT_IN_YN, "N") != 0 && Str_Cmp(stBsMtr.BUILT_IN_YN, "Y") != 0 )
-		{
-			MessageBoxEx (CONFIRM_OK, "빌트인 점검여부를 점검하세요.");
-			EditCtrl_SetStr(Get_hDlgCtrlByID(CMB_DATA11), "해당없음");
-			Str_Cpy(stBsMtr.BUILT_IN_YN, "N");
 			ret = FALSE;
 			return ret;
 		}
@@ -3139,7 +3055,7 @@ Finally:
 		Mem_Set( (byte*)szSql, 0x00, sizeof(szSql) );
 		SPRINT(szSql, "UPDATE SPECIAL_MTR SET \
 					MTR_INDI_CUR = ?, INDI_VA_CUR = ?, INDI_VC_CUR = ?, CHK_EXCEP_WHY = ?, CHK_RSLT = ? \
-					, MRT_RSLT = ?, VISIT_DTM = ?, SEND_YN = 'S', UPD_EMPID = ?, PDA_IP = ? ,BUILT_IN_YN = ? \
+					, MRT_RSLT = ?, VISIT_DTM = ?, SEND_YN = 'S', UPD_EMPID = ?, PDA_IP = ? \
 					WHERE CHK_EXEC_NUM = ? AND MTR_NUM = ? "
 					, 0, 0, 0);
 		hstmt = sql->CreateStatement(sql, szSql);
@@ -3160,9 +3076,6 @@ Finally:
 		sql->Bind(sql, idx++, 'U', (long *)stBsMtr.VISIT_DTM		,14 ,DECRYPT);
 		sql->Bind(sql, idx++, 'U', (long *)stUserinfo.szemployee_id	,20 ,DECRYPT);
 		sql->Bind(sql, idx++, 'U', (long *)stUserinfo.szpda_ip	    ,15 ,DECRYPT);
-		sql->Bind(sql, idx++, 'U', (long *)stBsMtr.BUILT_IN_YN	    ,1 ,DECRYPT);
-
-		
 
 		sql->Bind(sql, idx++, 'U', (long *)g_szCHK_EXEC_NUM	        ,12 ,DECRYPT);
 		sql->Bind(sql, idx++, 'U', (long *)stBsMtr.MTR_NUM	        ,9  ,DECRYPT);

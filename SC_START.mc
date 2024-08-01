@@ -303,22 +303,22 @@ card SC_START
 				g_lNewBurFlag = 0;
 				PRINT(g_szCHK_EXEC_NUM,0,0,0);
 				
-				// if( Str_Cmp(stSc.PREUSE_CHK_WHY, "10") == 0 || Str_Cmp(stSc.PREUSE_CHK_WHY, "30") == 0 )
-				// {
-				// 	lCount = 0;
+				if( Str_Cmp(stSc.PREUSE_CHK_WHY, "10") == 0 || Str_Cmp(stSc.PREUSE_CHK_WHY, "30") == 0 )
+				{
+					lCount = 0;
 					
-				// 	Mem_Set( (byte*)sztmp, 0x00, sizeof(sztmp) );
-				// 	SPRINT(sztmp, "SELECT COUNT(*) FROM NORMAL_NOGOOD_DETAL WHERE CHK_EXEC_NUM = '%s' ", g_szCHK_EXEC_NUM, 0, 0   );
+					Mem_Set( (byte*)sztmp, 0x00, sizeof(sztmp) );
+					SPRINT(sztmp, "SELECT COUNT(*) FROM NORMAL_NOGOOD_DETAL WHERE CHK_EXEC_NUM = '%s' ", g_szCHK_EXEC_NUM, 0, 0   );
 					
-				// 	g_Sql_RetInt( sztmp, &lCount );
+					g_Sql_RetInt( sztmp, &lCount );
 					
-				// 	if( lCount == 0 )
-				// 	{
-				// 		MessageBoxEx (CONFIRM_OK, "우선점검 부적합 항목 및\n차수가 없습니다.\n확인해 주세요.");
-				// 		Card_Move("SC_CONFIRM");
-				// 		return;
-				// 	}
-				// }
+					if( lCount == 0 )
+					{
+						MessageBoxEx (CONFIRM_OK, "우선점검 부적합 항목 및\n차수가 없습니다.\n확인해 주세요.");
+						Card_Move("SC_CONFIRM");
+						return;
+					}
+				}
 				
 				if(g_lSCMoveFlag == 1)
 				{
@@ -363,7 +363,7 @@ card SC_START
 				g_Str_TimeType( stSc.CHK_TIME_TO, Time_GetTime() );
 				
 				// 현재 시간
-				Mem_Set( (byte*)sztmp, 0x00, sizeof(sztmp));
+				Mem_Set( (byte*)sztmp, 0x00, sizeof(sztmp) );
 				g_Str_TimeForm( sztmp, stSc.CHK_TIME_TO);
 				EditCtrl_SetStr( Get_hDlgCtrlByID(TXT_TIME_TO), sztmp);
 
@@ -489,7 +489,6 @@ card SC_START
 		SPRINT(szSql, " SELECT USAGE_CD FROM NORMAL_DATA WHERE CHK_EXEC_NUM ='%s' " , g_szCHK_EXEC_NUM, 0, 0);
 		g_Sql_RetStr(szSql, 2, szUsageCd);
 		
-
 		//완성검사여부
 		for ( i = 0 ;  SCCOMP_CHK[i].Str[0] != 0 ; i++)
 		{
@@ -783,40 +782,40 @@ card SC_START
 				g_Sql_RetStr(szSql, 2, stScMtr.PROD_CD);
 				
 				// 테스트를 위한 주석처리
-				// if( Str_Cmp(stScMtr.PROD_CD, "11") == 0 )
-				// {
-				// 	if( ntotime - nfromtime < 120 )
-				// 	{
-				// 		Timer_Kill( m_nTimerId );
-				// 		m_nTimerId = -1;
-				// 		SetStatus("");
+				if( Str_Cmp(stScMtr.PROD_CD, "11") == 0 || Str_Cmp(stScMtr.PROD_CD, "81") == 0)
+				{
+					if( ntotime - nfromtime < 120 )
+					{
+						Timer_Kill( m_nTimerId );
+						m_nTimerId = -1;
+						SetStatus("");
 						
-				// 		MessageBoxEx (CONFIRM_OK, "점검기준시간 이전에는\n점검 완료 처리가 되지 않습니다.\n( 취사전용세대 : 2분 )");
+						MessageBoxEx (CONFIRM_OK, "점검기준시간 이전에는\n점검 완료 처리가 되지 않습니다.\n( 취사전용세대 : 2분 )");
 						
-				// 		Mem_Set( (byte*)stSc.CHK_TIME_TO, 0x00, sizeof(stSc.CHK_TIME_TO) );
-				// 		g_Str_TimeType( stSc.CHK_TIME_TO, Time_GetTime() );
-				// 		Start_Timer();
+						Mem_Set( (byte*)stSc.CHK_TIME_TO, 0x00, sizeof(stSc.CHK_TIME_TO) );
+						g_Str_TimeType( stSc.CHK_TIME_TO, Time_GetTime() );
+						Start_Timer();
 						
-				// 		break;
-				// 	}
-				// }
-				// else
-				// {
-				// 	if( ntotime - nfromtime < 150 )
-				// 	{
-				// 		Timer_Kill( m_nTimerId );
-				// 		m_nTimerId = -1;
-				// 		SetStatus("");
+						break;
+					}
+				}
+				else
+				{
+					if( ntotime - nfromtime < 150 )
+					{
+						Timer_Kill( m_nTimerId );
+						m_nTimerId = -1;
+						SetStatus("");
 						
-				// 		MessageBoxEx (CONFIRM_OK, "점검기준시간 이전에는\n점검 완료 처리가 되지 않습니다.\n( 난방세대 : 2분30초 )");
+						MessageBoxEx (CONFIRM_OK, "점검기준시간 이전에는\n점검 완료 처리가 되지 않습니다.\n( 난방세대 : 2분30초 )");
 						
-				// 		Mem_Set( (byte*)stSc.CHK_TIME_TO, 0x00, sizeof(stSc.CHK_TIME_TO) );
-				// 		g_Str_TimeType( stSc.CHK_TIME_TO, Time_GetTime() );
-				// 		Start_Timer();
+						Mem_Set( (byte*)stSc.CHK_TIME_TO, 0x00, sizeof(stSc.CHK_TIME_TO) );
+						g_Str_TimeType( stSc.CHK_TIME_TO, Time_GetTime() );
+						Start_Timer();
 						
-				// 		break;
-				// 	}
-				// }
+						break;
+					}
+				}
 				
 				//점검 결과 저장
 				if( Save_Result() )
@@ -900,7 +899,6 @@ card SC_START
 		char sztmp[100];
 		char szSql[200];
 		char szFilenm[100];
-		char prod_cd[2];
 		
 		if( INIT_MAIN == m_bFirst )
 		{	
@@ -966,10 +964,6 @@ card SC_START
 			/********************************/
 			/* 2. 완성검사여부              */
 			/********************************/
-		// 	Mem_Set( (byte*)szSql, 0x00, sizeof(szSql) );
-		//  Mem_Set( (byte*)prod_cd, 0x00, sizeof(prod_cd) );
-		//  SPRINT(szSql, " SELECT MAX(PROD_CD) FROM NORMAL_MTR WHERE CHK_EXEC_NUM ='%s' " , g_szCHK_EXEC_NUM, 0, 0);
-		//  g_Sql_RetStr(szSql, 2, prod_cd);
 			i = SearchStr( EditCtrl_GetStr(Get_hDlgCtrlByID(CMB_COMPLETE)), SCCOMP_CHK );
 			
 			Mem_Set((byte*)stSc.COMP_CHK_OBJ_YN, 0x00, sizeof(stSc.COMP_CHK_OBJ_YN));
@@ -980,7 +974,6 @@ card SC_START
 			}
 			else
 			{
-
 				Str_Cpy(stSc.COMP_CHK_OBJ_YN, SCCOMP_CHK[i].Code);
 			}
 		}
@@ -2274,7 +2267,7 @@ Finally:
 		if( Str_Cmp(stSc.INST_PLACE_NUM, szBar) == 0 )	
 		{
 			// 1. 바코드 정보
-			Mem_Set( (byte*)stSc.CURR_BAR, 0x00, sizeof(stSc.CURR_BAR));
+			Mem_Set( (byte*)stSc.CURR_BAR, 0x00, sizeof(stSc.CURR_BAR) );
 			Str_Cpy(stSc.CURR_BAR, m_szBartmp);
 			
 			//2. 로컬 DB 업데이트
@@ -2487,7 +2480,6 @@ Finally:
 		char szSql[800];
 		char szMsg[300];
 		char szMsg2[300];
-		char szMsg3[300];
 		
 		char szUserTel[20];
 		char szUserTel2[20];
@@ -2807,19 +2799,15 @@ Finally:
 		/*******************************************************************/
 		Mem_Set( (byte*)szMsg, 0x00, sizeof(szMsg) );
 		Mem_Set( (byte*)szMsg2, 0x00, sizeof(szMsg2) );
-		Mem_Set( (byte*)szMsg3, 0x00, sizeof(szMsg3) );
 		Mem_Set( (byte*)szUserTel2, 0x00, sizeof(szUserTel2) );
 
 		g_FormatPhoneNumber(szUserTel, szUserTel2);	
 		
 		SPRINT(szMsg, "\n서울도시가스 %s 고객센터", stUserinfo.szcenter_nm, 0, 0);
-		// SPRINT(szMsg2, "\n안전점검원 : %s(%s)\n*업무시간만 통화가능합니다.\n(09시~18시)", stUserinfo.sznm_kor, szUserTel2, 0);
-		SPRINT(szMsg2, "\n안전점검원 : %s(%s)\n*문의전화는 업무시간(09시~18시)에 해주시면 감사하겠습니다.", stUserinfo.sznm_kor, szUserTel2, 0);
-		SPRINT(szMsg2, "\n가스앱 설치 : http://bit.ly/3adhNwn", 0, 0, 0);
+		SPRINT(szMsg2, "\n안전점검원 : %s(%s)\n*업무시간만 통화가능합니다.\n(09시~18시)", stUserinfo.sznm_kor, szUserTel2, 0);
 		
 		Str_Cat(szNogoodMsg, szMsg);
 		Str_Cat(szNogoodMsg, szMsg2);
-		Str_Cat(szNogoodMsg, szMsg3);
 		
 		Mem_Set( (byte*)m_szSms_Desc, 0x00, sizeof(m_szSms_Desc) );
 		Str_Cpy(m_szSms_Desc, szNogoodMsg);

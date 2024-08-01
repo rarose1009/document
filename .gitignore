@@ -3,3 +3,7 @@ Package/*.pop
 Error/*
 Debug/*
 *.bak
+Sdk/Error/.err
+Sdk/makepop_org.exe
+Sdk/SCGGAS.pop
+Sdk/WinTail-2.3.1.0-portable.exe

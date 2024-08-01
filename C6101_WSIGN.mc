@@ -386,7 +386,6 @@ card C6101_WSIGN
 				}
 				else
 				{
-					PRINT("555555555555",0,0,0);
 					Card_Move("C6101_WPAY");
 				}
 			
@@ -2485,7 +2484,6 @@ FROM C6101_PROMISE_MTR WHERE PROMISE_ASSIGN_SEQ = ? ");
 	{
 		long ret = -1;
 		long idx = 0;
-		long amtChkYn;
 		handle hdb = NULL;
 		handle hstmt = NULL;
 		SQLITE sql = NewSqLite();
@@ -2498,7 +2496,6 @@ FROM C6101_PROMISE_MTR WHERE PROMISE_ASSIGN_SEQ = ? ");
 		char szCard_yn      [1 +1];
 		char szUnpay_amt    [10+1];
 		char szMtr_num      [10+1];
-		char szSql[300];
 		
 		js = JSON_Create(JSON_Array);
 		if( js == NULL  )
@@ -2510,35 +2507,14 @@ FROM C6101_PROMISE_MTR WHERE PROMISE_ASSIGN_SEQ = ? ");
 		{
 			goto Finally;
 		}
-
-		amtChkYn = 0;
-		Mem_Set( (byte*)szSql, 0x00, sizeof(szSql) );
-		SPRINT( szSql ,"SELECT COUNT(1) FROM C6101_NONPAY WHERE PROMISE_ASSIGN_SEQ = '%s' AND CHK ='1' AND CARD_YN = '1' AND AMT_CHK_YN ='Y'",g_szCHK_EXEC_NUM, 0, 0 );
-		g_Sql_RetInt(szSql, &amtChkYn );
-
-		if(amtChkYn > 0)
-		{
-			hstmt = sql->CreateStatement(sql, "select USE_CONT_NUM, PROD_CONT_SEQ, REQ_YM, \
-			DEADLINE_FLAG, CHK, CARD_YN, SUB_UNPAY_AMT AS UNPAY_AMT, MTR_NUM \
-			from C6101_NONPAY WHERE PROMISE_ASSIGN_SEQ = ? \
-			UNION \
-			select USE_CONT_NUM, PROD_CONT_SEQ, REQ_YM, \
-			DEADLINE_FLAG, CHK_YN AS CHK, CARD_YN, CASE WHEN AMT_CHK_YN ='Y' THEN SUB_ACCOUNT WHEN AMT_CHK_YN ='N' THEN ACCOUNT END AS UNPAY_AMT, MTR_NUM \
-			from C6101_PROMISE_MTR WHERE PROMISE_ASSIGN_SEQ = ? AND ACCOUNT > 0  ");
-
-		}
-		else
-		{
-			hstmt = sql->CreateStatement(sql, "select USE_CONT_NUM, PROD_CONT_SEQ, REQ_YM, \
-			DEADLINE_FLAG, CHK, CARD_YN, UNPAY_AMT, MTR_NUM \
-			from C6101_NONPAY WHERE PROMISE_ASSIGN_SEQ = ? \
-			UNION \
-			select USE_CONT_NUM, PROD_CONT_SEQ, REQ_YM, \
-			DEADLINE_FLAG, CHK_YN AS CHK, CARD_YN, CASE WHEN AMT_CHK_YN ='Y' THEN SUB_ACCOUNT WHEN AMT_CHK_YN ='N' THEN ACCOUNT END AS UNPAY_AMT, MTR_NUM \
-			from C6101_PROMISE_MTR WHERE PROMISE_ASSIGN_SEQ = ? AND ACCOUNT > 0  ");
-
-		}
-		
+	
+		hstmt = sql->CreateStatement(sql, "select USE_CONT_NUM, PROD_CONT_SEQ, REQ_YM, \
+DEADLINE_FLAG, CHK, CARD_YN, UNPAY_AMT, MTR_NUM \
+from C6101_NONPAY WHERE PROMISE_ASSIGN_SEQ = ? \
+UNION \
+select USE_CONT_NUM, PROD_CONT_SEQ, REQ_YM, \
+DEADLINE_FLAG, CHK_YN AS CHK, CARD_YN, ACCOUNT AS UNPAY_AMT, MTR_NUM \
+from C6101_PROMISE_MTR WHERE PROMISE_ASSIGN_SEQ = ? AND ACCOUNT > 0  ");
 		if( hstmt == NULL )
 		{
 			PRINT("::SQL_CreateStatement fail [%s]", sql->GetLastError(sql), 0, 0);
@@ -2612,7 +2588,6 @@ Finally:
 		}
 		
 		DelSqLite(sql);
-		MessageBoxEx (CONFIRM_OK, szUnpay_amt);
 
 		return ret;
 	}

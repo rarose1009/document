@@ -3453,7 +3453,7 @@ Finally:
 		/********************************/
 		if( JSON_LoadFile(g_pjcomm, szJsonpath) > 0)
 		{
-		szCode = JSON_GetValue (g_pjcomm, "code", szType);
+			szCode = JSON_GetValue (g_pjcomm, "code", szType);
 			szMessage = JSON_GetValue (g_pjcomm, "message", szType);
 			
 			/* FR90001 데이터 */
@@ -4451,66 +4451,6 @@ Finally:
 		else if ( Str_Cmp( stMcMainInfo.BILL_SEND_METHOD_CD, "80" ) == 0 )
 		{
 			Str_Cpy( szMsg, "[ 모바일 ]\n" );
-			Str_Cat( szMsg, stMcMainInfo.REQ_CP_DDD );
-			Str_Cat( szMsg, "-" );
-			Str_Cat( szMsg, stMcMainInfo.REQ_CP_EXN );
-			Str_Cat( szMsg, "-" );
-			Str_Cat( szMsg, stMcMainInfo.REQ_CP_NUM );
-		}
-		else if ( Str_Cmp( stMcMainInfo.BILL_SEND_METHOD_CD, "14" ) == 0 )
-		{
-			Str_Cpy( szMsg, "[ E-MAIL ]\n" );
-			Str_Cat( szMsg, stMcMainInfo.REQ_EMAIL );
-		}
-		else if ( Str_Cmp( stMcMainInfo.BILL_SEND_METHOD_CD, "17" ) == 0 )
-		{
-			Str_Cpy( szMsg, "[ LMS ]\n" );
-			Str_Cat( szMsg, stMcMainInfo.REQ_CP_DDD );
-			Str_Cat( szMsg, "-" );
-			Str_Cat( szMsg, stMcMainInfo.REQ_CP_EXN );
-			Str_Cat( szMsg, "-" );
-			Str_Cat( szMsg, stMcMainInfo.REQ_CP_NUM );
-		}
-		else if ( Str_Cmp( stMcMainInfo.BILL_SEND_METHOD_CD, "18" ) == 0 )
-		{
-			Str_Cpy( szMsg, "[ 모바일 ]\n" );
-			Str_Cat( szMsg, stMcMainInfo.REQ_CP_DDD );
-			Str_Cat( szMsg, "-" );
-			Str_Cat( szMsg, stMcMainInfo.REQ_CP_EXN );
-			Str_Cat( szMsg, "-" );
-			Str_Cat( szMsg, stMcMainInfo.REQ_CP_NUM );
-		}
-		else if ( Str_Cmp( stMcMainInfo.BILL_SEND_METHOD_CD, "47" ) == 0 )
-		{
-			Str_Cpy( szMsg, "[ E-MAIL ]\n" );
-			Str_Cat( szMsg, stMcMainInfo.REQ_EMAIL );
-			Str_Cat( szMsg, "\n [ LMS ]\n" );
-			Str_Cat( szMsg, stMcMainInfo.REQ_CP_DDD );
-			Str_Cat( szMsg, "-" );
-			Str_Cat( szMsg, stMcMainInfo.REQ_CP_EXN );
-			Str_Cat( szMsg, "-" );
-			Str_Cat( szMsg, stMcMainInfo.REQ_CP_NUM );
-		}
-		else if ( Str_Cmp( stMcMainInfo.BILL_SEND_METHOD_CD, "48" ) == 0 )
-		{
-			Str_Cpy( szMsg, "[ 모바일 \n" );
-			Str_Cat( szMsg, stMcMainInfo.REQ_CP_DDD );
-			Str_Cat( szMsg, "-" );
-			Str_Cat( szMsg, stMcMainInfo.REQ_CP_EXN );
-			Str_Cat( szMsg, "-" );
-			Str_Cat( szMsg, stMcMainInfo.REQ_CP_NUM );
-			Str_Cat( szMsg, "\n [ E-MAIL ]\n" );
-			Str_Cat( szMsg, stMcMainInfo.REQ_EMAIL );
-		}
-		else if ( Str_Cmp( stMcMainInfo.BILL_SEND_METHOD_CD, "78" ) == 0 )
-		{
-			Str_Cpy( szMsg, "[ 모바일 ]\n" );
-			Str_Cat( szMsg, stMcMainInfo.REQ_CP_DDD );
-			Str_Cat( szMsg, "-" );
-			Str_Cat( szMsg, stMcMainInfo.REQ_CP_EXN );
-			Str_Cat( szMsg, "-" );
-			Str_Cat( szMsg, stMcMainInfo.REQ_CP_NUM );
-			Str_Cat( szMsg, "\n[ LMS ]\n" );
 			Str_Cat( szMsg, stMcMainInfo.REQ_CP_DDD );
 			Str_Cat( szMsg, "-" );
 			Str_Cat( szMsg, stMcMainInfo.REQ_CP_EXN );

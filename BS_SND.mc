@@ -672,11 +672,11 @@ void	SetStyle(void)
 				g_Sql_RetStr(szSql, 8, sztmp);
 				Str_ItoA( Time_GetDate(), szyymm, 10);
 				
-				// if( Str_NCmp( sztmp, szyymm, 6) != 0 )
-				// {
-				// 	MessageBoxEx (CONFIRM_OK, "이월된 미송신건은 전송할 수 없습니다.");
-				// 	return -1;
-				// }
+				if( Str_NCmp( sztmp, szyymm, 6) != 0 )
+				{
+					MessageBoxEx (CONFIRM_OK, "이월된 미송신건은 전송할 수 없습니다.");
+					return -1;
+				}
 		    }	
 		}
 		
@@ -989,7 +989,7 @@ from SPECIAL_DATA WHERE SEND_YN = 'S' "
 		GET_FILENM(szDbpath, SQLITE_DB);
 		Mem_Set((byte*)szSql, 0x00, sizeof(szSql));	
 		SPRINT( szSql, "select mtr_num,chk_exec_num,PDA_IP as client_id,UPD_EMPID as user_id,visit_dtm \
-,mtr_indi_cur,indi_va_cur,indi_vc_cur,compens_yn,chk_excep_why,chk_year,chk_order,special_num,chk_type,obj_ym,plan_ym, memo, faci_sts_cd, mtr_deta_loc, built_in_yn \
+,mtr_indi_cur,indi_va_cur,indi_vc_cur,compens_yn,chk_excep_why,chk_year,chk_order,special_num,chk_type,obj_ym,plan_ym, memo, faci_sts_cd, mtr_deta_loc \
 from SPECIAL_MTR where SEND_YN = 'S' "
         ,0 , 0, 0 );
 

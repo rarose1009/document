@@ -549,7 +549,6 @@ card CHK_DTL
 				{
 					if( Str_AtoI(stScBur.BEFO_SUPPLY_CHK_YMD) >= Str_AtoI(stScBur.BURNER_INST_YMD) )
 					{
-						//공급전점검일자가 설치일자보다 클때
 						boil_chk_cd = FALSE;
 					}
 					else

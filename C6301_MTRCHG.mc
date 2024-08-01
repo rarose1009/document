@@ -7790,8 +7790,8 @@ Finally:
 				{
 					// 원격 : NB-IOT 
 					EditCtrl_SetStr( Get_hDlgCtrlByID(CMB_DATA1), ListCtrl_GetStr( Get_hDlgCtrlByID(CMB_DATA1+2), 6));
-					DlgCtrl_SetEnable(this->m_hDlg, Get_iDlgCtrlByID(CMB_DATA1+1), FALSE );
-					DlgCtrl_SetGray( this->m_hDlg, Get_iDlgCtrlByID(CMB_DATA1+1), TRUE );
+					DlgCtrl_SetEnable(this->m_hDlg, Get_iDlgCtrlByID(CMB_DATA1+1), TRUE );
+					DlgCtrl_SetGray( this->m_hDlg, Get_iDlgCtrlByID(CMB_DATA1+1), FALSE );
 					Str_Cpy(szRemoteCd, "81");
 
 					Str_Cpy(stMtrChg.COMM_FIRM, "20"); //통신사 KT
@@ -7808,8 +7808,8 @@ Finally:
 				{
 					// 원격 : LORAWan
 					EditCtrl_SetStr( Get_hDlgCtrlByID(CMB_DATA1), ListCtrl_GetStr( Get_hDlgCtrlByID(CMB_DATA1+2), 13));
-					DlgCtrl_SetEnable(this->m_hDlg, Get_iDlgCtrlByID(CMB_DATA1+1), FALSE );
-					DlgCtrl_SetGray( this->m_hDlg, Get_iDlgCtrlByID(CMB_DATA1+1), TRUE );
+					DlgCtrl_SetEnable(this->m_hDlg, Get_iDlgCtrlByID(CMB_DATA1+1), TRUE );
+					DlgCtrl_SetGray( this->m_hDlg, Get_iDlgCtrlByID(CMB_DATA1+1), FALSE );
 					Str_Cpy(szRemoteCd, "88");
 
 					Str_Cpy(stMtrChg.COMM_FIRM, "20"); //통신사 KT
@@ -7822,8 +7822,8 @@ Finally:
 				{
 					// 원격 : 다채널
 					EditCtrl_SetStr( Get_hDlgCtrlByID(CMB_DATA1), ListCtrl_GetStr( Get_hDlgCtrlByID(CMB_DATA1+2), 11));
-					DlgCtrl_SetEnable(this->m_hDlg, Get_iDlgCtrlByID(CMB_DATA1+1), FALSE );
-					DlgCtrl_SetGray( this->m_hDlg, Get_iDlgCtrlByID(CMB_DATA1+1), TRUE );
+					DlgCtrl_SetEnable(this->m_hDlg, Get_iDlgCtrlByID(CMB_DATA1+1), TRUE );
+					DlgCtrl_SetGray( this->m_hDlg, Get_iDlgCtrlByID(CMB_DATA1+1), FALSE );
 					Str_Cpy(szRemoteCd, "86");
 
 					Str_Cpy(stMtrChg.COMM_FIRM, "20"); //통신사 KT
@@ -7836,8 +7836,8 @@ Finally:
 				{
 					// 원격 : 다채널
 					EditCtrl_SetStr( Get_hDlgCtrlByID(CMB_DATA1), ListCtrl_GetStr( Get_hDlgCtrlByID(CMB_DATA1+2), 7));
-					DlgCtrl_SetEnable(this->m_hDlg, Get_iDlgCtrlByID(CMB_DATA1+1), FALSE );
-					DlgCtrl_SetGray( this->m_hDlg, Get_iDlgCtrlByID(CMB_DATA1+1), TRUE );
+					DlgCtrl_SetEnable(this->m_hDlg, Get_iDlgCtrlByID(CMB_DATA1+1), TRUE );
+					DlgCtrl_SetGray( this->m_hDlg, Get_iDlgCtrlByID(CMB_DATA1+1), FALSE );
 					Str_Cpy(szRemoteCd, "82");
 
 					Str_Cpy(stMtrChg.COMM_FIRM, "20"); //통신사 KT
@@ -7883,8 +7883,8 @@ Finally:
 				{
 					// 원격 : NB-IOT 
 					EditCtrl_SetStr( Get_hDlgCtrlByID(CMB_DATA1), ListCtrl_GetStr( Get_hDlgCtrlByID(CMB_DATA1+2), 6));
-					DlgCtrl_SetEnable(this->m_hDlg, Get_iDlgCtrlByID(CMB_DATA1+1), FALSE );
-					DlgCtrl_SetGray( this->m_hDlg, Get_iDlgCtrlByID(CMB_DATA1+1), TRUE );
+					DlgCtrl_SetEnable(this->m_hDlg, Get_iDlgCtrlByID(CMB_DATA1+1), TRUE );
+					DlgCtrl_SetGray( this->m_hDlg, Get_iDlgCtrlByID(CMB_DATA1+1), FALSE );
 					Str_Cpy(szRemoteCd, "81");
 
 					Str_Cpy(stMtrChg.COMM_FIRM, "30"); //통신사 LGT
@@ -7901,8 +7901,8 @@ Finally:
 				{
 					// 원격 : LORAWan
 					EditCtrl_SetStr( Get_hDlgCtrlByID(CMB_DATA1), ListCtrl_GetStr( Get_hDlgCtrlByID(CMB_DATA1+2), 13));
-					DlgCtrl_SetEnable(this->m_hDlg, Get_iDlgCtrlByID(CMB_DATA1+1), FALSE );
-					DlgCtrl_SetGray( this->m_hDlg, Get_iDlgCtrlByID(CMB_DATA1+1), TRUE );
+					DlgCtrl_SetEnable(this->m_hDlg, Get_iDlgCtrlByID(CMB_DATA1+1), TRUE );
+					DlgCtrl_SetGray( this->m_hDlg, Get_iDlgCtrlByID(CMB_DATA1+1), FALSE );
 					Str_Cpy(szRemoteCd, "88");
 
 					Str_Cpy(stMtrChg.COMM_FIRM, "30"); //통신사 LGT
@@ -7915,8 +7915,8 @@ Finally:
 				{
 					// 원격 : 다채널
 					EditCtrl_SetStr( Get_hDlgCtrlByID(CMB_DATA1), ListCtrl_GetStr( Get_hDlgCtrlByID(CMB_DATA1+2), 11));
-					DlgCtrl_SetEnable(this->m_hDlg, Get_iDlgCtrlByID(CMB_DATA1+1), FALSE );
-					DlgCtrl_SetGray( this->m_hDlg, Get_iDlgCtrlByID(CMB_DATA1+1), TRUE );
+					DlgCtrl_SetEnable(this->m_hDlg, Get_iDlgCtrlByID(CMB_DATA1+1), TRUE );
+					DlgCtrl_SetGray( this->m_hDlg, Get_iDlgCtrlByID(CMB_DATA1+1), FALSE );
 					Str_Cpy(szRemoteCd, "86");
 
 					Str_Cpy(stMtrChg.COMM_FIRM, "30"); //통신사 LGT
@@ -7929,8 +7929,8 @@ Finally:
 				{
 					// 원격 : 다채널
 					EditCtrl_SetStr( Get_hDlgCtrlByID(CMB_DATA1), ListCtrl_GetStr( Get_hDlgCtrlByID(CMB_DATA1+2), 7));
-					DlgCtrl_SetEnable(this->m_hDlg, Get_iDlgCtrlByID(CMB_DATA1+1), FALSE );
-					DlgCtrl_SetGray( this->m_hDlg, Get_iDlgCtrlByID(CMB_DATA1+1), TRUE );
+					DlgCtrl_SetEnable(this->m_hDlg, Get_iDlgCtrlByID(CMB_DATA1+1), TRUE );
+					DlgCtrl_SetGray( this->m_hDlg, Get_iDlgCtrlByID(CMB_DATA1+1), FALSE );
 					Str_Cpy(szRemoteCd, "82");
 
 					Str_Cpy(stMtrChg.COMM_FIRM, "30"); //통신사 LGT

@@ -315,6 +315,7 @@ card GM_GRPLST
 				break;
 			
 			case BID_REFLESH:
+			
 				if( MessageBoxEx (CONFIRM_YESNO, "자료를 수신받겠습니까?")  == MB_OK)
 				{
 					g_GM_Rcv25012();

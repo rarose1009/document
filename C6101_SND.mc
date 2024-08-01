@@ -1525,7 +1525,7 @@ Finally:
 	char szProd_sts_cd[3];
 	char szCont_flag_cd[3];
 	
-	PRINT("333333333333333",0,0,0);
+	
 		
 		js = JSON_Create(JSON_Array);
 		if( js == NULL  )

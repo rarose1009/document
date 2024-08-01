@@ -26,15 +26,9 @@ card LOGIN
 	//DefType.h에 릴리즈가 선언될 경우, 자동으로 비활성화 됨.
 	//-----------------------------------------------------------------
 	//-----------------------------------------------------------------
-	// #define __USE_DEV_CARD__
+	//#define __USE_DEV_CARD__
 	
 	//릴리즈시 반드시 선언 및 제거 되어야 하는 것들 정의
-
-	// 20240610 진광언
-	// 새로운 Table이나 Column 생성시에는 Alter_Table()을 이용하여 생성 진행.
-	// 현재 case 99 까지 생성되어있는상태. 
-	// TBL_REGIST 테이블에 +1 값 INSERT 진행
-	
 	#ifdef VER_RELEASE
 	
 		//로컬 릴리즈 선언 활성화
@@ -1945,96 +1939,96 @@ card LOGIN
 			    Str_Cpy(szSql, "INSERT INTO TBL_REGIST (SEQ, GKEY, TXTDETAIL) VALUES(75, '20230517', '1. 체납세대 확인')");
     		    nSqlRet = g_Sql_DirectExecute( szSql );
 
-				nRet++;					  			      				
-
+				nRet++;		
+			
 			case 75:
-				Mem_Set((byte*)szSql ,0x00, sizeof(szSql) );
-			    Str_Cpy(szSql, "ALTER TABLE C6301_CHANGEDATA ADD COLUMN [OTHER_PRICE] VARCHAR(10)");
-  			    g_Sql_DirectExecute( szSql );
-				
-				Mem_Set((byte*)szSql ,0x00, sizeof(szSql) );
-			    Str_Cpy(szSql, "INSERT INTO TBL_REGIST (SEQ, GKEY, TXTDETAIL) VALUES(76, '20230523', '1. 기타부품 컬럼 추가')");
-    		    nSqlRet = g_Sql_DirectExecute( szSql );
-
-				nRet++;					  			      								
-				
-			case 76:
-				Mem_Set((byte*)szSql ,0x00, sizeof(szSql) );
-			    Str_Cpy(szSql, "ALTER TABLE C6301_CHANGEDATA ADD COLUMN [BATTERY_YN] VARCHAR(2)");
-  			    g_Sql_DirectExecute( szSql );
-				
-				Mem_Set((byte*)szSql ,0x00, sizeof(szSql) );
-			    Str_Cpy(szSql, "INSERT INTO TBL_REGIST (SEQ, GKEY, TXTDETAIL) VALUES(77, '20230523', '1. 배터리유무 컬럼 추가')");
-    		    nSqlRet = g_Sql_DirectExecute( szSql );
-
-				nRet++;					  			      								
-
-			case 77:
-				Mem_Set((byte*)szSql ,0x00, sizeof(szSql) );
-			    Str_Cpy(szSql, "ALTER TABLE C6301_CHANGEDATA ADD COLUMN [MTRDISPLAY_YN] VARCHAR(2)");
-  			    g_Sql_DirectExecute( szSql );
-				
-				Mem_Set((byte*)szSql ,0x00, sizeof(szSql) );
-			    Str_Cpy(szSql, "INSERT INTO TBL_REGIST (SEQ, GKEY, TXTDETAIL) VALUES(78, '20230523', '1. 지시부유무 컬럼 추가')");
-    		    nSqlRet = g_Sql_DirectExecute( szSql );
-
-				nRet++;			
-
-			case 78:
-				Mem_Set((byte*)szSql ,0x00, sizeof(szSql) );
-			    Str_Cpy(szSql, "ALTER TABLE C6301_CHANGEDATA ADD COLUMN [CHK_BULD_CENTER_CD] VARCHAR(2)");
-  			    g_Sql_DirectExecute( szSql );	
-				
-				Mem_Set((byte*)szSql ,0x00, sizeof(szSql) );
-			    Str_Cpy(szSql, "INSERT INTO TBL_REGIST (SEQ, GKEY, TXTDETAIL) VALUES(79, '20230621', '1. 건물센터코드(특수계량기)')");
-    		    nSqlRet = g_Sql_DirectExecute( szSql );
-
-				nRet++;			 
-
-			case 79:
 				Mem_Set((byte*)szSql ,0x00, sizeof(szSql) );
 			    Str_Cpy(szSql, "ALTER TABLE C6101_PROMISE_BUR ADD COLUMN [SPECIAL_YN] VARCHAR(2)");
   			    g_Sql_DirectExecute( szSql );			
 
 				Mem_Set((byte*)szSql ,0x00, sizeof(szSql) );
-				Str_Cpy(szSql, "INSERT INTO TBL_REGIST (SEQ, GKEY, TXTDETAIL) VALUES(80, '20230704', '1. 특정계량기여부')");
+				Str_Cpy(szSql, "INSERT INTO TBL_REGIST (SEQ, GKEY, TXTDETAIL) VALUES(76, '20230704', '1. 특정계량기여부')");
 				nSqlRet = g_Sql_DirectExecute( szSql );
-
+				
 				nRet++;
 			
-			case 80:
+			case 76:
 				Mem_Set((byte*)szSql ,0x00, sizeof(szSql) );
 			    Str_Cpy(szSql, "ALTER TABLE NORMAL_DATA ADD COLUMN [MTR_REMOTE_AMI] VARCHAR(10)");
   			    g_Sql_DirectExecute( szSql );			
 
 				Mem_Set((byte*)szSql ,0x00, sizeof(szSql) );
-				Str_Cpy(szSql, "INSERT INTO TBL_REGIST (SEQ, GKEY, TXTDETAIL) VALUES(81, '20230712', '1. 계량기 원격구분')");
+				Str_Cpy(szSql, "INSERT INTO TBL_REGIST (SEQ, GKEY, TXTDETAIL) VALUES(77, '20230712', '1. 계량기 원격구분')");
 				nSqlRet = g_Sql_DirectExecute( szSql );
-
+				
 				nRet++;
 
-			case 81:
+			case 77:
 				Mem_Set((byte*)szSql ,0x00, sizeof(szSql) );
 			    Str_Cpy(szSql, "ALTER TABLE NORMAL_DATA ADD COLUMN [USAGE_CD] VARCHAR(6)");
   			    g_Sql_DirectExecute( szSql );			
 
 				Mem_Set((byte*)szSql ,0x00, sizeof(szSql) );
-				Str_Cpy(szSql, "INSERT INTO TBL_REGIST (SEQ, GKEY, TXTDETAIL) VALUES(82, '20230728', '1. 용도코드')");
+				Str_Cpy(szSql, "INSERT INTO TBL_REGIST (SEQ, GKEY, TXTDETAIL) VALUES(78, '20230728', '1. 용도코드')");
 				nSqlRet = g_Sql_DirectExecute( szSql );
-
 				nRet++;
-
-			case 82:
+			
+			case 78:
 				Mem_Set((byte*)szSql ,0x00, sizeof(szSql) );
 			    Str_Cpy(szSql, "ALTER TABLE NORMAL_DATA ADD COLUMN [BILL_YN] VARCHAR(2)");
   			    g_Sql_DirectExecute( szSql );			
 
 				Mem_Set((byte*)szSql ,0x00, sizeof(szSql) );
-				Str_Cpy(szSql, "INSERT INTO TBL_REGIST (SEQ, GKEY, TXTDETAIL) VALUES(83, '20230731', '1. 사용계약서 작성여부')");
+				Str_Cpy(szSql, "INSERT INTO TBL_REGIST (SEQ, GKEY, TXTDETAIL) VALUES(79, '20230731', '1.사용계약서 작성여부')");
+				
 				nSqlRet = g_Sql_DirectExecute( szSql );
+				
+				nRet++;
+				
+			case 79:
+				Mem_Set((byte*)szSql ,0x00, sizeof(szSql) );
+			    Str_Cpy(szSql, "ALTER TABLE C6301_CHANGEDATA ADD COLUMN [OTHER_PRICE] VARCHAR(10)");
+  			    g_Sql_DirectExecute( szSql );
+				
+				Mem_Set((byte*)szSql ,0x00, sizeof(szSql) );
+			    Str_Cpy(szSql, "INSERT INTO TBL_REGIST (SEQ, GKEY, TXTDETAIL) VALUES(80, '20230523', '1. 기타부품 컬럼 추가')");
+    		    nSqlRet = g_Sql_DirectExecute( szSql );
+
+				nRet++;					  			      								
+				
+			case 80:
+				Mem_Set((byte*)szSql ,0x00, sizeof(szSql) );
+			    Str_Cpy(szSql, "ALTER TABLE C6301_CHANGEDATA ADD COLUMN [BATTERY_YN] VARCHAR(2)");
+  			    g_Sql_DirectExecute( szSql );
+				
+				Mem_Set((byte*)szSql ,0x00, sizeof(szSql) );
+			    Str_Cpy(szSql, "INSERT INTO TBL_REGIST (SEQ, GKEY, TXTDETAIL) VALUES(81, '20230523', '1. 배터리유무 컬럼 추가')");
+    		    nSqlRet = g_Sql_DirectExecute( szSql );
+
+				nRet++;					  			      								
+
+			case 81:
+				Mem_Set((byte*)szSql ,0x00, sizeof(szSql) );
+			    Str_Cpy(szSql, "ALTER TABLE C6301_CHANGEDATA ADD COLUMN [MTRDISPLAY_YN] VARCHAR(2)");
+  			    g_Sql_DirectExecute( szSql );
+				
+				Mem_Set((byte*)szSql ,0x00, sizeof(szSql) );
+			    Str_Cpy(szSql, "INSERT INTO TBL_REGIST (SEQ, GKEY, TXTDETAIL) VALUES(82, '20230523', '1. 지시부유무 컬럼 추가')");
+    		    nSqlRet = g_Sql_DirectExecute( szSql );
+
+				nRet++;	
+				
+			case 82:
+				Mem_Set((byte*)szSql ,0x00, sizeof(szSql) );
+			    Str_Cpy(szSql, "ALTER TABLE C6301_CHANGEDATA ADD COLUMN [CHK_BULD_CENTER_CD] VARCHAR(2)");
+  			    g_Sql_DirectExecute( szSql );	
+				
+				Mem_Set((byte*)szSql ,0x00, sizeof(szSql) );
+			    Str_Cpy(szSql, "INSERT INTO TBL_REGIST (SEQ, GKEY, TXTDETAIL) VALUES(83, '20230621', '1. 건물센터코드(특수계량기)')");
+    		    nSqlRet = g_Sql_DirectExecute( szSql );
 
 				nRet++;
-
+			
 			case 83:
 				Mem_Set((byte*)szSql ,0x00, sizeof(szSql) );
 			    Str_Cpy(szSql, "ALTER TABLE C6301_CHANGEDATA ADD COLUMN [REMOTE_SYSTEM] VARCHAR(2)");
@@ -2045,17 +2039,16 @@ card LOGIN
     		    nSqlRet = g_Sql_DirectExecute( szSql );
 
 				nRet++;
-
+			
 			case 84:
 				Table_OldMtr_Add();
-				
 				
 				Mem_Set((byte*)szSql ,0x00, sizeof(szSql) );
 			    Str_Cpy(szSql, "INSERT INTO TBL_REGIST (SEQ, GKEY, TXTDETAIL) VALUES(85, '20230824', '1. C6301_OLDMTRIDNUM 테이블 생성')");
     		    nSqlRet = g_Sql_DirectExecute( szSql );
 
 				nRet++;
-
+				
 			case 85:
 				Mem_Set((byte*)szSql ,0x00, sizeof(szSql) );
 			    Str_Cpy(szSql, "ALTER TABLE C6301_CHANGEDATA ADD COLUMN [OLD_MTR_ID_NUM] VARCHAR(25)");
@@ -2066,7 +2059,7 @@ card LOGIN
     		    nSqlRet = g_Sql_DirectExecute( szSql );
 
 				nRet++;
-
+				
 			case 86: 
 			    Mem_Set((byte*)szSql ,0x00, sizeof(szSql) );
 				Str_Cpy(szSql, "ALTER TABLE C6101_PROMISE_MTR ADD COLUMN [CHK_BULD_CENTER_CD] VARCHAR(2)");
@@ -2076,8 +2069,8 @@ card LOGIN
 			    Str_Cpy(szSql, "INSERT INTO TBL_REGIST (SEQ, GKEY, TXTDETAIL) VALUES(87, '20230831', '1. 건물센터코드(특수계량기)')");
     		    nSqlRet = g_Sql_DirectExecute( szSql );
 
-				nRet++;		
-
+				nRet++;
+				
 			case 87:
 			    Mem_Set((byte*)szSql ,0x00, sizeof(szSql) );
 			    Str_Cpy(szSql, "ALTER TABLE C6101_PROMISE_MTR ADD COLUMN [BATTERY_YN] VARCHAR(2)");
@@ -2087,8 +2080,8 @@ card LOGIN
 			    Str_Cpy(szSql, "INSERT INTO TBL_REGIST (SEQ, GKEY, TXTDETAIL) VALUES(88, '20230831', '1. 배터리유무 컬럼 추가')");
     		    nSqlRet = g_Sql_DirectExecute( szSql );
 
-				nRet++;		
-
+				nRet++;
+				
 			case 88:
 			    Mem_Set((byte*)szSql ,0x00, sizeof(szSql) );
 			    Str_Cpy(szSql, "ALTER TABLE C6101_PROMISE_MTR ADD COLUMN [MTRDISPLAY_YN] VARCHAR(2)");
@@ -2098,8 +2091,8 @@ card LOGIN
 			    Str_Cpy(szSql, "INSERT INTO TBL_REGIST (SEQ, GKEY, TXTDETAIL) VALUES(89, '20230831', '1. 지시부유무 컬럼 추가')");
     		    nSqlRet = g_Sql_DirectExecute( szSql );
 
-				nRet++;		
-
+				nRet++;
+			
 			case 89:
 			    Mem_Set((byte*)szSql ,0x00, sizeof(szSql) );
 			    Str_Cpy(szSql, "ALTER TABLE C6101_PROMISE_MTR ADD COLUMN [OTHER_PRICE] VARCHAR(10)");
@@ -2109,8 +2102,8 @@ card LOGIN
 			    Str_Cpy(szSql, "INSERT INTO TBL_REGIST (SEQ, GKEY, TXTDETAIL) VALUES(90, '20230831', '1. 기타부품 컬럼 추가')");
     		    nSqlRet = g_Sql_DirectExecute( szSql );
 
-				nRet++;		
-
+				nRet++;	
+				
 			case 90:
 			    Mem_Set((byte*)szSql ,0x00, sizeof(szSql) );
 			    Str_Cpy(szSql, "ALTER TABLE C6101_CHG_MTR_INFO ADD COLUMN [OTHER_PRICE] VARCHAR(10)");
@@ -2121,7 +2114,7 @@ card LOGIN
     		    nSqlRet = g_Sql_DirectExecute( szSql );
 
 				nRet++;	
-
+				
 			case 91:
 			    Mem_Set((byte*)szSql ,0x00, sizeof(szSql) );
 			    Str_Cpy(szSql, "ALTER TABLE C6101_CHG_MTR_INFO ADD COLUMN [BATTERY_YN] VARCHAR(2)");
@@ -2131,8 +2124,8 @@ card LOGIN
 			    Str_Cpy(szSql, "INSERT INTO TBL_REGIST (SEQ, GKEY, TXTDETAIL) VALUES(92, '20230831', '1. 배터리유무 컬럼 추가')");
     		    nSqlRet = g_Sql_DirectExecute( szSql );
 
-				nRet++;		
-
+				nRet++;	
+				
 			case 92:
 			    Mem_Set((byte*)szSql ,0x00, sizeof(szSql) );
 			    Str_Cpy(szSql, "ALTER TABLE C6101_CHG_MTR_INFO ADD COLUMN [MTRDISPLAY_YN] VARCHAR(2)");
@@ -2156,15 +2149,19 @@ card LOGIN
 				nRet++;	
 
 			case 94:
-				Table_C6101_CHK_BULD_CENTER_CD();
+			    Mem_Set((byte*)szSql ,0x00, sizeof(szSql) );
+			    Str_Cpy(szSql, "ALTER TABLE C6101_CHG_MTR_INFO ADD COLUMN [OLD_MTR_ID_NUM] VARCHAR(25)");
+  			    g_Sql_DirectExecute( szSql );
 				
 				Mem_Set((byte*)szSql ,0x00, sizeof(szSql) );
-			    Str_Cpy(szSql, "INSERT INTO TBL_REGIST (SEQ, GKEY, TXTDETAIL) VALUES(95, '20230905', '1. C6101_CHK_BULD_CENTER_CD 테이블 생성')");
+			    Str_Cpy(szSql, "INSERT INTO TBL_REGIST (SEQ, GKEY, TXTDETAIL) VALUES(95, '20230831', '1. OLD_MTR_ID_NUM 컬럼 생성')");
     		    nSqlRet = g_Sql_DirectExecute( szSql );
 
 				nRet++;
-
+				
 			case 95:
+				Table_C6101_CHK_BULD_CENTER_CD();
+				
 				Mem_Set((byte*)szSql ,0x00, sizeof(szSql) );
 			    Str_Cpy(szSql, "INSERT INTO TBL_REGIST (SEQ, GKEY, TXTDETAIL) VALUES(96, '20230905', '1. C6101_CHK_BULD_CENTER_CD 테이블 생성')");
     		    nSqlRet = g_Sql_DirectExecute( szSql );
@@ -2208,86 +2205,19 @@ card LOGIN
 			    Str_Cpy(szSql, "INSERT INTO TBL_REGIST (SEQ, GKEY, TXTDETAIL) VALUES(97, '20231030', '1. 조정기 필터청소')");
     		    nSqlRet = g_Sql_DirectExecute( szSql );
 
-				nRet++;				
-
+				nRet++;	
 			case 97:
-				Mem_Set((byte*)szSql ,0x00, sizeof(szSql) );
-				Str_Cpy(szSql, "ALTER TABLE C6101_PROMISE_MTR ADD COLUMN [ADJ_AMT_YN] VARCHAR(2)");
-				g_Sql_DirectExecute( szSql );
-
-				Mem_Set((byte*)szSql ,0x00, sizeof(szSql) );
-				Str_Cpy(szSql, "ALTER TABLE C6101_PROMISE_MTR ADD COLUMN [AMT_CHK_YN] VARCHAR(2)");
-				g_Sql_DirectExecute( szSql );
-
-				Mem_Set((byte*)szSql ,0x00, sizeof(szSql) );
-				Str_Cpy(szSql, "ALTER TABLE C6101_NONPAY ADD COLUMN [AMT_CHK_YN] VARCHAR(2)");
-				g_Sql_DirectExecute( szSql );
-
-				Mem_Set((byte*)szSql ,0x00, sizeof(szSql) );
-				Str_Cpy(szSql, "ALTER TABLE C6101_NONPAY ADD COLUMN [SUB_UNPAY_AMT] NUMBERIC(10)");
-				g_Sql_DirectExecute( szSql );
-
-				Mem_Set((byte*)szSql ,0x00, sizeof(szSql) );
-				Str_Cpy(szSql, "ALTER TABLE C6101_PROMISE_MTR ADD COLUMN [SUB_ACCOUNT] NUMBERIC(9)");
-				g_Sql_DirectExecute( szSql );
-
-				Mem_Set((byte*)szSql ,0x00, sizeof(szSql) );
-			    Str_Cpy(szSql, "INSERT INTO TBL_REGIST (SEQ, GKEY, TXTDETAIL) VALUES(98, '20240103', '1. 예수금 YN')");
-    		    nSqlRet = g_Sql_DirectExecute( szSql );
-
-				nRet++;
-
-			case 98 :
-
-				Mem_Set((byte*)szSql ,0x00, sizeof(szSql) );
-			    Str_Cpy(szSql, "INSERT INTO TBL_REGIST (SEQ, GKEY, TXTDETAIL) VALUES(99, '20240103', '1. 테스트 98누락')");
-    		    nSqlRet = g_Sql_DirectExecute( szSql );
-
-			case 99 : 
-			    Mem_Set((byte*)szSql ,0x00, sizeof(szSql) );				
+				
+				Mem_Set((byte*)szSql ,0x00, sizeof(szSql) );				
 				Str_Cpy(szSql, "ALTER TABLE RCV_TMP ADD COLUMN [PARAM102] VARCHAR(3000)");
 				g_Sql_DirectExecute( szSql );
 
 				Mem_Set((byte*)szSql ,0x00, sizeof(szSql) );
-			    Str_Cpy(szSql, "INSERT INTO TBL_REGIST (SEQ, GKEY, TXTDETAIL) VALUES(100, '20240312', '1. 활동결과내역(ACTIVE_RSLT_DESC) 컬럼사이즈 1200 으로 변경')");
+			    Str_Cpy(szSql, "INSERT INTO TBL_REGIST (SEQ, GKEY, TXTDETAIL) VALUES(98, '20240312', '1. 활동결과내역(ACTIVE_RSLT_DESC) 컬럼사이즈 1200 으로 변경')");
     		    nSqlRet = g_Sql_DirectExecute( szSql );
-
-			case 100 : 
-			    Mem_Set((byte*)szSql ,0x00, sizeof(szSql) );				
-				Str_Cpy(szSql, "ALTER TABLE C6301_CHANGEDATA ADD COLUMN [AMI_OBJ_YN] VARCHAR(1)");
-				g_Sql_DirectExecute( szSql );
-
-				Mem_Set((byte*)szSql ,0x00, sizeof(szSql) );
-			    Str_Cpy(szSql, "INSERT INTO TBL_REGIST (SEQ, GKEY, TXTDETAIL) VALUES(101, '20240624', '1. AMI 대상 수신')");
-    		    nSqlRet = g_Sql_DirectExecute( szSql );
-			
-			case 101 : 
-			    Mem_Set((byte*)szSql ,0x00, sizeof(szSql) );				
-				Str_Cpy(szSql, "ALTER TABLE C6301_CHANGEDATA ADD COLUMN [CONCENT_INST_AMT_YN] VARCHAR(1)");
-				g_Sql_DirectExecute( szSql );
-
-				Mem_Set((byte*)szSql ,0x00, sizeof(szSql) );
-			    Str_Cpy(szSql, "INSERT INTO TBL_REGIST (SEQ, GKEY, TXTDETAIL) VALUES(102, '20240625', '1. 집중기설치비용')");
-    		    nSqlRet = g_Sql_DirectExecute( szSql );
-
-			case 102 : 
-			    Mem_Set((byte*)szSql ,0x00, sizeof(szSql) );				
-				Str_Cpy(szSql, "ALTER TABLE SPECIAL_MTR ADD COLUMN [BUILT_IN_YN] VARCHAR(1)");
-				g_Sql_DirectExecute( szSql );
-
-				Mem_Set((byte*)szSql ,0x00, sizeof(szSql) );
-			    Str_Cpy(szSql, "INSERT INTO TBL_REGIST (SEQ, GKEY, TXTDETAIL) VALUES(103, '20240701', '1. 특정점검 빌트인설치여부')");
-    		    nSqlRet = g_Sql_DirectExecute( szSql );
-
-			case 103 : 
-			    Mem_Set((byte*)szSql ,0x00, sizeof(szSql) );				
-				Str_Cpy(szSql, "ALTER TABLE GUMDATA ADD COLUMN [DISC_CUST_YN] VARCHAR(1)");
-				g_Sql_DirectExecute( szSql );
-
-				Mem_Set((byte*)szSql ,0x00, sizeof(szSql) );
-			    Str_Cpy(szSql, "INSERT INTO TBL_REGIST (SEQ, GKEY, TXTDETAIL) VALUES(104, '20240701', '1. 특정점검 빌트인설치여부')");
-    		    nSqlRet = g_Sql_DirectExecute( szSql );
-
+				
+				nRet++;	
+				
 			default:
 				break;
 		}
@@ -4269,7 +4199,7 @@ Finally:
 		
 		return;
 	}
-
+	
 	void Table_OldMtr_Add(void)
 	{
 		handle hdb = NULL;
@@ -4294,8 +4224,8 @@ Finally:
 		
 		return;
 	}
-
-	void Table_C6101_CHK_BULD_CENTER_CD(void)
+	
+		void Table_C6101_CHK_BULD_CENTER_CD(void)
 	{
 		handle hdb = NULL;
 		SQLITE sql = NewSqLite();

@@ -900,7 +900,6 @@ card GM_SMSSND
 				Str_Cpy(m_send_tel_flag, "3");//°í°´¼¾ÅÍ
 				
 				nchkcnt = Analy_Phone(stUserinfo.sztel, szPhoneNum1, szPhoneNum2, szPhoneNum3 );
-				PRINT("55555555555555555555%d :",nchkcnt,0,0);
 				if( nchkcnt > 0 )
 				{
 					Str_Cpy(szPhoneNum , szPhoneNum1 );

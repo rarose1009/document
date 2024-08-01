@@ -228,16 +228,12 @@ void	SetStyle(void)
 	char szDp[20];
 	long i;
 	long chkmm;
-	long chkTime;
-	long chkDate;
 	long date;
 	
 		Mem_Set( (byte*)sztmp, 0x00, sizeof(sztmp) );
 		Mem_Set( (byte*)szDp, 0x00, sizeof(szDp) );
 	
-		chkmm = Time_GetDate()- Time_GetDay()+15; //현재날짜에서 요일을빼고 그 숫자에 15일을 더한날짜 20240708
-		//ex 20240627 -목요일(4)  + 15 = 20240708 그래서 현재는 202407부터 5개
-		
+		chkmm = Time_GetDate()- Time_GetDay()+15;
 		//테스트용 년월
 		//ListCtrl_AddItem (Get_hDlgCtrlByID(CMB_SCDT+2), "201403", 0, ICON_NONE);
 		//ListCtrl_AddItem (Get_hDlgCtrlByID(CMB_SCDT+2), "201406", 0, ICON_NONE);
@@ -1358,7 +1354,7 @@ void	SetStyle(void)
 		}
 		else
 		{
-			// Del_Data();
+			Del_Data();
 			return -1;
 		}
 		

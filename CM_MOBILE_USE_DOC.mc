@@ -6300,14 +6300,15 @@ Finally:
 		{
 			if( MessageBoxEx (CONFIRM_YESNO, "등록에 실패하였습니다.\n다시 전송하시겠습니까?")  == MB_OK)
 			{
+				Snd_OzView();
+				
 				if( g_lMobile_Inflow_Path == 2 )
 				{
 					Mem_Set( (byte*)szSql, 0x00, sizeof(szSql) );
 					SPRINT( szSql, " UPDATE NORMAL_DATA SET BILL_YN = 'Y' WHERE USE_CONT_NUM = '%s' AND INST_PLACE_NUM = '%s'", stMudData.USE_CONT_NUM, stMudData.INST_PLACE_NUM, 0 );
 					g_Sql_DirectExecute( szSql );
 				}
-
-				Snd_OzView();
+				
 				return 0;
 			}
 			

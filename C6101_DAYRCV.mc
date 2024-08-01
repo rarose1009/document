@@ -1357,7 +1357,7 @@ Finally:
 	
 		//PRINT("callback TR68404 success", 0, 0, 0);
 		g_Sock_Close();
-		// RCV75108();
+		RCV75108();
 		
 		if(g_Chk_Json(68404) >= 0)
 		{

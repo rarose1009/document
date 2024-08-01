@@ -396,18 +396,15 @@ card C6202_CLEAR
 	void	OnInit(char bFirst)
 	{
 		long lCnt;
-		PRINT("AAAAAAAAAAAAAAAAAAAAAAAA",0,0,0);
-		PRINT("g_nWorkFlag : %d",g_nWorkFlag,0,0);
+
 		//g_nWorkFlag == 820 -> 해제활동
 		if( g_nWorkFlag == 820 )
 		{
-			PRINT("BBBBBBBBBBBBBBBBBBBB",0,0,0);
 			m_bFirst = INIT_MAIN;
 			bFirst = m_bFirst;
 		}
 		else
 		{
-			PRINT("CCCCCCCCCCCCCCCCCCCC",0,0,0);
 			m_bFirst = INIT_NPCLEAR;
 			bFirst = m_bFirst;
 		}
@@ -1825,15 +1822,13 @@ card C6202_CLEAR
 					g_Sql_DirectExecute(szSql);
 				}
 			}
-			PRINT("0000000000000000000000",0,0,0);
+			
 			if( m_bFirst == INIT_MAIN )
 			{
-				PRINT("11111111111111111111",0,0,0);
 				Snd_Clear_sms();
 			}
 			else
 			{
-				PRINT("222222222222222222",0,0,0);
 				MessageBoxEx(CONFIRM_OK, "처리가 완료 되었습니다.");
 				
 				Str_Cpy(stNoPayObj.VISIT_FLAG, "Y");

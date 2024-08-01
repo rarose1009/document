@@ -2245,7 +2245,7 @@ Finally:
 		char szAddr[300];
 		char szTel[50];
 		long i;
-		long nLen = 0;
+	
 		//ÆäÀÌÁö
 		m_lTotpage = FS_GetSrchTotCnt();
 		SPRINT(m_szCnt_index, "%d/%d", g_nActIndex+1, m_lTotpage, 0);
@@ -2312,7 +2312,6 @@ Finally:
 			if(Str_Len(stBf.COUNTY) != 0)
 			{
 				Str_Cpy(szAddr,  stBf.COUNTY );
-				Str_Cpy(szAddr,  "1111111111111111111111111111111111111" );
 			}
 			if(Str_Len(stBf.TOWN) != 0)
 			{
@@ -2323,7 +2322,7 @@ Finally:
 			{
 				Str_Cat(szAddr,  " " );
 				Str_Cat(szAddr,  stBf.VILLAGE);
-			}		
+			}			
 			if(Str_Len(stBf.ADDR1_M) != 0)
 			{
 				Str_Cat(szAddr,  " " );
@@ -2347,22 +2346,11 @@ Finally:
 					Str_Cat(szAddr,  " ");
 					Str_Cat(szAddr, stBf.LOT_NUM_SECOND_ADDR);
 				}
-				
 				if(Str_Len(stBf.BLD_NM) != 0)
 				{
 					Str_Cat(szAddr,  " ");
 					Str_Cat(szAddr,  stBf.BLD_NM);
 				}
-				nLen = Str_Len(szAddr);
-				PRINT("nLen8888 : %d",nLen,0,0);
-				// if(Str_Len(szAddr) > 26 && Str_Len(szAddr) < 45)
-				// {
-				// 	Str_Cat(szAddr,  "\n");
-				// }
-				// if(Str_Len(szAddr) > 51 && Str_Len(szAddr) < 64)
-				// {
-				// 	Str_Cat(szAddr,  "\n");
-				// }
 				if(Str_Len(stBf.HOUSE_CNT) != 0)
 				{
 					Str_Cat(szAddr,  " ");
@@ -2377,8 +2365,6 @@ Finally:
 					Str_Cat(szAddr,  " ");
 					Str_Cat(szAddr, stBf.CO_LIVE_NM);
 				}
-				Str_Cat(szAddr,  "\n");
-				
 				if(Str_Len(stBf.BLD_NM) != 0)
 				{
 					Str_Cat(szAddr,  " ");
@@ -2393,7 +2379,6 @@ Finally:
 			
 			EditCtrl_SetStr(Get_hDlgCtrlByID(TXT_DATA4), szAddr);
 			//EditCtrl_SetStr(Get_hDlgCtrlByID(TXT_DATA5), szAddr);
-			PRINT("szAddr : %s",szAddr,0,0 );
 		}
 		else
 		{

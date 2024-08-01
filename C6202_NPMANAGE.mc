@@ -751,8 +751,7 @@ enum
 	void	OnInit(char bFirst)
 	{
 		long lCnt;
-		PRINT("AAAAAAAAAAAAAAAAAAAAAAAA",0,0,0);
-		PRINT("g_nWorkFlag : %d",g_nWorkFlag,0,0);
+	
 		m_bFirst = bFirst;
 	
 		switch (bFirst)

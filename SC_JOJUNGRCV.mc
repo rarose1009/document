@@ -372,7 +372,7 @@ void	SetStyle(void)
 		{
 			JSON_Finalize( g_pjcomm );
 			g_pjcomm = NULL;
-		}
+		}		
 		g_pjcomm = g_CreateJsonHead(g_pjcomm, szUrl, 311317, FALSE);
 		
 		JSON_SetValue( g_pjcomm, 'C', "safe_chk_type",    m_szSafechktype);

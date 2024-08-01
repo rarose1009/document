@@ -32,5 +32,8 @@
         "euckr"
     ],
     "git-graph.fileEncoding": "utf8",
-    "files.encoding": "euckr"
+    "files.encoding": "euckr",
+    "todo-tree.general.tagGroups": {
+        
+    }
 }

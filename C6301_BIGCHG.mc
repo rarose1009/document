@@ -196,7 +196,6 @@ card C6301_BIGCHG
 	void SetBtnImg(void);
 	void SetStyle(void);
 	void SetData(void);
-	void SetDetaLocData(void);
 	void SetCombo(void);
 	void SetCombo_Valid(void);		//유효 콤보 셋팅
 	void Set_Index(void);
@@ -555,7 +554,6 @@ card C6301_BIGCHG
 				}
 				else
 				{
-					// SetDetaLocData();
 					ReDraw();
 				}
 				
@@ -661,7 +659,6 @@ card C6301_BIGCHG
 				SaveInput();
 				Set_Index();
 				g_nPhotoFlag = 7;
-				Str_Cpy(g_szMTR_NUM, stMtrChg.MTR_NUM);
 				Card_Move("C6301_CUSTINFO");
 				break;
 			case BID_ADDR:
@@ -691,7 +688,7 @@ card C6301_BIGCHG
 				{
 					Mem_Set( (byte*)m_szBartmp, 0x00, sizeof(m_szBartmp) );
 					Str_Cpy(m_szBartmp, EditCtrl_GetStr(Get_hDlgCtrlByID(EDT_DATA1)));
-
+					
 					if (Str_Cmp(m_szBartmp, stMtrChg.MTR_ID_NUM) == 0)
 					{
 						MessageBoxEx (CONFIRM_OK, "철거계량기와 설치계량기 \n 기물번호가 동일합니다.");
@@ -701,7 +698,6 @@ card C6301_BIGCHG
 						Barcode_Func();
 						ON_DRAW();
 					}
-					
 					
 					
 				}
@@ -1591,62 +1587,6 @@ card C6301_BIGCHG
 		return;
 	}
 
-void SetDetaLocData(void)
-	{
-		long i;
-		char szindex[5];
-		handle hdb = NULL;
-		handle hstmt = NULL;
-		SQLITE sql = NewSqLite();
-
-		Mem_Set((byte*)&stMtrChg, 0x00, sizeof(stMtrChg));
-		Mem_Set( (byte*)m_szSql, 0x00, sizeof(m_szSql) );
-
-		hdb = sql->Open(sql);
-		if( hdb == NULL )
-		{
-			goto Finally;
-		}
-
-		hstmt = sql->CreateStatement(sql,
-		"SELECT MTR_DETA_LOC FROM C6301_CHANGEDATA WHERE ROWID = ?"
-		);
-		
-		if( hstmt == NULL )
-		{
-			PRINT("::SQL_CreateStatement fail [%s]", sql->GetLastError(sql), 0, 0);
-			goto Finally;
-		}
-
-		i = 0;
-		Mem_Set((byte*)&szindex, 0x00, sizeof(szindex));
-		Str_ItoA(g_lindex,szindex,10);
-
-		sql->Bind(sql, i++, 'U', (long*)&szindex , 4, DECRYPT);
-
-		if(sql->Execute(sql) == FALSE)
-		{
-			PRINT("::SQL_Execute fail [%s]", sql->GetLastError(sql), 0, 0);
-			goto Finally;
-		}
-
-		if(sql->Next(sql) == TRUE )
-		{	
-			i = 0;
-			sql->GetValue( sql, i++, 'U', (long*) stMtrChg.MTR_DETA_LOC            , 30 +1, DECRYPT );
-		}
-		else
-		{
-			PRINT("::sql->Next fail [%s]",sql->GetLastError(sql),0,0);
-			goto Finally;
-		}
-
-Finally:
-		DelSqLite(sql);
-		
-		return;
-
-	}
 //------------------------------------------------------------------
 	void SetData(void)
 	{

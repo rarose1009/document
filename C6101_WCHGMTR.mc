@@ -490,10 +490,10 @@ card C6101_WCHGMTR
 				Mem_Set( (byte*)m_lCheckPAY_2, 0x00, sizeof(m_lCheckPAY_2));
 				Str_Cpy(m_lCheckPAY_2, EditCtrl_GetStr(Get_hDlgCtrlByID(CMB_AF_REMOTE_FLAG)));				
 			
-				// if(Str_Cmp(stChgMtr.chk_buld_center_cd,"41") == 0 || Str_Cmp(stChgMtr.chk_buld_center_cd,"42") == 0 
-				// || Str_Cmp(stChgMtr.chk_buld_center_cd,"43") == 0 || Str_Cmp(stChgMtr.chk_buld_center_cd,"44") == 0 
-				// || Str_Cmp(stChgMtr.chk_buld_center_cd,"45") == 0 || Str_Cmp(stChgMtr.chk_buld_center_cd,"46") == 0 )
-				// {
+				if(Str_Cmp(stChgMtr.chk_buld_center_cd,"41") == 0 || Str_Cmp(stChgMtr.chk_buld_center_cd,"42") == 0 
+				|| Str_Cmp(stChgMtr.chk_buld_center_cd,"43") == 0 || Str_Cmp(stChgMtr.chk_buld_center_cd,"44") == 0 
+				|| Str_Cmp(stChgMtr.chk_buld_center_cd,"45") == 0 || Str_Cmp(stChgMtr.chk_buld_center_cd,"46") == 0 )
+				{
 					if(Str_Cmp(m_lCheckPAY, "펄스") == 0 || Str_Cmp(m_lCheckPAY, "다기능") == 0 || Str_Cmp(m_lCheckPAY, "누출점검용") == 0 
 					|| Str_Cmp(m_lCheckPAY, "디지털 누출") == 0	|| Str_Cmp(m_lCheckPAY, "누출점검용(듀얼)") == 0 || Str_Cmp(m_lCheckPAY, "디지털 누출(듀얼)") == 0 )
 					{
@@ -512,7 +512,7 @@ card C6101_WCHGMTR
 						}
 					}
 					
-				// }
+				}
 
 				// break;
 			
@@ -533,10 +533,10 @@ card C6101_WCHGMTR
 
 				Mem_Set( (byte*)m_lCheckPAY_2, 0x00, sizeof(m_lCheckPAY_2));
 				Str_Cpy(m_lCheckPAY_2, EditCtrl_GetStr(Get_hDlgCtrlByID(CMB_AF_REMOTE_FLAG)));				
-				// if(Str_Cmp(stChgMtr.chk_buld_center_cd,"41") == 0 || Str_Cmp(stChgMtr.chk_buld_center_cd,"42") == 0 
-				// || Str_Cmp(stChgMtr.chk_buld_center_cd,"43") == 0 || Str_Cmp(stChgMtr.chk_buld_center_cd,"44") == 0
-				// || Str_Cmp(stChgMtr.chk_buld_center_cd,"45") == 0 || Str_Cmp(stChgMtr.chk_buld_center_cd,"46") == 0 )
-				// {
+				if(Str_Cmp(stChgMtr.chk_buld_center_cd,"41") == 0 || Str_Cmp(stChgMtr.chk_buld_center_cd,"42") == 0 
+				|| Str_Cmp(stChgMtr.chk_buld_center_cd,"43") == 0 || Str_Cmp(stChgMtr.chk_buld_center_cd,"44") == 0
+				|| Str_Cmp(stChgMtr.chk_buld_center_cd,"45") == 0 || Str_Cmp(stChgMtr.chk_buld_center_cd,"46") == 0 )
+				{
 					if(Str_Cmp(m_lCheckPAY, "일반") != 0  )
 					{
 						// if(Str_Cmp(m_lCheckPAY_2, "미설치") != 0 && Str_Cmp(m_lCheckPAY_2, "") != 0 )
@@ -555,7 +555,7 @@ card C6101_WCHGMTR
 						}
 					}
 					
-				// }
+				}
 
 				// break;
 			
@@ -1000,10 +1000,10 @@ card C6101_WCHGMTR
 				SPRINT(m_szSql, "SELECT CODE_ITEM FROM COMMONCODE WHERE CODE_ID = 'C30008' AND ITEM_KNAME = '%s' ", m_szRemote, 0, 0 );
 				g_Sql_RetStr( m_szSql, 20, m_szTmp );		
 				
-				// if(Str_Cmp(stChgMtr.chk_buld_center_cd,"41") == 0 || Str_Cmp(stChgMtr.chk_buld_center_cd,"42") == 0 
-				// || Str_Cmp(stChgMtr.chk_buld_center_cd,"43") == 0 || Str_Cmp(stChgMtr.chk_buld_center_cd,"44") == 0 
-				// || Str_Cmp(stChgMtr.chk_buld_center_cd,"45") == 0 || Str_Cmp(stChgMtr.chk_buld_center_cd,"46") == 0 )
-				// {
+				if(Str_Cmp(stChgMtr.chk_buld_center_cd,"41") == 0 || Str_Cmp(stChgMtr.chk_buld_center_cd,"42") == 0 
+				|| Str_Cmp(stChgMtr.chk_buld_center_cd,"43") == 0 || Str_Cmp(stChgMtr.chk_buld_center_cd,"44") == 0 
+				|| Str_Cmp(stChgMtr.chk_buld_center_cd,"45") == 0 || Str_Cmp(stChgMtr.chk_buld_center_cd,"46") == 0 )
+				{
 				
 					if( Str_Cmp(EditCtrl_GetStr(Get_hDlgCtrlByID(CMB_AF_KIND)), "다기능") == 0 
 						|| Str_Cmp(EditCtrl_GetStr(Get_hDlgCtrlByID(CMB_AF_KIND)), "누출점검용") == 0 || Str_Cmp(EditCtrl_GetStr(Get_hDlgCtrlByID(CMB_AF_KIND)), "디지털 누출") == 0
@@ -1094,12 +1094,12 @@ card C6101_WCHGMTR
 					// 	MessageBoxEx (CONFIRM_OK, "특수계량기 정보가 상이하여\n 처리 할 수 없습니다.44444");
 					// 	return;
 					// }
-				// }
-				// else
-				// {
-				// 	DlgCtrl_SetEnable(this->m_hDlg, Get_iDlgCtrlByID(BID_PAY), FALSE );								
-				// 	ButCtrl_SetBkColorEx(Get_hDlgCtrlByID(BID_PAY), GRAY);
-				// }
+				}
+				else
+				{
+					DlgCtrl_SetEnable(this->m_hDlg, Get_iDlgCtrlByID(BID_PAY), FALSE );								
+					ButCtrl_SetBkColorEx(Get_hDlgCtrlByID(BID_PAY), GRAY);
+				}
 			}
 			
 			ON_DRAW();
@@ -1958,10 +1958,10 @@ Finally:
 			}
 
 			
-			// if(Str_Cmp(stChgMtr.chk_buld_center_cd,"41") == 0 || Str_Cmp(stChgMtr.chk_buld_center_cd,"42") == 0 
-			// 	|| Str_Cmp(stChgMtr.chk_buld_center_cd,"43") == 0 || Str_Cmp(stChgMtr.chk_buld_center_cd,"44") == 0 
-			// 	|| Str_Cmp(stChgMtr.chk_buld_center_cd,"45") == 0 || Str_Cmp(stChgMtr.chk_buld_center_cd,"46") == 0 )
-			// {
+			if(Str_Cmp(stChgMtr.chk_buld_center_cd,"41") == 0 || Str_Cmp(stChgMtr.chk_buld_center_cd,"42") == 0 
+				|| Str_Cmp(stChgMtr.chk_buld_center_cd,"43") == 0 || Str_Cmp(stChgMtr.chk_buld_center_cd,"44") == 0 
+				|| Str_Cmp(stChgMtr.chk_buld_center_cd,"45") == 0 || Str_Cmp(stChgMtr.chk_buld_center_cd,"46") == 0 )
+			{
 				if(Str_Cmp(stChgMtr.szAfter_mtr_kind, "20") == 0 || Str_Cmp(stChgMtr.szAfter_mtr_kind, "21") == 0
 				||Str_Cmp(stChgMtr.szAfter_mtr_kind, "50") == 0 || Str_Cmp(stChgMtr.szAfter_mtr_kind, "60") == 0
 				||Str_Cmp(stChgMtr.szAfter_mtr_kind, "61") == 0 || Str_Cmp(stChgMtr.szAfter_mtr_kind, "65") == 0
@@ -2058,7 +2058,7 @@ Finally:
 						
 					}
 				}
-			// }
+			}
 			
 		}
 	}
@@ -2397,11 +2397,10 @@ Finally:
 			}
 		}
 		//이전기물번호 로직 삭제로 인한 Y -> N 으로 변경 (20231019)
-		// SPRINT(m_szSql, "SELECT CASE WHEN COUNT(*) > 0 THEN 'N' ELSE 'N' END AS CNT FROM C6301_OLDMTRIDNUM WHERE MTR_ID_NUM = '%s' ", m_szMtrBarcode, 0, 0 );
+		SPRINT(m_szSql, "SELECT CASE WHEN COUNT(*) > 0 THEN 'N' ELSE 'N' END AS CNT FROM C6301_OLDMTRIDNUM WHERE MTR_ID_NUM = '%s' ", m_szMtrBarcode, 0, 0 );
 		// SPRINT(m_szSql, "SELECT CASE WHEN COUNT(*) > 0 THEN 'Y' ELSE 'N' END AS CNT FROM C6301_OLDMTRIDNUM WHERE MTR_ID_NUM = '%s' ", m_szMtrBarcode, 0, 0 );
-		// g_Sql_RetStr( m_szSql, 20, stChgMtr.old_mtr_id_num );
-		Str_Cpy(stChgMtr.old_mtr_id_num, "N");
-
+		g_Sql_RetStr( m_szSql, 20, stChgMtr.old_mtr_id_num );
+		
 		//제조사 코드
 		Mem_Set( (byte*)szTmp, 0x00, sizeof(szTmp) );
 		Mem_Set( (byte*)m_szMakernum, 0x00, sizeof(m_szMakernum) );
@@ -2617,10 +2616,10 @@ Finally:
 		switch( i )
 		{
 			case 1:
-				// if(Str_Cmp(stChgMtr.chk_buld_center_cd,"41") == 0 || Str_Cmp(stChgMtr.chk_buld_center_cd,"42") == 0 
-				// 	|| Str_Cmp(stChgMtr.chk_buld_center_cd,"43") == 0 || Str_Cmp(stChgMtr.chk_buld_center_cd,"44") == 0 
-				// 	|| Str_Cmp(stChgMtr.chk_buld_center_cd,"45") == 0 || Str_Cmp(stChgMtr.chk_buld_center_cd,"46") == 0 )
-				// {	
+				if(Str_Cmp(stChgMtr.chk_buld_center_cd,"41") == 0 || Str_Cmp(stChgMtr.chk_buld_center_cd,"42") == 0 
+					|| Str_Cmp(stChgMtr.chk_buld_center_cd,"43") == 0 || Str_Cmp(stChgMtr.chk_buld_center_cd,"44") == 0 
+					|| Str_Cmp(stChgMtr.chk_buld_center_cd,"45") == 0 || Str_Cmp(stChgMtr.chk_buld_center_cd,"46") == 0 )
+				{	
 					// 종류 : 일반
 					EditCtrl_SetStr( Get_hDlgCtrlByID(CMB_AF_KIND), ListCtrl_GetStr( Get_hDlgCtrlByID(CMB_AF_KIND+2), 0));
 					DlgCtrl_SetEnable(this->m_hDlg, Get_iDlgCtrlByID(CMB_AF_KIND+1), FALSE );
@@ -2633,21 +2632,21 @@ Finally:
 					DlgCtrl_SetGray( this->m_hDlg, Get_iDlgCtrlByID(CMB_AF_REMOTE_FLAG+1), TRUE );
 					Str_Cpy(szRemoteCd, "10");
 					
-				// }
-				// else
-				// {
-				// 	// 종류 : 일반
-				// 	EditCtrl_SetStr( Get_hDlgCtrlByID(CMB_AF_KIND), ListCtrl_GetStr( Get_hDlgCtrlByID(CMB_AF_KIND+2), 0));
-				// 	DlgCtrl_SetEnable(this->m_hDlg, Get_iDlgCtrlByID(CMB_AF_KIND+1), FALSE );
-				// 	DlgCtrl_SetGray( this->m_hDlg, Get_iDlgCtrlByID(CMB_AF_KIND+1), TRUE );
-				// 	Str_Cpy(szMtrKindCd, "10");
+				}
+				else
+				{
+					// 종류 : 일반
+					EditCtrl_SetStr( Get_hDlgCtrlByID(CMB_AF_KIND), ListCtrl_GetStr( Get_hDlgCtrlByID(CMB_AF_KIND+2), 0));
+					DlgCtrl_SetEnable(this->m_hDlg, Get_iDlgCtrlByID(CMB_AF_KIND+1), FALSE );
+					DlgCtrl_SetGray( this->m_hDlg, Get_iDlgCtrlByID(CMB_AF_KIND+1), TRUE );
+					Str_Cpy(szMtrKindCd, "10");
 					
-				// 	// 원격 : 미설치, 비활성화
-				// 	EditCtrl_SetStr( Get_hDlgCtrlByID(CMB_AF_REMOTE_FLAG), ListCtrl_GetStr( Get_hDlgCtrlByID(CMB_AF_REMOTE_FLAG+2), 0));
-				// 	DlgCtrl_SetEnable(this->m_hDlg, Get_iDlgCtrlByID(CMB_AF_REMOTE_FLAG+1), FALSE );
-				// 	DlgCtrl_SetGray( this->m_hDlg, Get_iDlgCtrlByID(CMB_AF_REMOTE_FLAG+1), TRUE );
-				// 	Str_Cpy(szRemoteCd, "10");
-				// }
+					// 원격 : 미설치, 비활성화
+					EditCtrl_SetStr( Get_hDlgCtrlByID(CMB_AF_REMOTE_FLAG), ListCtrl_GetStr( Get_hDlgCtrlByID(CMB_AF_REMOTE_FLAG+2), 0));
+					DlgCtrl_SetEnable(this->m_hDlg, Get_iDlgCtrlByID(CMB_AF_REMOTE_FLAG+1), FALSE );
+					DlgCtrl_SetGray( this->m_hDlg, Get_iDlgCtrlByID(CMB_AF_REMOTE_FLAG+1), TRUE );
+					Str_Cpy(szRemoteCd, "10");
+				}
 				
 				break;
 			case 2:
@@ -2682,10 +2681,10 @@ Finally:
 						Str_Cpy(szRemoteCd, "10");
 					}
 
-					// if(Str_Cmp(stChgMtr.chk_buld_center_cd,"41") == 0 || Str_Cmp(stChgMtr.chk_buld_center_cd,"42") == 0 
-					// 	|| Str_Cmp(stChgMtr.chk_buld_center_cd,"43") == 0 || Str_Cmp(stChgMtr.chk_buld_center_cd,"44") == 0 
-					// 	|| Str_Cmp(stChgMtr.chk_buld_center_cd,"45") == 0 || Str_Cmp(stChgMtr.chk_buld_center_cd,"46") == 0 )
-					// 	{
+					if(Str_Cmp(stChgMtr.chk_buld_center_cd,"41") == 0 || Str_Cmp(stChgMtr.chk_buld_center_cd,"42") == 0 
+						|| Str_Cmp(stChgMtr.chk_buld_center_cd,"43") == 0 || Str_Cmp(stChgMtr.chk_buld_center_cd,"44") == 0 
+						|| Str_Cmp(stChgMtr.chk_buld_center_cd,"45") == 0 || Str_Cmp(stChgMtr.chk_buld_center_cd,"46") == 0 )
+						{
 							Mem_Set( (byte*)m_lCheckRemoteFlag, 0x00, sizeof(m_lCheckRemoteFlag));
 							Str_Cpy(m_lCheckRemoteFlag, EditCtrl_GetStr(Get_hDlgCtrlByID(CMB_AF_REMOTE_FLAG)));
 							
@@ -2701,7 +2700,7 @@ Finally:
 								
 								
 							}
-						// }
+						}
 
 				
 
@@ -2714,12 +2713,12 @@ Finally:
 					DlgCtrl_SetEnable(this->m_hDlg, Get_iDlgCtrlByID(CMB_AF_KIND+1), FALSE );
 					DlgCtrl_SetGray( this->m_hDlg, Get_iDlgCtrlByID(CMB_AF_KIND+1), TRUE );
 					Str_Cpy(szMtrKindCd, "60");	
-					PRINT("11111111111111111111",0,0,0);
+					
 					//특수계량기의 경우 철거계량기의 원격 종류와 같도록 설정.
-					// if(Str_Cmp(stChgMtr.chk_buld_center_cd,"41") == 0 || Str_Cmp(stChgMtr.chk_buld_center_cd,"42") == 0 
-					// || Str_Cmp(stChgMtr.chk_buld_center_cd,"43") == 0 || Str_Cmp(stChgMtr.chk_buld_center_cd,"44") == 0 
-					// || Str_Cmp(stChgMtr.chk_buld_center_cd,"45") == 0 || Str_Cmp(stChgMtr.chk_buld_center_cd,"46") == 0 )
-					// {
+					if(Str_Cmp(stChgMtr.chk_buld_center_cd,"41") == 0 || Str_Cmp(stChgMtr.chk_buld_center_cd,"42") == 0 
+					|| Str_Cmp(stChgMtr.chk_buld_center_cd,"43") == 0 || Str_Cmp(stChgMtr.chk_buld_center_cd,"44") == 0 
+					|| Str_Cmp(stChgMtr.chk_buld_center_cd,"45") == 0 || Str_Cmp(stChgMtr.chk_buld_center_cd,"46") == 0 )
+					{
 							EditCtrl_SetStr( Get_hDlgCtrlByID(CMB_AF_REMOTE_FLAG), ListCtrl_GetStr( Get_hDlgCtrlByID(CMB_AF_REMOTE_FLAG+2), 3));
 							DlgCtrl_SetEnable(this->m_hDlg, Get_iDlgCtrlByID(CMB_AF_REMOTE_FLAG+1), TRUE );
 							DlgCtrl_SetGray( this->m_hDlg, Get_iDlgCtrlByID(CMB_AF_REMOTE_FLAG+1), FALSE );
@@ -2736,18 +2735,18 @@ Finally:
 								// ButCtrl_SetBkColorEx(Get_hDlgCtrlByID(BID_BALANCE), GREEN);
 
 
-					// }
-					// else //경기고객센터가 아닌 센터인 경우
-					// {
-					// 	// 원격 : 통합원격, 활성화
-					// 	EditCtrl_SetStr( Get_hDlgCtrlByID(CMB_AF_REMOTE_FLAG), ListCtrl_GetStr( Get_hDlgCtrlByID(CMB_AF_REMOTE_FLAG+2), 3));
-					// 	DlgCtrl_SetEnable(this->m_hDlg, Get_iDlgCtrlByID(CMB_AF_REMOTE_FLAG+1), TRUE );
-					// 	DlgCtrl_SetGray( this->m_hDlg, Get_iDlgCtrlByID(CMB_AF_REMOTE_FLAG+1), FALSE );
-					// 	Str_Cpy(szRemoteCd, "10");
+					}
+					else //경기고객센터가 아닌 센터인 경우
+					{
+						// 원격 : 통합원격, 활성화
+						EditCtrl_SetStr( Get_hDlgCtrlByID(CMB_AF_REMOTE_FLAG), ListCtrl_GetStr( Get_hDlgCtrlByID(CMB_AF_REMOTE_FLAG+2), 3));
+						DlgCtrl_SetEnable(this->m_hDlg, Get_iDlgCtrlByID(CMB_AF_REMOTE_FLAG+1), TRUE );
+						DlgCtrl_SetGray( this->m_hDlg, Get_iDlgCtrlByID(CMB_AF_REMOTE_FLAG+1), FALSE );
+						Str_Cpy(szRemoteCd, "10");
 
-					// 	// DlgCtrl_SetEnable(this->m_hDlg, Get_iDlgCtrlByID(CMB_AF_REMOTE_FLAG+1), FALSE );
-					// 	// DlgCtrl_SetGray( this->m_hDlg, Get_iDlgCtrlByID(CMB_AF_REMOTE_FLAG+1), TRUE );
-					// }
+						// DlgCtrl_SetEnable(this->m_hDlg, Get_iDlgCtrlByID(CMB_AF_REMOTE_FLAG+1), FALSE );
+						// DlgCtrl_SetGray( this->m_hDlg, Get_iDlgCtrlByID(CMB_AF_REMOTE_FLAG+1), TRUE );
+					}
 				}
 				else
 				{
@@ -2758,10 +2757,10 @@ Finally:
 					Str_Cpy(szMtrKindCd, "50");
 
 					//특수계량기의 경우 철거계량기의 원격 종류와 같도록 설정.
-					// if(Str_Cmp(stChgMtr.chk_buld_center_cd,"41") == 0 || Str_Cmp(stChgMtr.chk_buld_center_cd,"42") == 0 
-					// || Str_Cmp(stChgMtr.chk_buld_center_cd,"43") == 0 || Str_Cmp(stChgMtr.chk_buld_center_cd,"44") == 0 
-					// || Str_Cmp(stChgMtr.chk_buld_center_cd,"45") == 0 || Str_Cmp(stChgMtr.chk_buld_center_cd,"46") == 0 )
-					// {
+					if(Str_Cmp(stChgMtr.chk_buld_center_cd,"41") == 0 || Str_Cmp(stChgMtr.chk_buld_center_cd,"42") == 0 
+					|| Str_Cmp(stChgMtr.chk_buld_center_cd,"43") == 0 || Str_Cmp(stChgMtr.chk_buld_center_cd,"44") == 0 
+					|| Str_Cmp(stChgMtr.chk_buld_center_cd,"45") == 0 || Str_Cmp(stChgMtr.chk_buld_center_cd,"46") == 0 )
+					{
 						// if( Str_Cmp(stChgMtr.REPL_OCCU_FLAG, "10") == 0 )
 						// {
 						// 	if( Str_Cmp(stChgMtr.szBefo_mtr_kind, "50") != 0 )
@@ -2828,18 +2827,18 @@ Finally:
 							// ButCtrl_SetBkColorEx(Get_hDlgCtrlByID(BID_BALANCE), GREEN);
 
 							
-					// }
-					// else //경기고객센터가 아닌 센터인 경우
-					// {
-					// 	// 원격 : 미설치, 활성화
-					// 	EditCtrl_SetStr( Get_hDlgCtrlByID(CMB_AF_REMOTE_FLAG), ListCtrl_GetStr( Get_hDlgCtrlByID(CMB_AF_REMOTE_FLAG+2), 0));
-					// 	DlgCtrl_SetEnable(this->m_hDlg, Get_iDlgCtrlByID(CMB_AF_REMOTE_FLAG+1), TRUE );
-					// 	DlgCtrl_SetGray( this->m_hDlg, Get_iDlgCtrlByID(CMB_AF_REMOTE_FLAG+1), FALSE );
-					// 	Str_Cpy(szRemoteCd, "10");
+					}
+					else //경기고객센터가 아닌 센터인 경우
+					{
+						// 원격 : 미설치, 활성화
+						EditCtrl_SetStr( Get_hDlgCtrlByID(CMB_AF_REMOTE_FLAG), ListCtrl_GetStr( Get_hDlgCtrlByID(CMB_AF_REMOTE_FLAG+2), 0));
+						DlgCtrl_SetEnable(this->m_hDlg, Get_iDlgCtrlByID(CMB_AF_REMOTE_FLAG+1), TRUE );
+						DlgCtrl_SetGray( this->m_hDlg, Get_iDlgCtrlByID(CMB_AF_REMOTE_FLAG+1), FALSE );
+						Str_Cpy(szRemoteCd, "10");
 
-					// 	// DlgCtrl_SetEnable(this->m_hDlg, Get_iDlgCtrlByID(CMB_AF_REMOTE_FLAG+1), FALSE );
-					// 	// DlgCtrl_SetGray( this->m_hDlg, Get_iDlgCtrlByID(CMB_AF_REMOTE_FLAG+1), TRUE );
-					// }
+						// DlgCtrl_SetEnable(this->m_hDlg, Get_iDlgCtrlByID(CMB_AF_REMOTE_FLAG+1), FALSE );
+						// DlgCtrl_SetGray( this->m_hDlg, Get_iDlgCtrlByID(CMB_AF_REMOTE_FLAG+1), TRUE );
+					}
 					
 				}
 				
@@ -2856,10 +2855,10 @@ Finally:
 					
 				
 					//특수계량기의 경우 철거계량기의 원격 종류와 같도록 설정.
-					// if(Str_Cmp(stChgMtr.chk_buld_center_cd,"41") == 0 || Str_Cmp(stChgMtr.chk_buld_center_cd,"42") == 0 
-					// || Str_Cmp(stChgMtr.chk_buld_center_cd,"43") == 0 || Str_Cmp(stChgMtr.chk_buld_center_cd,"44") == 0 
-					// || Str_Cmp(stChgMtr.chk_buld_center_cd,"45") == 0 || Str_Cmp(stChgMtr.chk_buld_center_cd,"46") == 0 )
-					// {
+					if(Str_Cmp(stChgMtr.chk_buld_center_cd,"41") == 0 || Str_Cmp(stChgMtr.chk_buld_center_cd,"42") == 0 
+					|| Str_Cmp(stChgMtr.chk_buld_center_cd,"43") == 0 || Str_Cmp(stChgMtr.chk_buld_center_cd,"44") == 0 
+					|| Str_Cmp(stChgMtr.chk_buld_center_cd,"45") == 0 || Str_Cmp(stChgMtr.chk_buld_center_cd,"46") == 0 )
+					{
 							// 원격 : 미설치, 활성화
 							EditCtrl_SetStr( Get_hDlgCtrlByID(CMB_AF_REMOTE_FLAG), ListCtrl_GetStr( Get_hDlgCtrlByID(CMB_AF_REMOTE_FLAG+2), 3));
 							DlgCtrl_SetEnable(this->m_hDlg, Get_iDlgCtrlByID(CMB_AF_REMOTE_FLAG+1), TRUE );
@@ -2877,15 +2876,15 @@ Finally:
 							}
 								// ButCtrl_SetBkColorEx(Get_hDlgCtrlByID(BID_BALANCE), GREEN);
 							
-					// }
-					// else //경기고객센터가 아닌 센터인 경우
-					// {
-					// 	// 원격 : 미설치, 활성화
-					// 	EditCtrl_SetStr( Get_hDlgCtrlByID(CMB_AF_REMOTE_FLAG), ListCtrl_GetStr( Get_hDlgCtrlByID(CMB_AF_REMOTE_FLAG+2), 3));
-					// 	DlgCtrl_SetEnable(this->m_hDlg, Get_iDlgCtrlByID(CMB_AF_REMOTE_FLAG+1), TRUE );
-					// 	DlgCtrl_SetGray( this->m_hDlg, Get_iDlgCtrlByID(CMB_AF_REMOTE_FLAG+1), FALSE );
-					// 	Str_Cpy(szRemoteCd, "40");
-					// }
+					}
+					else //경기고객센터가 아닌 센터인 경우
+					{
+						// 원격 : 미설치, 활성화
+						EditCtrl_SetStr( Get_hDlgCtrlByID(CMB_AF_REMOTE_FLAG), ListCtrl_GetStr( Get_hDlgCtrlByID(CMB_AF_REMOTE_FLAG+2), 3));
+						DlgCtrl_SetEnable(this->m_hDlg, Get_iDlgCtrlByID(CMB_AF_REMOTE_FLAG+1), TRUE );
+						DlgCtrl_SetGray( this->m_hDlg, Get_iDlgCtrlByID(CMB_AF_REMOTE_FLAG+1), FALSE );
+						Str_Cpy(szRemoteCd, "40");
+					}
 				}
 				else
 				{
@@ -2896,10 +2895,10 @@ Finally:
 					Str_Cpy(szMtrKindCd, "20");
 					
 					//특수계량기의 경우 철거계량기의 원격 종류와 같도록 설정.
-					// if(Str_Cmp(stChgMtr.chk_buld_center_cd,"41") == 0 || Str_Cmp(stChgMtr.chk_buld_center_cd,"42") == 0 
-					// || Str_Cmp(stChgMtr.chk_buld_center_cd,"43") == 0 || Str_Cmp(stChgMtr.chk_buld_center_cd,"44") == 0 
-					// || Str_Cmp(stChgMtr.chk_buld_center_cd,"45") == 0 || Str_Cmp(stChgMtr.chk_buld_center_cd,"46") == 0 )
-					// {
+					if(Str_Cmp(stChgMtr.chk_buld_center_cd,"41") == 0 || Str_Cmp(stChgMtr.chk_buld_center_cd,"42") == 0 
+					|| Str_Cmp(stChgMtr.chk_buld_center_cd,"43") == 0 || Str_Cmp(stChgMtr.chk_buld_center_cd,"44") == 0 
+					|| Str_Cmp(stChgMtr.chk_buld_center_cd,"45") == 0 || Str_Cmp(stChgMtr.chk_buld_center_cd,"46") == 0 )
+					{
 						// 원격 : 통합원격, 활성화
 						EditCtrl_SetStr( Get_hDlgCtrlByID(CMB_AF_REMOTE_FLAG), ListCtrl_GetStr( Get_hDlgCtrlByID(CMB_AF_REMOTE_FLAG+2), 3));
 						DlgCtrl_SetEnable(this->m_hDlg, Get_iDlgCtrlByID(CMB_AF_REMOTE_FLAG+1), TRUE );
@@ -2908,15 +2907,15 @@ Finally:
 
 						ButCtrl_SetBkColorEx(Get_hDlgCtrlByID(BID_REMOTE), GREEN);
 
-					// }
-					// else //경기고객센터가 아닌 센터인 경우
-					// {
-					// 	// 원격 : 통합원격, 활성화
-					// 	EditCtrl_SetStr( Get_hDlgCtrlByID(CMB_AF_REMOTE_FLAG), ListCtrl_GetStr( Get_hDlgCtrlByID(CMB_AF_REMOTE_FLAG+2), 3));
-					// 	DlgCtrl_SetEnable(this->m_hDlg, Get_iDlgCtrlByID(CMB_AF_REMOTE_FLAG+1), TRUE );
-					// 	DlgCtrl_SetGray( this->m_hDlg, Get_iDlgCtrlByID(CMB_AF_REMOTE_FLAG+1), FALSE );
-					// 	Str_Cpy(szRemoteCd, "40");
-					// }
+					}
+					else //경기고객센터가 아닌 센터인 경우
+					{
+						// 원격 : 통합원격, 활성화
+						EditCtrl_SetStr( Get_hDlgCtrlByID(CMB_AF_REMOTE_FLAG), ListCtrl_GetStr( Get_hDlgCtrlByID(CMB_AF_REMOTE_FLAG+2), 3));
+						DlgCtrl_SetEnable(this->m_hDlg, Get_iDlgCtrlByID(CMB_AF_REMOTE_FLAG+1), TRUE );
+						DlgCtrl_SetGray( this->m_hDlg, Get_iDlgCtrlByID(CMB_AF_REMOTE_FLAG+1), FALSE );
+						Str_Cpy(szRemoteCd, "40");
+					}
 				}
 				
 				
@@ -2950,10 +2949,10 @@ Finally:
 
 					// 종류 : 디지털 누출점검용
 					//특수계량기의 경우 철거계량기의 원격 종류와 같도록 설정.
-					// if(Str_Cmp(stChgMtr.chk_buld_center_cd,"41") == 0 || Str_Cmp(stChgMtr.chk_buld_center_cd,"42") == 0 
-					// || Str_Cmp(stChgMtr.chk_buld_center_cd,"43") == 0 || Str_Cmp(stChgMtr.chk_buld_center_cd,"44") == 0 
-					// || Str_Cmp(stChgMtr.chk_buld_center_cd,"45") == 0 || Str_Cmp(stChgMtr.chk_buld_center_cd,"46") == 0 )
-					// {
+					if(Str_Cmp(stChgMtr.chk_buld_center_cd,"41") == 0 || Str_Cmp(stChgMtr.chk_buld_center_cd,"42") == 0 
+					|| Str_Cmp(stChgMtr.chk_buld_center_cd,"43") == 0 || Str_Cmp(stChgMtr.chk_buld_center_cd,"44") == 0 
+					|| Str_Cmp(stChgMtr.chk_buld_center_cd,"45") == 0 || Str_Cmp(stChgMtr.chk_buld_center_cd,"46") == 0 )
+					{
 						// 원격 : 미설치, 활성화
 						EditCtrl_SetStr( Get_hDlgCtrlByID(CMB_AF_REMOTE_FLAG), ListCtrl_GetStr( Get_hDlgCtrlByID(CMB_AF_REMOTE_FLAG+2), 3));
 						DlgCtrl_SetEnable(this->m_hDlg, Get_iDlgCtrlByID(CMB_AF_REMOTE_FLAG+1), TRUE );
@@ -2970,15 +2969,15 @@ Finally:
 						}
 								// ButCtrl_SetBkColorEx(Get_hDlgCtrlByID(BID_BALANCE), GREEN);
 							
-					// }
-					// else //경기고객센터가 아닌 센터인 경우
-					// {
-					// 	// 원격 : 미설치, 활성화
-					// 	EditCtrl_SetStr( Get_hDlgCtrlByID(CMB_AF_REMOTE_FLAG), ListCtrl_GetStr( Get_hDlgCtrlByID(CMB_AF_REMOTE_FLAG+2), 3));
-					// 	DlgCtrl_SetEnable(this->m_hDlg, Get_iDlgCtrlByID(CMB_AF_REMOTE_FLAG+1), TRUE );
-					// 	DlgCtrl_SetGray( this->m_hDlg, Get_iDlgCtrlByID(CMB_AF_REMOTE_FLAG+1), FALSE );
-					// 	Str_Cpy(szRemoteCd, "40");
-					// }
+					}
+					else //경기고객센터가 아닌 센터인 경우
+					{
+						// 원격 : 미설치, 활성화
+						EditCtrl_SetStr( Get_hDlgCtrlByID(CMB_AF_REMOTE_FLAG), ListCtrl_GetStr( Get_hDlgCtrlByID(CMB_AF_REMOTE_FLAG+2), 3));
+						DlgCtrl_SetEnable(this->m_hDlg, Get_iDlgCtrlByID(CMB_AF_REMOTE_FLAG+1), TRUE );
+						DlgCtrl_SetGray( this->m_hDlg, Get_iDlgCtrlByID(CMB_AF_REMOTE_FLAG+1), FALSE );
+						Str_Cpy(szRemoteCd, "40");
+					}
 				}
 				else
 				{
@@ -2989,10 +2988,10 @@ Finally:
 					Str_Cpy(szMtrKindCd, "21");
 
 					//특수계량기의 경우 철거계량기의 원격 종류와 같도록 설정.
-					// if(Str_Cmp(stChgMtr.chk_buld_center_cd,"41") == 0 || Str_Cmp(stChgMtr.chk_buld_center_cd,"42") == 0 
-					// || Str_Cmp(stChgMtr.chk_buld_center_cd,"43") == 0 || Str_Cmp(stChgMtr.chk_buld_center_cd,"44") == 0 
-					// || Str_Cmp(stChgMtr.chk_buld_center_cd,"45") == 0 || Str_Cmp(stChgMtr.chk_buld_center_cd,"46") == 0 )
-					// {
+					if(Str_Cmp(stChgMtr.chk_buld_center_cd,"41") == 0 || Str_Cmp(stChgMtr.chk_buld_center_cd,"42") == 0 
+					|| Str_Cmp(stChgMtr.chk_buld_center_cd,"43") == 0 || Str_Cmp(stChgMtr.chk_buld_center_cd,"44") == 0 
+					|| Str_Cmp(stChgMtr.chk_buld_center_cd,"45") == 0 || Str_Cmp(stChgMtr.chk_buld_center_cd,"46") == 0 )
+					{
 						// 원격 : 통합원격, 활성화
 						EditCtrl_SetStr( Get_hDlgCtrlByID(CMB_AF_REMOTE_FLAG), ListCtrl_GetStr( Get_hDlgCtrlByID(CMB_AF_REMOTE_FLAG+2), 3));
 						DlgCtrl_SetEnable(this->m_hDlg, Get_iDlgCtrlByID(CMB_AF_REMOTE_FLAG+1), TRUE );
@@ -3002,15 +3001,15 @@ Finally:
 						ButCtrl_SetBkColorEx(Get_hDlgCtrlByID(BID_REMOTE), GREEN);
 						
 							
-					// }
-					// else //경기고객센터가 아닌 센터인 경우
-					// {
-					// 	// 원격 : 통합원격, 활성화
-					// 	EditCtrl_SetStr( Get_hDlgCtrlByID(CMB_AF_REMOTE_FLAG), ListCtrl_GetStr( Get_hDlgCtrlByID(CMB_AF_REMOTE_FLAG+2), 3));
-					// 	DlgCtrl_SetEnable(this->m_hDlg, Get_iDlgCtrlByID(CMB_AF_REMOTE_FLAG+1), TRUE );
-					// 	DlgCtrl_SetGray( this->m_hDlg, Get_iDlgCtrlByID(CMB_AF_REMOTE_FLAG+1), FALSE );
-					// 	Str_Cpy(szRemoteCd, "40");
-					// }
+					}
+					else //경기고객센터가 아닌 센터인 경우
+					{
+						// 원격 : 통합원격, 활성화
+						EditCtrl_SetStr( Get_hDlgCtrlByID(CMB_AF_REMOTE_FLAG), ListCtrl_GetStr( Get_hDlgCtrlByID(CMB_AF_REMOTE_FLAG+2), 3));
+						DlgCtrl_SetEnable(this->m_hDlg, Get_iDlgCtrlByID(CMB_AF_REMOTE_FLAG+1), TRUE );
+						DlgCtrl_SetGray( this->m_hDlg, Get_iDlgCtrlByID(CMB_AF_REMOTE_FLAG+1), FALSE );
+						Str_Cpy(szRemoteCd, "40");
+					}
 					
 				}
 			
@@ -3819,10 +3818,10 @@ Finally:
 			if(Str_Cmp(m_szSql, "미설치") != 0 && Str_Cmp(m_szSql, "") != 0 )
 			{
 				
-				// if( Str_Cmp(stChgMtr.chk_buld_center_cd,"41") == 0 || Str_Cmp(stChgMtr.chk_buld_center_cd,"42") == 0 
-				//     || Str_Cmp(stChgMtr.chk_buld_center_cd,"43") == 0 || Str_Cmp(stChgMtr.chk_buld_center_cd,"44") == 0 
-				// 	|| Str_Cmp(stChgMtr.chk_buld_center_cd,"45") == 0 || Str_Cmp(stChgMtr.chk_buld_center_cd,"46") == 0)
-				// {
+				if( Str_Cmp(stChgMtr.chk_buld_center_cd,"41") == 0 || Str_Cmp(stChgMtr.chk_buld_center_cd,"42") == 0 
+				    || Str_Cmp(stChgMtr.chk_buld_center_cd,"43") == 0 || Str_Cmp(stChgMtr.chk_buld_center_cd,"44") == 0 
+					|| Str_Cmp(stChgMtr.chk_buld_center_cd,"45") == 0 || Str_Cmp(stChgMtr.chk_buld_center_cd,"46") == 0)
+				{
 					if(Str_Cmp(m_szSql, "지시부형") == 0 || Str_Cmp(m_szSql, "CDMA") == 0 || Str_Cmp(m_szSql, "통합원격") == 0 || Str_Cmp(m_szSql, "디지로그") == 0 || Str_Cmp(m_szSql, "디지털변환기") == 0 )
 					{	
 						if(Str_Cmp(stChgMtr.old_mtr_id_num, "N") == 0)
@@ -3840,7 +3839,7 @@ Finally:
 						}
 						
 					}
-				// }						
+				}						
 			}
 		}
 		else if(Str_Cmp(EditCtrl_GetStr(Get_hDlgCtrlByID(CMB_AF_KIND)), "다기능") == 0 || Str_Cmp(EditCtrl_GetStr(Get_hDlgCtrlByID(CMB_AF_KIND)), "디지털") == 0 
@@ -3849,10 +3848,10 @@ Finally:
 			|| Str_Cmp(EditCtrl_GetStr(Get_hDlgCtrlByID(CMB_AF_KIND)), "디지털 누출") == 0 || Str_Cmp(EditCtrl_GetStr(Get_hDlgCtrlByID(CMB_AF_KIND)), "디지털 누출(듀얼)") == 0)
 		{	
 			
-			// if(Str_Cmp(stChgMtr.chk_buld_center_cd,"41") == 0 || Str_Cmp(stChgMtr.chk_buld_center_cd,"42") == 0 
-			// 	|| Str_Cmp(stChgMtr.chk_buld_center_cd,"43") == 0 || Str_Cmp(stChgMtr.chk_buld_center_cd,"44") == 0
-			// 	|| Str_Cmp(stChgMtr.chk_buld_center_cd,"45") == 0 || Str_Cmp(stChgMtr.chk_buld_center_cd,"46") == 0 )
-			// 	{	
+			if(Str_Cmp(stChgMtr.chk_buld_center_cd,"41") == 0 || Str_Cmp(stChgMtr.chk_buld_center_cd,"42") == 0 
+				|| Str_Cmp(stChgMtr.chk_buld_center_cd,"43") == 0 || Str_Cmp(stChgMtr.chk_buld_center_cd,"44") == 0
+				|| Str_Cmp(stChgMtr.chk_buld_center_cd,"45") == 0 || Str_Cmp(stChgMtr.chk_buld_center_cd,"46") == 0 )
+				{	
 					if(Str_Cmp(stChgMtr.old_mtr_id_num, "N") == 0)
 					{
 						if(Str_Len(stChgMtr.remote_system) == 0 )
@@ -3867,7 +3866,7 @@ Finally:
 						}
 					}
 					
-				// }
+				}
 		}
 		
 		if( Str_AtoI(stChgMtr.szLastvc) > Str_AtoI(EditCtrl_GetStr(Get_hDlgCtrlByID(TXT_BF_VC))) )

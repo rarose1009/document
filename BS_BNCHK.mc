@@ -99,7 +99,6 @@ card BS_BNCHK
 		, {"점검항목",	   CWD*27+23, EDITALIGN_CENTER|EDITALIGN_MIDDLE, TABLE_TEXT, 0}
 		, {"부",           CWD*6,     EDITALIGN_CENTER|EDITALIGN_MIDDLE, TABLE_TEXT, 0}
 		, {"우선점검여부", CWD*0,     EDITALIGN_CENTER|EDITALIGN_MIDDLE, TABLE_TEXT, 0}
-		// , {"개선권고여부", CWD*0,     EDITALIGN_CENTER|EDITALIGN_MIDDLE, TABLE_TEXT, 0}
 	};
 	
 	#define INIT_MAIN	1
@@ -503,20 +502,6 @@ void	SetStyle(void)
 
 				}
 			}
-
-			// if( Str_Cmp(DlgTbl_GetStr( ID_TBLLIST, lrow, 4), "Y") != 0  )
-			// {
-			// 	if( MessageBoxEx (CONFIRM_YESNO, "개선권고가 진행된 부적합항목이였습니다. \n\n 개선권고 일자를 입력하시겠습니까?")  == MB_OK)
-			// 	{
-			// 		// g_lGovBetterFlag = 2;
-			// 		Card_Move("BS_RFRMRSK");
-
-			// 	}
-			// }
-			// else
-			// {
-
-			// }
 			
 			lpage = m_lpage + (index/COL);
 			g_nChkIndex = index;
@@ -537,7 +522,6 @@ void	SetStyle(void)
 		char szDate[20];
 		char szNOT_PASS_ITEM_CD[3];
 		char szPRE_CHK_OBJ_YN[3];
-		// char szNOGOOD_CHA[2];
 		long ret = -1;	
 
 		//종류
@@ -667,16 +651,6 @@ void	SetStyle(void)
 				Str_Cat(szSql, szTmp);
 				g_Sql_RetStr( szSql, 3, szPRE_CHK_OBJ_YN );
 				DlgTbl_SetStr ( ID_TBLLIST, i, 3, szPRE_CHK_OBJ_YN );
-
-				//개선여부 확인
-				// Mem_Set((byte*)szTmp ,0x00, sizeof(szTmp) );
-				// Mem_Set((byte*)szSql ,0x00, sizeof(szSql) );
-				// Mem_Set((byte*)szNOGOOD_CHA ,0x00, sizeof(szNOGOOD_CHA) );
-				// SPRINT(szSql, " SELECT CASE WHEN COUNT(*) > 0 THEN 'Y' ELSE 'N' END  FROM SPECIAL_NOGOOD_CHA WHERE CHK_EXEC_NUM ='%s' AND SEND_YN ='S'", stBsNogood.CHK_EXEC_NUM,0,0);
-				// Str_Cat(szSql, szTmp);
-				// g_Sql_RetStr( szSql, 3, szNOGOOD_CHA );
-				// DlgTbl_SetStr ( ID_TBLLIST, i, 4, szNOGOOD_CHA );
-				
 			}			
 		}
 				

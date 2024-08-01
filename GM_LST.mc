@@ -170,7 +170,6 @@ card GM_LST
 
 	#define INIT_MAIN	 1
 	#define	INIT_SRCH 	 2		// 검색
-	// #define	INIT_REFLESH 	 3		// 검색
 	
 	handle m_hGrid = NULL;
 	
@@ -379,30 +378,6 @@ card GM_LST
 		DLG_COMBO (STARTX+100, STARTY+680, 390, 200, 120, 80, TXTFRCOLOR, PDAEDTCTRLBK, CALL_FUNC, "", CMB_NWGOO, 10),	//구(신 주소)
 		DLG_COMBO (STARTX+690, STARTY+680, 285, 200, 120, 80, TXTFRCOLOR, PDAEDTCTRLBK, CALL_FUNC, "", CMB_STREET, 10),	//도로명
 	};	
-    //검침 반영 화면
-	// DlgObject	DlgRes_Reflesh[] = 
-	// {
-	// 	NORM_DLG ("", "", DLGSTY_HSCROLLBAR|DLGSTY_VSCROLLBAR|DLGSTY_TITLE, 0, MAINBKCOLOR, WHITE, BLUE, TITLE_HEIGHT, 0),		
-	// 	DLG_TEXT(0, 0, 998, BTNHT_1, 0, 0, 0, EDITSTY_BORDER|EDITSTY_BOLD, WHITE, TRANSPARENT, TXT_BORDER, ""),
-	// 	DLG_ICON(0, BTNY_2, ICON_TITLE, ""),
-	// 	//타이틀
-	// 	DLG_TEXT(TX, TY, STWD, STHT, 0, 0, EDITSTY_BORDER, EDITSTY_BOLD, TTLCTRLFR, TTLCTRLBK, TXT_TITLE, "검침반영"),
-		
-	// 	DLG_BUTTON(STARTX+600, STARTY+350, 400, 70, 0, 0, BUTSTY_BOLD, BUTSTY_BORDER, BTNMENUFRCOLOR, BTNCTRLBKCOLOR, CALL_FUNC , "", BID_SMSOK , "문자/기타"),
-	// 	DLG_BUTTON(STARTX+700, STARTY+350, 400, 70, 0, 0, BUTSTY_BOLD, BUTSTY_BORDER, BTNMENUFRCOLOR, BTNCTRLBKCOLOR, CALL_FUNC , "", BID_REMOTEOK , "원격"),
-		
-	// 	DLG_TEXT(STARTX, 		 STARTY+65,  230, 50, 0, 0, 0, EDITSTY_BORDER, TXTTTLFRCOLOR, TXTCTRLBK, TXT_DATA57 , " 항 목 "),
-	// 	// DLG_TEXT(STARTX+230, 	 STARTY+65,  350, 50, 0, 0, 0, EDITSTY_BORDER, TXTTTLFRCOLOR, TXTCTRLBK, TXT_DATA43 , "철거 계량기"),
-	// 	DLG_TEXT(STARTX+230, 	 STARTY+65,  770, 50, 0, 0, 0, EDITSTY_BORDER, TXTTTLFRCOLOR, TXTCTRLBK, TXT_DATA58 , "소요비용"),
-	// 	DLG_TEXT(STARTX, 		 STARTY+115, 230, 50, 0, 0, 0, EDITSTY_BORDER, TXTTTLFRCOLOR, TXTCTRLBK, TXT_DATA59 , "배터리"),
-	// 	DLG_TEXT(STARTX, 		 STARTY+165, 230, 50, 0, 0, 0, EDITSTY_BORDER, TXTTTLFRCOLOR, TXTCTRLBK, TXT_DATA60 , "지시부"),
-	// 	// DLG_TEXT(STARTX, 		 STARTY+215, 230, 50, 0, 0, 0, EDITSTY_BORDER, TXTTTLFRCOLOR, TXTCTRLBK, TXT_DATA61 , "기타비용"),
-	// 	// DLG_TEXT(STARTX+230,     STARTY+215, 760, 50, 0, 0, 0, EDITSTY_BORDER|EDITSTY_BOLD, TXTFRCOLOR, EDTCTRLBK, TXT_DATA48, ""),
-	// 	// DLG_EDIT(STARTX+230, 	 STARTY+215, 760, 50, 0, 0, 0, EDITSTY_BORDER, TXTFRCOLOR, PDAEDTCTRLBK, EDT_DATA12,9, ""),
-		
-	// 	DLG_COMBO(STARTX+230,  STARTY+115, 770, 50, 80, 50, TXTFRCOLOR, TXTINCTRLBK, CALL_FUNC, "", CMB_DATA13, 15),
-	// 	DLG_COMBO(STARTX+230,  STARTY+165, 770, 50, 80, 50, TXTFRCOLOR, TXTINCTRLBK, CALL_FUNC, "", CMB_DATA14, 15),
-	// };	
 
 
 	//----------------------------------------------------------------------
@@ -438,18 +413,6 @@ card GM_LST
 						CREATE_DIALOG_OBJECT (DlgRes, SIZEOF(DlgRes));
 						break;
 				}
-			
-			// case INIT_REFLESH:
-			// 	switch (theDevInfo.m_nType)
-			// 	{
-			// 		default:
-			// 			CREATE_DIALOG_OBJECT (DlgRes_Reflesh, SIZEOF(DlgRes_Reflesh));
-			// 			break;
-			// 	}
-			// 	SetBtnImg();
-			// 	SetStyle();
-			// 	SetCombo();
-			// 	break;
 
 #ifdef GRID_DEBUG
 
@@ -485,18 +448,6 @@ card GM_LST
 						break;	
 				}
 				break;
-
-			// case INIT_REFLESH:
-			// 	switch (theDevInfo.m_nType)
-			// 	{
-			// 		default:
-			// 			CREATE_DIALOG_OBJECT (DlgRes_PAY, SIZEOF(DlgRes_PAY));
-			// 			break;
-			// 	}
-			// 	SetBtnImg();
-			// 	SetStyle();
-			// 	SetCombo();
-			// 	break;
 		}
 	}
 	
@@ -1560,9 +1511,9 @@ Finally:
 		}
 
 		if( g_nAddrFlag == 0)
-			hstmt = sql->CreateStatement(sql, "SELECT Length(Trim(CO_LIVE_NM))+Length(Trim(BLD_NM)), ifnull(CO_LIVE_NM,'') ||' '|| ifnull(BLD_NM,'') ||'-'|| ifnull(HOSU,'') ||' '|| ifnull(DETA_FLOOR,''),ifnull(ADDR1_M,'') ||'-'|| ifnull(ADDR1_S,'') ||' '|| ifnull(HOSU,'') ||' '|| ifnull(DETA_FLOOR,''),BASE_YMD, MTR_WORK_CODE, INDI_SET_VC, INDI_QTY, ifnull(AREA,'') ||' '|| ifnull(TOWN,'') ||' '|| ifnull(VILLAGE,'') ||' '|| ifnull(ADDR1_M,'') ||'-'|| ifnull(ADDR1_S,''), ifnull(CO_LIVE_NM,'') ||' '|| ifnull(BLD_NM,'') ||'-'|| ifnull(HOSU,'') ||' '|| ifnull(DETA_FLOOR,''), ifnull(HOSU,'') ||' '|| ifnull(DETA_FLOOR,''), ROWID, INST_PLACE_NUM, COUNS_HIST, PROD_CD, GMTR_YM_FLAG, REMOTE_MTR_ERR_YN , DISC_CUST_YN FROM GUMDATA ORDER BY DONG_ORD, HOUSE_NUM_ORD, MTR_COURSE LIMIT ?, ?");
+			hstmt = sql->CreateStatement(sql, "SELECT Length(Trim(CO_LIVE_NM))+Length(Trim(BLD_NM)), ifnull(CO_LIVE_NM,'') ||' '|| ifnull(BLD_NM,'') ||'-'|| ifnull(HOSU,'') ||' '|| ifnull(DETA_FLOOR,''),ifnull(ADDR1_M,'') ||'-'|| ifnull(ADDR1_S,'') ||' '|| ifnull(HOSU,'') ||' '|| ifnull(DETA_FLOOR,''),BASE_YMD, MTR_WORK_CODE, INDI_SET_VC, INDI_QTY, ifnull(AREA,'') ||' '|| ifnull(TOWN,'') ||' '|| ifnull(VILLAGE,'') ||' '|| ifnull(ADDR1_M,'') ||'-'|| ifnull(ADDR1_S,''), ifnull(CO_LIVE_NM,'') ||' '|| ifnull(BLD_NM,'') ||'-'|| ifnull(HOSU,'') ||' '|| ifnull(DETA_FLOOR,''), ifnull(HOSU,'') ||' '|| ifnull(DETA_FLOOR,''), ROWID, INST_PLACE_NUM, COUNS_HIST, PROD_CD, GMTR_YM_FLAG, REMOTE_MTR_ERR_YN FROM GUMDATA ORDER BY DONG_ORD, HOUSE_NUM_ORD, MTR_COURSE LIMIT ?, ?");
 		else
-			hstmt = sql->CreateStatement(sql, "SELECT Length(Trim(CO_LIVE_NM))+Length(Trim(BLD_NM)), ifnull(CO_LIVE_NM,'') ||' '|| ifnull(BLD_NM,'') ||'-'|| ifnull(HOSU,'') ||' '|| ifnull(DETA_FLOOR,''), ifnull(NEW_ADDR_M,'') ||'-'|| ifnull(NEW_ADDR_S,'') ||' '|| ifnull(HOSU,'') ||' '|| ifnull(DETA_FLOOR,''), BASE_YMD, MTR_WORK_CODE, INDI_SET_VC, INDI_QTY, ifnull(AREA,'') ||' '|| ifnull(NEW_ROAD_NM,'') ||' '|| ifnull(NEW_ADDR_M,'') ||'-'|| ifnull(NEW_ADDR_S,''), ifnull(CO_LIVE_NM,'') ||' '|| ifnull(BLD_NM,'') ||'-'|| ifnull(HOSU,'') ||' '|| ifnull(DETA_FLOOR,''), ifnull(HOSU,'') ||' '|| ifnull(DETA_FLOOR,''), ROWID, INST_PLACE_NUM, COUNS_HIST, PROD_CD, GMTR_YM_FLAG, REMOTE_MTR_ERR_YN, DISC_CUST_YN FROM GUMDATA ORDER BY DONG_ORD, HOUSE_NUM_ORD, MTR_COURSE LIMIT ?, ?");
+			hstmt = sql->CreateStatement(sql, "SELECT Length(Trim(CO_LIVE_NM))+Length(Trim(BLD_NM)), ifnull(CO_LIVE_NM,'') ||' '|| ifnull(BLD_NM,'') ||'-'|| ifnull(HOSU,'') ||' '|| ifnull(DETA_FLOOR,''), ifnull(NEW_ADDR_M,'') ||'-'|| ifnull(NEW_ADDR_S,'') ||' '|| ifnull(HOSU,'') ||' '|| ifnull(DETA_FLOOR,''), BASE_YMD, MTR_WORK_CODE, INDI_SET_VC, INDI_QTY, ifnull(AREA,'') ||' '|| ifnull(NEW_ROAD_NM,'') ||' '|| ifnull(NEW_ADDR_M,'') ||'-'|| ifnull(NEW_ADDR_S,''), ifnull(CO_LIVE_NM,'') ||' '|| ifnull(BLD_NM,'') ||'-'|| ifnull(HOSU,'') ||' '|| ifnull(DETA_FLOOR,''), ifnull(HOSU,'') ||' '|| ifnull(DETA_FLOOR,''), ROWID, INST_PLACE_NUM, COUNS_HIST, PROD_CD, GMTR_YM_FLAG, REMOTE_MTR_ERR_YN FROM GUMDATA ORDER BY DONG_ORD, HOUSE_NUM_ORD, MTR_COURSE LIMIT ?, ?");
 
 		if( hstmt == NULL )
 		{
@@ -1768,33 +1719,6 @@ Finally:
 						EditCtrl_SetForeColorEx( DlgTbl_GetHandle 	( ID_TBLLIST, i, 4 ), TXTFRCOLOR);
 					}
 				}
-
-				if( Str_Cmp(szProd_cd, "순수취사") == 0 || Str_Cmp(szProd_cd, "겸용취사") == 0 || Str_Cmp(szProd_cd, "순수난방") == 0 || Str_Cmp(szProd_cd, "냉난방공조용") == 0)
-				{	
-					//DISC_CUST_YN
-					Mem_Set( (byte*)sztmp, 0x00, sizeof(sztmp) );
-					sql->GetValue(sql, 16, 'U', (long*)sztmp, 10, DECRYPT);
-
-					if( Str_Cmp(sztmp, "Y") == 0 )
-					{
-						EditCtrl_SetBkColorEx( DlgTbl_GetHandle 	( ID_TBLLIST, i, 0 ), LIGHTPINK);
-						EditCtrl_SetBkColorEx( DlgTbl_GetHandle 	( ID_TBLLIST, i, 1 ), LIGHTPINK);
-						EditCtrl_SetBkColorEx( DlgTbl_GetHandle 	( ID_TBLLIST, i, 2 ), LIGHTPINK);
-						EditCtrl_SetBkColorEx( DlgTbl_GetHandle 	( ID_TBLLIST, i, 3 ), LIGHTPINK);
-						EditCtrl_SetBkColorEx( DlgTbl_GetHandle 	( ID_TBLLIST, i, 4 ), LIGHTPINK);	
-					}
-					else
-					{
-						EditCtrl_SetBkColorEx( DlgTbl_GetHandle 	( ID_TBLLIST, i, 0 ), BTNMENUFRCOLOR);
-						EditCtrl_SetBkColorEx( DlgTbl_GetHandle 	( ID_TBLLIST, i, 1 ), BTNMENUFRCOLOR);
-						EditCtrl_SetBkColorEx( DlgTbl_GetHandle 	( ID_TBLLIST, i, 2 ), BTNMENUFRCOLOR);
-						EditCtrl_SetBkColorEx( DlgTbl_GetHandle 	( ID_TBLLIST, i, 3 ), BTNMENUFRCOLOR);
-						EditCtrl_SetBkColorEx( DlgTbl_GetHandle 	( ID_TBLLIST, i, 4 ), BTNMENUFRCOLOR);
-						
-					}
-
-				}
-
 			}
 		}
 
@@ -2184,7 +2108,6 @@ Finally:
 		char* sndbuf;
 		char szReqym[20];
 		char szDeadlineflag[20];
-		char szMtrCnt[2];
 		long ret = 0;
 		
 		Mem_Set( (byte*)szReqym, 0x00, sizeof(szReqym) );
@@ -2204,9 +2127,6 @@ Finally:
 		JSON_SetValue( g_pjcomm, 'C', "req_ym",          szReqym );
 		JSON_SetValue( g_pjcomm, 'C', "deadline_flag",   szDeadlineflag );
 		
-		Mem_Set( (byte*)szMtrCnt, 0x00, sizeof(szMtrCnt) );
-		g_Sql_RetStr( "SELECT PARAM2 FROM RCV_LOG WHERE GUBUN = '1'", 5, szMtrCnt );
-
 		g_GM_Mtr_Add_Item(g_pjcomm);
 		g_GM_Use_Cont_Num_Add_Item(g_pjcomm);
 		
@@ -2214,7 +2134,6 @@ Finally:
 		
 		g_SeverConnection();
 		
-
 		Mem_Set((byte*)sztmp, 0x00, sizeof(sztmp));	
 		GET_FILENM(sztmp, SQLITE_DB);
 		

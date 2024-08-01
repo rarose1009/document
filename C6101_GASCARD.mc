@@ -522,14 +522,10 @@ card C6101_GASCARD
 		long lstartidx;
 		long account = 0;
 		long amt = 0;
-		long mtrCnt , nonPayCnt , amtChkYn;
 		char sztmp[100];
 		char szSql[300];
 		char szbuf[51];
-		char szCardChk[20];
-		char * sqlstr1 = "";		
 		bool ret = TRUE;	
-		handle* sql1 = NULL;
 		handle hdb = NULL;
 		handle hstmt = NULL;
 		SQLITE sql = NewSqLite();
@@ -544,58 +540,17 @@ card C6101_GASCARD
 		Str_Cat(sztmp, "원");
 		EditCtrl_SetStr( Get_hDlgCtrlByID( TXT_ADJ ), sztmp );
 
-		// Mem_Set( (byte*)szSql, 0x00, sizeof(szSql) );
-		// Mem_Set( (byte*)szCardChk, 0x00, sizeof(szCardChk) );
-		// SPRINT(szSql, "SELECT ADJ_AMT_YN C6101_PROMISE_MTR WHERE PROMISE_ASSIGN_SEQ = '%s'", g_szCHK_EXEC_NUM, 0, 0   );
-		// g_Sql_RetStr( szSql, 9 , szCardChk );
-
-		// if( Str_Cmp( szCardChk, "Y") == 0 )
-		// {
-		mtrCnt = 0;
-		Mem_Set( (byte*)szSql, 0x00, sizeof(szSql) );
-		SPRINT( szSql ,"SELECT COUNT(1) FROM C6101_PROMISE_MTR WHERE PROMISE_ASSIGN_SEQ = '%s' AND CHK_YN ='1' AND CARD_YN = '1'",g_szCHK_EXEC_NUM, 0, 0 );
-		g_Sql_RetInt(szSql, &mtrCnt );
-
-		nonPayCnt = 0;
-		Mem_Set( (byte*)szSql, 0x00, sizeof(szSql) );
-		SPRINT( szSql ,"SELECT COUNT(1) FROM C6101_NONPAY WHERE PROMISE_ASSIGN_SEQ = '%s' AND CHK ='1' AND CARD_YN = '1'",g_szCHK_EXEC_NUM, 0, 0 );
-		g_Sql_RetInt(szSql, &nonPayCnt );
-		
-		amtChkYn = 0;
-		Mem_Set( (byte*)szSql, 0x00, sizeof(szSql) );
-		SPRINT( szSql ,"SELECT COUNT(1) FROM C6101_NONPAY WHERE PROMISE_ASSIGN_SEQ = '%s' AND CHK ='1' AND CARD_YN = '1' AND AMT_CHK_YN ='Y'",g_szCHK_EXEC_NUM, 0, 0 );
-		g_Sql_RetInt(szSql, &amtChkYn );
-		// }
-
 		/* 결제금액 */
-		PRINT("amtChkYnamtChkYnamtChkYnamtChkYnamtChkYn :%d",amtChkYn,0,0);
 		Mem_Set((byte*)szSql, 0x00, sizeof(szSql));
 		Mem_Set((byte*)sztmp, 0x00, sizeof(sztmp));
-		if(amtChkYn > 0)
-		{
-			PRINT("AAAAAAAAAAAAAAAAAA",0,0,0);
-			SPRINT(szSql, "SELECT SUM(AMT) AS AMT \
-					     FROM ( SELECT CASE WHEN AMT_CHK_YN ='Y' THEN SUB_ACCOUNT WHEN AMT_CHK_YN ='N' THEN ACCOUNT END AS AMT FROM C6101_PROMISE_MTR WHERE PROMISE_ASSIGN_SEQ = '%s' AND CARD_LIST_YN ='1' \
+		SPRINT(szSql, "SELECT SUM(AMT) AS AMT \
+					     FROM ( SELECT ACCOUNT AS AMT FROM C6101_PROMISE_MTR WHERE PROMISE_ASSIGN_SEQ = '%s' AND CARD_LIST_YN ='1' \
 							     UNION ALL \
-							    SELECT SUM(SUB_UNPAY_AMT) AS AMT FROM C6101_NONPAY WHERE PROMISE_ASSIGN_SEQ = '%s' AND CARD_LIST_YN ='1' AND AMT_CHK_YN ='Y')", g_szCHK_EXEC_NUM, g_szCHK_EXEC_NUM, 0);
-		}
-		else
-		{
-			PRINT("BBBBBBBBBBBBBBBBB",0,0,0);
-			SPRINT(szSql, "SELECT SUM(AMT) AS AMT \
-					     FROM ( SELECT CASE WHEN AMT_CHK_YN ='Y' THEN SUB_ACCOUNT WHEN AMT_CHK_YN ='N' THEN ACCOUNT END AS AMT FROM C6101_PROMISE_MTR WHERE PROMISE_ASSIGN_SEQ = '%s' AND CARD_LIST_YN ='1' \
-							     UNION ALL \
-							    SELECT SUM(UNPAY_AMT) AS AMT FROM C6101_NONPAY WHERE PROMISE_ASSIGN_SEQ = '%s' AND CARD_LIST_YN ='1' AND IFNULL(AMT_CHK_YN,'N')  ='N')", g_szCHK_EXEC_NUM, g_szCHK_EXEC_NUM, 0);
-
-		}
-		
+							    SELECT SUM(UNPAY_AMT) AS AMT FROM C6101_NONPAY WHERE PROMISE_ASSIGN_SEQ = '%s' AND CARD_LIST_YN ='1')", g_szCHK_EXEC_NUM, g_szCHK_EXEC_NUM, 0);
 		g_Sql_RetInt(szSql, &amt);
-		PRINT("szSqlszSqlszSqlszSql : %s",szSql,0,0);
 		Str_ItoA( amt, sztmp, 10 );
-		PRINT("amtamtamtamtamtamt : %d",amt,0,0);
 		Str_Chg( sztmp, STRCHG_INS_COMMA );
 		Str_Cat(sztmp, "원");
-		PRINT("sztmpsztmpsztmpsztmp : %s",sztmp,0,0);
 		EditCtrl_SetStr( Get_hDlgCtrlByID( TXT_AMT ), sztmp );
 
 		/* 미납금액 PAGE */
@@ -621,24 +576,8 @@ card C6101_GASCARD
 			ret = FALSE;
 			goto Finally;
 		}
-		amtChkYn = 0;
-		Mem_Set( (byte*)szSql, 0x00, sizeof(szSql) );
-		SPRINT( szSql ,"SELECT COUNT(1) FROM C6101_NONPAY WHERE PROMISE_ASSIGN_SEQ = '%s' AND CHK ='1' AND CARD_YN = '1' AND AMT_CHK_YN ='Y'",g_szCHK_EXEC_NUM, 0, 0 );
-		g_Sql_RetInt(szSql, &amtChkYn );
-
-		PRINT("00000000000000000000 : %d",amtChkYn,0,0);
-
-		if(amtChkYn > 0)
-		{
-			PRINT("여기들어옴 111",0,0,0);
-			hstmt = sql->CreateStatement(sql, "SELECT REQ_YM, SUB_UNPAY_AMT AS UNPAY_AMT FROM C6101_NONPAY WHERE PROMISE_ASSIGN_SEQ = ? AND CARD_LIST_YN = '1' ORDER BY REQ_YM DESC LIMIT ?, ?");
-		}
-		else
-		{
-			PRINT("여기들어옴 222",0,0,0);
-			hstmt = sql->CreateStatement(sql, "SELECT REQ_YM, UNPAY_AMT FROM C6101_NONPAY WHERE PROMISE_ASSIGN_SEQ = ? AND CARD_LIST_YN = '1' ORDER BY REQ_YM DESC LIMIT ?, ?");
-		}
 		
+		hstmt = sql->CreateStatement(sql, "SELECT REQ_YM, UNPAY_AMT FROM C6101_NONPAY WHERE PROMISE_ASSIGN_SEQ = ? AND CARD_LIST_YN = '1' ORDER BY REQ_YM DESC LIMIT ?, ?");
 		
 		if( hstmt == NULL )
 		{

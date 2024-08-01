@@ -626,7 +626,7 @@ card CM_MRGMEMO
 			if(Str_Len(stSc.CHK_VISIBLE_YN) == 0)
 				{
 					Str_Cpy(stSc.CHK_VISIBLE_YN,"Y");		
-					// PRINT("777777stSc.CHK_VISIBLE_YN : %s",stSc.CHK_VISIBLE_YN,0,0);
+					//PRINT("777777stSc.CHK_VISIBLE_YN : %s",stSc.CHK_VISIBLE_YN,0,0);
 				}
 
 			SQL_ConvUcStr( szUMemo, EditCtrl_GetStr(Get_hDlgCtrlByID(TXT_DATA4)) );

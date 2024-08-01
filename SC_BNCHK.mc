@@ -70,7 +70,6 @@ card SC_BNCHK
 		DEF_BUTTON_ID ( BID_OK3 )			// 신규등록
 		DEF_BUTTON_ID ( BID_INSTYMD )		// 신규등록
 		DEF_BUTTON_ID ( BID_WRITE )			// 모델명입력
-		DEF_BUTTON_ID ( BID_WRITE2 )		// 제조사검색
 		
 		/********************************/
 		/* 연소기 점검                  */
@@ -149,7 +148,6 @@ card SC_BNCHK
 		DEF_OBJECT_ID ( TXT_DATA41 )		// 호스_적합부적합
 		DEF_OBJECT_ID ( TXT_DATA45 )		// 연소기
 		DEF_OBJECT_ID ( TXT_DATA46 )		// 연소기_적합부적합
-		DEF_OBJECT_ID ( TXT_DATA47 )		// 연소기_적합부적합
 		
 		/********************************/
 		/* EDIT                         */
@@ -160,7 +158,6 @@ card SC_BNCHK
 		DEF_OBJECT_ID ( EDT_DATA3 )			// 설치일자_1
 		DEF_OBJECT_ID ( EDT_DATA4 )			// 설치일자_2
 		DEF_OBJECT_ID ( EDT_DATA5 )			// 설치일자_3
-		DEF_OBJECT_ID ( EDT_DATA6 )			// 설치일자_3
 		
 		/********************************/
 		/* TABLE                        */
@@ -185,7 +182,6 @@ card SC_BNCHK
 		DEF_OBJECT_ID ( CMB_DATA7 = CMB_DATA6 + 3 )	// 타이머콕
 		DEF_OBJECT_ID ( CMB_DATA8 = CMB_DATA7 + 3 )	// 플러그마감미비
 		DEF_OBJECT_ID ( CMB_KIT_SPRINKLER = CMB_DATA8 + 3 ) // 주방소화장치
-		
 	
 	END_OBJECT_ID()
 
@@ -277,8 +273,6 @@ card SC_BNCHK
 	char m_szfilenm[256];
 	char m_lBunPhoto_Old = 0; // 이전 연소기사진 가져올지 정하는 flag : 0 = 안가져옴, 1= 가져옴
 	char m_lphoto_flag = 0; // 카메라 flag : 0 = 연소기 사진, 1 = 플러그마감 미비
-	char m_szTxt [10]; // 10 : 수정 , 20 : 신규 
-	
 	
 	//-----------------------------------------------------------------------------------------------
 	// Function
@@ -287,9 +281,7 @@ card SC_BNCHK
 	void SetStruct(void); // 수정 전 데이터 스트럭쳐에 저장하는 함수
 	void SetData(void);
 	void SetCombo(void);
-	void SetComboMaker(void);
 	void SetBtnImg(void);
-	void Set_Alarm(void);
 	
 	void SetClickData(void);
 	
@@ -448,16 +440,12 @@ card SC_BNCHK
 		DLG_TEXT ( STARTX,	   STARTY+451, 350,  80,   0,  0, 0, EDITSTY_BORDER, TXTTTLFRCOLOR, TXTCTRLBK, TXT_DATA33, ""),
 		DLG_TEXT ( STARTX+350, STARTY+451, 650,  80,   0,  0, 0, EDITSTY_BORDER, TXTFRCOLOR, TXTINCTRLBK, TXT_DATA34, ""),
 		DLG_COMBO (STARTX+350, STARTY+451, 650, 200, 150, 80,    TXTFRCOLOR, TXTINCTRLBK, CALL_FUNC, "", CMB_DATA4, 10),
-
-		DLG_TEXT(STARTX, 	 STARTY+531, 350, 80, 0, 0, 0, EDITSTY_BORDER, TXTTTLFRCOLOR, TXTCTRLBK, 	TXT_DATA47,"제조사검색"),
-		DLG_BUTTON(STARTX+350, STARTY+531, 650,  80, 175  ,  50, BUTSTY_BOLD, BUTSTY_BORDER, BTNMENUFRCOLOR, BTNCTRLMNBKCOLOR, CALL_FUNC , "", BID_WRITE2,  ""),
-		DLG_TEXT(STARTX+350, STARTY+531, 650,  80, 175  ,  50, EDITSTY_BOLD, EDITSTY_BORDER, TXTFRCOLOR, EDTCTRLBK, EDT_DATA6,  ""),
 		
 		DLG_LINE ( STARTX,     STARTY+535, 1000, STARTY+535, DARKSLATEBLUE, 10, LINE_DATA1),
 		
-		DLG_BUTTON(STARTX,	   STARTY+619, 500,  80,   0,  0,    BUTSTY_BOLD, BUTSTY_BORDER, BTNMENUFRCOLOR, BTNCTRLBKCOLOR, CALL_FUNC , "", BID_CANCLE,  "닫기"),
-		DLG_BUTTON(STARTX+500, STARTY+619, 500,  80,   0,  0,    BUTSTY_BOLD, BUTSTY_BORDER, BTNMENUFRCOLOR, BTNCTRLBKCOLOR, CALL_FUNC , "", BID_OK2,  "저장"),
-		DLG_BUTTON(STARTX+500, STARTY+619, 500,  80,   0,  0,    BUTSTY_BOLD, BUTSTY_BORDER, BTNMENUFRCOLOR, BTNCTRLBKCOLOR, CALL_FUNC , "", BID_OK3,  "저장"),
+		DLG_BUTTON(STARTX,	   STARTY+539, 500,  80,   0,  0,    BUTSTY_BOLD, BUTSTY_BORDER, BTNMENUFRCOLOR, BTNCTRLBKCOLOR, CALL_FUNC , "", BID_CANCLE,  "닫기"),
+		DLG_BUTTON(STARTX+500, STARTY+539, 500,  80,   0,  0,    BUTSTY_BOLD, BUTSTY_BORDER, BTNMENUFRCOLOR, BTNCTRLBKCOLOR, CALL_FUNC , "", BID_OK2,  "저장"),
+		DLG_BUTTON(STARTX+500, STARTY+539, 500,  80,   0,  0,    BUTSTY_BOLD, BUTSTY_BORDER, BTNMENUFRCOLOR, BTNCTRLBKCOLOR, CALL_FUNC , "", BID_OK3,  "저장"),
 	};
 	
 	//-----------------------------------------------------------------------------------------------
@@ -553,7 +541,6 @@ card SC_BNCHK
 
 				SetData();	
 				CockDraw();	
-				Set_Alarm();
 						
 				break;
 			
@@ -899,10 +886,6 @@ card SC_BNCHK
 			case BID_WRITE:
 				g_EditCtrl_ShowEditInput( Get_hDlgCtrlByID(EDT_DATA1), EditCtrl_GetStr(Get_hDlgCtrlByID(EDT_DATA1)) );
 				break;	
-			
-			case BID_WRITE2:
-				g_EditCtrl_ShowEditInput( Get_hDlgCtrlByID(EDT_DATA6), EditCtrl_GetStr(Get_hDlgCtrlByID(EDT_DATA6)) );
-				break;	
 
 			case BID_OK2:		//수정
 			case BID_OK3:		//신규등록
@@ -1133,26 +1116,6 @@ card SC_BNCHK
 							ShowSip(TRUE);
 							g_Sipflag = 1;
 						}
-					}
-					// 신규
-					else if (X > DMS_X(STARTX+350) && X < DMS_X(STARTX+1000) && Y > DMS_Y(STARTY+451) && Y < DMS_Y(STARTY+521))
-					{
-						PRINT("m_szTxtm_szTxtm_szTxtm_szTxt : %s",m_szTxt,0,0);
-						if( Str_Cmp(m_szTxt, "20") == 0)
-						{
-							SetComboMaker();
-						}
-					}
-					// DLG_COMBO (STARTX+350, STARTY+131, 650, 200, 150, 80,    TXTFRCOLOR, TXTINCTRLBK, CALL_FUNC, "", CMB_DATA2, 10),
-					else if (X > DMS_X(STARTX+350) && X < DMS_X(STARTX+1000) && Y > DMS_Y(STARTY+131) && Y < DMS_Y(STARTY+201))
-					{
-						PRINT("44444444444444",0,0,0);
-						PRINT("m_szTxtm_szTxtm_szTxtm_szTxt :%s",m_szTxt,0,0);
-						if( Str_Cmp(m_szTxt, "10") == 0)
-						{
-							SetComboMaker();
-						}
-						
 					}
 					else
 					{
@@ -1624,65 +1587,6 @@ card SC_BNCHK
 			}
 		}
 	}
-
-	void SetComboMaker(void)
-	{	
-		char szSql[300];
-		char sztmp[100];
-		long i;
-		
-		//제조사명
-		// Mem_Set( (byte*)szSql, 0x00, sizeof(szSql) );
-		// SPRINT(szSql, "SELECT MAKER_NM FROM USE_MAKER WHERE MAKER_FLAG = '50' ORDER BY BOILER_SEQ ",0, 0, 0   );
-		
-		//신규
-		if( Str_Cmp(m_szTxt, "20") == 0)
-		{
-			ListCtrl_ResetAllItems( Get_hDlgCtrlByID(CMB_DATA4+2 ) );
-	
-			Str_Cpy( sztmp, EditCtrl_GetStr(Get_hDlgCtrlByID(EDT_DATA6)) );	
-
-			PRINT("sztmpsztmpsztmp : %s",sztmp,0,0);
-
-			Mem_Set( (byte*)szSql, 0x00, sizeof(szSql) );
-			
-			Str_Cpy( szSql, "SELECT MAKER_NM FROM USE_MAKER" );
-			Str_Cat( szSql, " WHERE MAKER_FLAG = '50'" );
-			Str_Cat( szSql, " AND MAKER_NM LIKE '%" );
-			Str_Cat( szSql, sztmp );
-			Str_Cat( szSql, "%'" );
-			Str_Cat( szSql, " ORDER BY BOILER_SEQ" );
-
-			PRINT("szSqlszSqlszSql : %s",szSql,0,0);
-
-			g_Sql_SetCombo(szSql, CMB_DATA4+2);
-		}
-		else if( Str_Cmp(m_szTxt, "10") == 0)
-		{
-			PRINT("222222222222222",0,0,0);
-			ListCtrl_ResetAllItems( Get_hDlgCtrlByID(CMB_DATA2+2 ) );
-		
-			Str_Cpy( sztmp, EditCtrl_GetStr(Get_hDlgCtrlByID(EDT_DATA6)) );	
-
-			PRINT("sztmpsztmpsztmp : %s",sztmp,0,0);
-
-			Mem_Set( (byte*)szSql, 0x00, sizeof(szSql) );
-			
-			Str_Cpy( szSql, "SELECT MAKER_NM FROM USE_MAKER" );
-			Str_Cat( szSql, " WHERE MAKER_FLAG = '50'" );
-			Str_Cat( szSql, " AND MAKER_NM LIKE '%" );
-			Str_Cat( szSql, sztmp );
-			Str_Cat( szSql, "%'" );
-			Str_Cat( szSql, " ORDER BY BOILER_SEQ" );
-
-			PRINT("szSqlszSqlszSql : %s",szSql,0,0);
-
-			g_Sql_SetCombo(szSql, CMB_DATA2+2);
-		}
-
-	
-		return;
-	}
 	
 	/*=======================================================================================
 	함수명 : SetData
@@ -2047,7 +1951,6 @@ Finally:
 		EditCtrl_SetAlign( Get_hDlgCtrlByID(TXT_DATA29), EDITALIGN_MIDDLE|EDITALIGN_CENTER);
 		EditCtrl_SetAlign( Get_hDlgCtrlByID(TXT_DATA31), EDITALIGN_MIDDLE|EDITALIGN_CENTER);
 		EditCtrl_SetAlign( Get_hDlgCtrlByID(TXT_DATA33), EDITALIGN_MIDDLE|EDITALIGN_CENTER);
-		EditCtrl_SetAlign( Get_hDlgCtrlByID(TXT_DATA47), EDITALIGN_MIDDLE|EDITALIGN_CENTER);
 		EditCtrl_SetAlign( Get_hDlgCtrlByID(TXT_DATA35), EDITALIGN_MIDDLE);
 		EditCtrl_SetAlign( Get_hDlgCtrlByID(TXT_DATA36), EDITALIGN_MIDDLE);
 		EditCtrl_SetAlign( Get_hDlgCtrlByID(TXT_DATA37), EDITALIGN_MIDDLE);
@@ -2072,9 +1975,6 @@ Finally:
 			EditCtrl_SetStr(Get_hDlgCtrlByID(TXT_DATA23), "기물번호");
 			EditCtrl_SetStr(Get_hDlgCtrlByID(TXT_DATA26), "제조사명");
 			EditCtrl_SetStr(Get_hDlgCtrlByID(TXT_DATA33), "구분");
-
-			//m_szTxt
-			Str_Cpy( m_szTxt, "10" );
 			
 			DlgCtrl_SetVisible(this->m_hDlg, Get_iDlgCtrlByID(CMB_DATA4), FALSE);
 			DlgCtrl_SetVisible(this->m_hDlg, Get_iDlgCtrlByID(CMB_DATA4+1), FALSE);
@@ -2098,8 +1998,6 @@ Finally:
 			EditCtrl_SetStr(Get_hDlgCtrlByID(TXT_DATA23), "연소기번호");
 			EditCtrl_SetStr(Get_hDlgCtrlByID(TXT_DATA26), "기물번호");
 			EditCtrl_SetStr(Get_hDlgCtrlByID(TXT_DATA33), "제조사명");
-
-			Str_Cpy( m_szTxt, "20" );
 			DlgCtrl_SetVisible(this->m_hDlg, Get_iDlgCtrlByID(CMB_DATA4), TRUE);
 			DlgCtrl_SetVisible(this->m_hDlg, Get_iDlgCtrlByID(TXT_DATA34), FALSE);
 			DlgCtrl_SetVisible(this->m_hDlg, Get_iDlgCtrlByID(BID_OK2), FALSE);
@@ -2417,63 +2315,6 @@ Finally:
 		ON_DRAW();
 		
 		return;
-	}
-
-	void Set_Alarm(void)
-	{
-		char szSql[500];
-		long cnt;
-		long lChkCnt = 0;
-		
-
-		//g_szCHK_EXEC_NUM
-
-		Mem_Set( (byte*)szSql, 0x00, sizeof(szSql) );
-		SPRINT(szSql, "SELECT COUNT(1) FROM NORMAL_BUR WHERE CHK_EXEC_NUM ='%s' AND BURNER_KIND_NUM NOT IN('201','301') AND MAKER_NUM ='50099' ", g_szCHK_EXEC_NUM, 0, 0);
-		g_Sql_RetInt(szSql, &lChkCnt);
-
-		if( lChkCnt > 0 )
-		// if(Str_Cmp( stScBur.MAKER_NUM, "50099" ) == 0 )
-		{
-			MessageBoxEx (CONFIRM_OK, "연소기 제조사 명칭을 확인 후 \n 수정 바랍니다");
-
-			// ON_EXIT();
-			// OnInit(INIT_BN);
-		}
-		
-		
-		/********************************************/
-		/* 보일러 모델명, 제조사에 따른 알림 활성화 */
-		/********************************************/
-		// 20190212 CS팀 이성근 차장님 요청( 보일러 제조사 = 롯데, 보일러 모델명 = LGB-204면 알림 ) -> 반영 취소
-		// ** 필독 ** : LIKE % 사용시 아래와 같이 String으로 구현해야함, SPRINT 사용시 % 인식 불가
-		/*
-		
-		Mem_Set( (byte*)szSql, 0x00, sizeof(szSql) );
-		
-		Str_Cpy( szSql, "SELECT COUNT(1) FROM NORMAL_BUR" );
-		Str_Cat( szSql, " WHERE CHK_EXEC_NUM = '" );
-		Str_Cat( szSql, g_szCHK_EXEC_NUM );
-		Str_Cat( szSql, "'" );
-		Str_Cat( szSql, " AND BURNER_NUM = '" );
-		Str_Cat( szSql, stScBur.BURNER_NUM );
-		Str_Cat( szSql, "'" );
-		Str_Cat( szSql, " AND BURNER_KIND_NUM IN (201, 301)" );
-		Str_Cat( szSql, " AND MAKER_NUM = '50031'" );
-		Str_Cat( szSql, " AND BURNER_MODEL_NM LIKE '%LGB%'" );
-		Str_Cat( szSql, " AND BURNER_MODEL_NM LIKE '%204%'" );
-		
-		g_Sql_RetInt( szSql, &cnt );
-		
-		if( cnt > 0 )
-		{
-			MessageBoxEx (CONFIRM_OK, "제조사 [롯데], 모델명 [ LGB-204 ]\n배기통 점검 주의");
-		}
-		*/
-		
-		g_nBoil_inst_cnt++;	
-		
-		ON_DRAW();
 	}
 	
 	/*=======================================================================================

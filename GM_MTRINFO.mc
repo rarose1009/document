@@ -42,7 +42,7 @@ card GM_MTRINFO
 		DEF_BUTTON_ID ( BID_EXIT )		// 종료
 		
 		DEF_BUTTON_ID ( BID_OK )		// 확인
-		DEF_BUTTON_ID ( BID_PHOTO )		// 사진촬영
+		//DEF_BUTTON_ID ( BID_PHOTO )		// 사진촬영
 		
 	END_BUTTON_ID()
 	
@@ -157,7 +157,7 @@ card GM_MTRINFO
 		
 		DLG_LINE ( STARTX     , STARTY +678, 1000, STARTY +678, DARKSLATEBLUE, 10, LINE_DATA_2 ),
 		
-		DLG_BUTTON(STARTX     , STARTY +683, 500, 80, 0, 0, BUTSTY_BOLD, BUTSTY_BORDER, TXTFRCOLOR, YELLOW, CALL_FUNC , "", BID_PHOTO, "촬 영" ),
+		//DLG_BUTTON(STARTX     , STARTY +683, 500, 80, 0, 0, BUTSTY_BOLD, BUTSTY_BORDER, TXTFRCOLOR, YELLOW, CALL_FUNC , "", BID_PHOTO, "촬 영" ),
 		DLG_BUTTON(STARTX +500, STARTY +683, 500, 80, 0, 0, BUTSTY_BOLD, BUTSTY_BORDER, BTNMENUFRCOLOR, BTNCTRLBKCOLOR, CALL_FUNC , "", BID_OK, "확 인" ),
 	};	
 	
@@ -281,7 +281,7 @@ card GM_MTRINFO
 				break;
 			
 			// 사진 촬영
-			
+			/*
 			case BID_PHOTO:
 				if( MessageBoxEx( CONFIRM_YESNO, "계량기 사진촬영을 하시겠습니까?" )  == MB_OK )
 				{
@@ -289,7 +289,7 @@ card GM_MTRINFO
 				}
 				
 				break;
-			
+			*/
 		}
 	}
 	
@@ -565,7 +565,7 @@ Finally:
 		// 교체사유
 		EditCtrl_SetStr( Get_hDlgCtrlByID(TXT_DATA9), stGm.MTR_REPL_WHY );
 		
-		
+		/*
 		// 사진버튼
 		if( Str_Cmp(stGm.PHOTO_MTR_YN, "Y") == 0 )
 		{
@@ -582,7 +582,7 @@ Finally:
 			ButCtrl_SetBkColorEx( Get_hDlgCtrlByID(BID_PHOTO), YELLOW );
 			ButCtrl_SetForeColorEx( Get_hDlgCtrlByID(BID_PHOTO), TXTFRCOLOR );
 		}
-		
+		*/
 		
 		return;
 	}
@@ -617,46 +617,6 @@ Finally:
 		SPRINT( g_szphoto, "%s/%s", PHOTO_GMMTR, m_szfilenm, 0 );
 		
 		ShootPhoto( 1, 0, m_szfilenm );
-
-		// h = JSON_Create( JSON_Object );
-		// 	if (h)
-		// 	{
-		// 		hdata = JSON_Create( JSON_Object );
-		// 		if(hdata == NULL)
-		// 		{
-		// 			goto Finally;
-		// 		}
-				
-		// 		//2017-08-18 Sanghyun Lee
-		// 		//카메라 화질 설정(photo_quality)	
-		// 		//"MEDIA_QUALITY_AUTO" ->> 에러 발생, 필요X
-		// 		//"MEDIA_QUALITY_LOWEST"
-		// 		//"MEDIA_QUALITY_LOW" ->> 선택되는 화질이 없음 , 필요X
-		// 		//"MEDIA_QUALITY_MEDIUM" ->> 현재 사용중인버전
-		// 		//"MEDIA_QUALITY_HIGH"
-		// 		//"MEDIA_QUALITY_HIGHEST"
-		// 		JSON_SetValue	(hdata	, 'C', "photo_quality"		, "MEDIA_QUALITY_HIGH");
-
-		// 		//JSON_SetValue	(hdata	, 'C', "desc"				, "photo");
-		// 		JSON_SetValue	(hdata	, 'C', "position_info"		, " ");
-		// 		JSON_SetValue	(h		, 'C', "method"				, "CameraActivity");
-				
-		// 		JSON_Attach 	(h		, "data"					, hdata);
-			
-		// 		System_Call		("Native_System_Call" , JSON_toString(h));
-		// 	}
-			
-		// 	Finally:
-		
-		// 	if (h)
-		// 	{
-		// 		JSON_Finalize(h);
-		// 	}	
-		
-		// 	if (hdata)
-		// 	{
-		// 		JSON_Finalize(hdata);
-		// 	}
 		
 		return;
 	}
@@ -708,20 +668,11 @@ Finally:
 		
 		Mem_Set( (byte*) sztmp, 0x00, sizeof( sztmp) );
 		Mem_Set( (byte*) szSql, 0x00, sizeof( szSql) );
-		
 		SPRINT( szSql, "SELECT PARAM6 FROM RCV_LOG WHERE GUBUN = '1' ", 0, 0, 0 );
 		g_Sql_RetStr(szSql, 5, sztmp);
-
-		if( Str_Cmp(sztmp, "" ) == 0 )
-		{
-			Mem_Set( (byte*) sztmp, 0x00, sizeof( sztmp) );
-			Mem_Set( (byte*) szSql, 0x00, sizeof( szSql) );
-			SPRINT( szSql, "SELECT ZONE_MANAGE_NUM FROM GUMDATA LIMIT 1 ", 0, 0, 0 );
-			g_Sql_RetStr(szSql, 5, sztmp);
-		}
-
+		
 		JSON_SetValue( g_pjcomm, 'C', "zone_manage_num" , sztmp );
-
+		
 		// FILE Setting
 		Mem_Set( (byte*)sztmp, 0x00, sizeof(sztmp) );
 		Str_Cpy( sztmp, stGm.MTR_NUM );

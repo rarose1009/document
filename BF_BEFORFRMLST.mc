@@ -19,11 +19,6 @@ card BF_BEFORFRMLST
 	#define USE_ON_SELECT
 
 	#include "DefEvent.h"
-
-#define CHK_N1	   "°‡N"
-#define CHK_N2	   "¢√N"
-#define CHK_Y1	   "°‡Y"
-#define CHK_Y2	   "¢√Y"
 	
 	//BUTTON ID define
 	BEGIN_BUTTON_ID()

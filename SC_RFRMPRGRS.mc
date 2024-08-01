@@ -3399,11 +3399,6 @@ AND BETTER_ADVICE_DEGREE=(SELECT MAX(BETTER_ADVICE_DEGREE) FROM NORMAL_NOGOOD_CH
 		SPRINT(szMsg, "\n서울도시가스 %s 고객센터", stUserinfo.szcenter_nm, 0, 0);
 		// SPRINT(szMsg2, "\n안전점검원 : %s(%s)\n*업무시간만 통화가능합니다.\n(09시~18시)", stUserinfo.sznm_kor, szUserTel2, 0);
 		SPRINT(szMsg2, "\n안전점검원 : %s(%s)\n*문의전화는 업무시간(09시~18시)에 해주시면 감사하겠습니다.", stUserinfo.sznm_kor, szUserTel2, 0);
-		SPRINT(szMsg2, "\n가스앱 설치 : http://bit.ly/3adhNwn", 0, 0, 0);
-
-		// Str_Cat( m_szMsg[2], "\n▣ 설치방법" ); 
-		// Str_Cat( m_szMsg[2], "\n  ▷http://bit.ly/3adhNwn" ); 
-		// Str_Cat( m_szMsg[2], "\n  ▷앱스토어(아이폰, 안드로이드)에서［가스앱］설치" );
 		
 		Str_Cat(szMsg, szMsg2);
 		Str_Cat(szNogoodMsg, szMsg);

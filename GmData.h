@@ -170,7 +170,6 @@ global char g_szIndi_Qty[10];
 		char RECENT_GMTR_JOB_YMD_DAYS			[4 +1];    //원격검침일
 		char ZONE_MANAGE_NUM					[5 +1];    //구역관리번호
 		char AMI_REQ_YM							[3 +1];    //3, 11월 AMI검침
-		char DISC_CUST_YN						[1  +1];    //원격검침YN
 	}	GMINFO;
 	
 	global GMINFO stGm;

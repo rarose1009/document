@@ -409,7 +409,7 @@ card C6301_SND
  , temper , press , revis_para , treat_flag , repl_not_permit_why , job_dtm , jober_empid \
  , mtr_photo , compens_photo , cust_sign , visit_ymd , memo, comm_num_24 as comm_num , comm_firm , inflow_flag  \
  , nobill_yn ,use_cont_num , prod_cont_seq , buld_center_cd , repl_treat_insti , no_bill_repl_why \
- , battery_yn, mtrdisplay_yn , other_price , remote_system , old_mtr_id_num , concent_inst_amt_yn \
+ , battery_yn, mtrdisplay_yn , other_price , remote_system , old_mtr_id_num \
    FROM C6301_CHANGEDATA WHERE SEND_YN = 'S' ",0, 0, 0);
 
 		callBackfunc = TR75302; //통신완료 후에 호출 함수

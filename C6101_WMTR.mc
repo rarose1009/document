@@ -3693,7 +3693,6 @@ Finally:
 									Str_Cpy( stBill.szREQ_AMT, szcode );
 
 									szcode = (char*)JSON_GetArrayItem ( hitem, i, "adj_alt_amt", szType);
-									// Str_Cpy( stBill.szADJ_ALT_AMT, "10000" );
 									Str_Cpy( stBill.szADJ_ALT_AMT, szcode );
 
 									szcode = (char*)JSON_GetArrayItem ( hitem, i, "tot_revis_qty", szType);

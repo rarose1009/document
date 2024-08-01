@@ -809,6 +809,9 @@ long m_nPayFlag = PRINT_PAY_PLAN;
 				SPRINT(szSql, "SELECT SUM(UNPAY_AMT) FROM C6101_NONPAY  WHERE PROMISE_ASSIGN_SEQ = '%s' AND CHK= '0' ", g_szCHK_EXEC_NUM, 0, 0   );
 				g_Sql_RetInt( szSql, &gasacconut );
 				
+				PRINT("g_szCHK_EXEC_NUM : %s",g_szCHK_EXEC_NUM,0,0);
+				PRINT("gasnonpay : %d",gasnonpay,0,0);
+				PRINT("gasacconut : %d",gasacconut,0,0);
 				//전출은 미납요금이 발생 납부확약서 발생 필수
 				if( (gasnonpay +gasacconut) == 0 )
 				{
@@ -3755,25 +3758,14 @@ Finally:
 	long gasacconut = 0;
 	long nCardAmt = 0;
 	long nCashAmt = 0;
-	long nAdjAmt = 0;
-	long nAmt = 0;
 	char szCardAmt[20];
 	char szCashAmt[20];
 	char szCardChk[20];
-	char * sqlstr1 = "";
-	char * sqlstr2 = "";
 	bool bret = FALSE;
 	long cardtot = 0;
 	long cardApproved = 0;
 	long lCnt = 0;
-	long mtrCnt , nonPayCnt ;
 	char chk_card = 0;
-	char szReqYm[10];
-	long szUnpayAmt , szNonpayAmt;
-	char szAmt[300];
-	handle* sql1 = NULL;
-	handle* sql2 = NULL;
-	
 	
 		hdb = sql->Open(sql);
 		if( hdb == NULL )
@@ -4431,279 +4423,51 @@ Finally:
 				return FALSE;	
 			}
 		}
-		// //카드 정산액 
-		// gasacconut = 0;
-		// Mem_Set( (byte*)szSql, 0x00, sizeof(szSql) );
-		// SPRINT(szSql, "SELECT SUM(ACCOUNT) FROM C6101_PROMISE_MTR  WHERE PROMISE_ASSIGN_SEQ = '%s' AND CHK_YN= '1' AND CARD_YN = '1' ", g_szCHK_EXEC_NUM, 0, 0   );
-		// g_Sql_RetInt( szSql, &gasacconut );
 		
-		// // 카드 청구년월 미납금액
-		// gasnonpay = 0;
-		// Mem_Set( (byte*)szSql, 0x00, sizeof(szSql) );
-		// SPRINT(szSql, "SELECT SUM(UNPAY_AMT) FROM C6101_NONPAY  WHERE PROMISE_ASSIGN_SEQ = '%s' AND CHK= '1' AND CARD_YN = '1' ", g_szCHK_EXEC_NUM, 0, 0   );
-		// g_Sql_RetInt( szSql, &gasnonpay );
-		// Str_ItoA( (gasacconut+ gasnonpay), stMw.szCard_gaspay, 10);//가스요금 카드수납금액
-		// nCardAmt = gasacconut+ gasnonpay;
+		gasacconut = 0;
+		Mem_Set( (byte*)szSql, 0x00, sizeof(szSql) );
+		SPRINT(szSql, "SELECT SUM(ACCOUNT) FROM C6101_PROMISE_MTR  WHERE PROMISE_ASSIGN_SEQ = '%s' AND CHK_YN= '1' AND CARD_YN = '1' ", g_szCHK_EXEC_NUM, 0, 0   );
+		g_Sql_RetInt( szSql, &gasacconut );
 		
-		// gasacconut = 0;
-		// Mem_Set( (byte*)szSql, 0x00, sizeof(szSql) );
-		// SPRINT(szSql, "SELECT SUM(ACCOUNT) FROM C6101_PROMISE_MTR  WHERE PROMISE_ASSIGN_SEQ = '%s' AND CHK_YN= '1'  ", g_szCHK_EXEC_NUM, 0, 0   );
-		// g_Sql_RetInt( szSql, &gasacconut );
+		gasnonpay = 0;
+		Mem_Set( (byte*)szSql, 0x00, sizeof(szSql) );
+		SPRINT(szSql, "SELECT SUM(UNPAY_AMT) FROM C6101_NONPAY  WHERE PROMISE_ASSIGN_SEQ = '%s' AND CHK= '1' AND CARD_YN = '1' ", g_szCHK_EXEC_NUM, 0, 0   );
+		g_Sql_RetInt( szSql, &gasnonpay );
+		Str_ItoA( (gasacconut+ gasnonpay), stMw.szCard_gaspay, 10);//가스요금 카드수납금액
+		nCardAmt = gasacconut+ gasnonpay;
 		
-		// gasnonpay = 0;
-		// Mem_Set( (byte*)szSql, 0x00, sizeof(szSql) );
-		// SPRINT(szSql, "SELECT SUM(UNPAY_AMT) FROM C6101_NONPAY  WHERE PROMISE_ASSIGN_SEQ = '%s' AND CHK= '1'  ", g_szCHK_EXEC_NUM, 0, 0   );
-		// g_Sql_RetInt( szSql, &gasnonpay );
 		
-		// if( Str_AtoI(stMw.szCard_gaspay) > 0 && Str_AtoI(stMw.szCard_gaspay) > (  gasacconut+ gasnonpay- Str_AtoI(stMw.szAdj_alt_amt) ) )
-		// {
-		// 	MessageBoxEx (ERROR_OK, "카드 결제 선택이 잘못되었습니다.");//
-		// 	return FALSE;
-		// }
-
-		//현금 정산액
+		gasacconut = 0;
+		Mem_Set( (byte*)szSql, 0x00, sizeof(szSql) );
+		SPRINT(szSql, "SELECT SUM(ACCOUNT) FROM C6101_PROMISE_MTR  WHERE PROMISE_ASSIGN_SEQ = '%s' AND CHK_YN= '1'  ", g_szCHK_EXEC_NUM, 0, 0   );
+		g_Sql_RetInt( szSql, &gasacconut );
+		
+		gasnonpay = 0;
+		Mem_Set( (byte*)szSql, 0x00, sizeof(szSql) );
+		SPRINT(szSql, "SELECT SUM(UNPAY_AMT) FROM C6101_NONPAY  WHERE PROMISE_ASSIGN_SEQ = '%s' AND CHK= '1'  ", g_szCHK_EXEC_NUM, 0, 0   );
+		g_Sql_RetInt( szSql, &gasnonpay );
+		
+		if( Str_AtoI(stMw.szCard_gaspay) > 0 && Str_AtoI(stMw.szCard_gaspay) > (  gasacconut+ gasnonpay- Str_AtoI(stMw.szAdj_alt_amt) ) )
+		{
+			MessageBoxEx (ERROR_OK, "카드 결제 선택이 잘못되었습니다.");//
+			return FALSE;
+		}
+		
 		gasacconut = 0;
 		Mem_Set( (byte*)szSql, 0x00, sizeof(szSql) );
 		SPRINT(szSql, "SELECT SUM(ACCOUNT) FROM C6101_PROMISE_MTR  WHERE PROMISE_ASSIGN_SEQ = '%s' AND CHK_YN= '1' AND ( CARD_YN <> '1' OR CARD_YN IS NULL) ", g_szCHK_EXEC_NUM, 0, 0   );
 		g_Sql_RetInt( szSql, &gasacconut );
-		//현금 청구년월 미납금액
+		
 		gasnonpay = 0;
 		Mem_Set( (byte*)szSql, 0x00, sizeof(szSql) );
 		SPRINT(szSql, "SELECT SUM(UNPAY_AMT) FROM C6101_NONPAY  WHERE PROMISE_ASSIGN_SEQ = '%s' AND CHK= '1' AND ( CARD_YN <> '1' OR CARD_YN IS NULL)  ", g_szCHK_EXEC_NUM, 0, 0   );
 		g_Sql_RetInt( szSql, &gasnonpay );
 		Str_ItoA( (gasacconut+gasnonpay-Str_AtoI(stMw.szAdj_alt_amt) ), stMw.szCash_gaspay , 10);//가스요금 현금수납금액
 		nCashAmt = gasacconut+gasnonpay-Str_AtoI(stMw.szAdj_alt_amt);
-
-		if(nCashAmt < 0)
-		{
-			nCashAmt = 0;
-			Str_ItoA( nCashAmt, stMw.szCash_gaspay , 10);//가스요금 현금수납금액
-		}
-
-		if ((gasacconut + gasnonpay) < Str_AtoI(stMw.szAdj_alt_amt))
-		{
-			nAdjAmt = Str_AtoI(stMw.szAdj_alt_amt) - (gasacconut + gasnonpay);
-		}
-		else
-		{
-			nAdjAmt = 0 ;
-		}
-
-		//카드 정산액 
-		gasacconut = 0;
-		Mem_Set( (byte*)szSql, 0x00, sizeof(szSql) );
-		SPRINT(szSql, "SELECT SUM(ACCOUNT) FROM C6101_PROMISE_MTR  WHERE PROMISE_ASSIGN_SEQ = '%s' AND CHK_YN= '1' AND CARD_YN = '1' ", g_szCHK_EXEC_NUM, 0, 0   );
-		g_Sql_RetInt( szSql, &gasacconut );
 		
-		// 카드 청구년월 미납금액
-		gasnonpay = 0;
-		Mem_Set( (byte*)szSql, 0x00, sizeof(szSql) );
-		SPRINT(szSql, "SELECT SUM(UNPAY_AMT) FROM C6101_NONPAY  WHERE PROMISE_ASSIGN_SEQ = '%s' AND CHK= '1' AND CARD_YN = '1' ", g_szCHK_EXEC_NUM, 0, 0   );
-		g_Sql_RetInt( szSql, &gasnonpay );
-		// Str_ItoA( (gasacconut+gasnonpay-Str_AtoI(stMw.szAdj_alt_amt) ), stMw.szCash_gaspay , 10)
-		
-		//현금에서 차감했는데도 예수금 금액이 있으면 nCardAmt에도 예수금을 차감.
-		//차감하면서 C6101_PROMISE_MTR에 ADJ_AMT_YN 의 값을 Y로 설정해주기
-		Str_ItoA( (gasacconut+ gasnonpay-nAdjAmt), stMw.szCard_gaspay, 10);//가스요금 카드수납금액
-		nCardAmt = gasacconut+ gasnonpay-nAdjAmt;
-
-		//현재 금액에서 예수금을 차감해도 0원이 될때까지 WHILE 돔. C6101_NONPAY 나 MTR 에 특정 FLAG값을 주어서 처리된거는 더 안돌게 해야함.
-		if( m_lDfrrd_flag == 1 ){
-			while( 1 )
-			{
-				nonPayCnt = 0;
-				Mem_Set( (byte*)szSql, 0x00, sizeof(szSql) );
-				SPRINT( szSql ,"SELECT COUNT(1) FROM C6101_NONPAY WHERE PROMISE_ASSIGN_SEQ = '%s' AND CHK ='1' AND CARD_LIST_YN = '1' AND UNPAY_AMT > 0 AND IFNULL(AMT_CHK_YN,'N') <> 'Y'",g_szCHK_EXEC_NUM, 0, 0 );
-				g_Sql_RetInt(szSql, &nonPayCnt );
-
-				mtrCnt = 0;
-				Mem_Set( (byte*)szSql, 0x00, sizeof(szSql) );
-				SPRINT( szSql ,"SELECT COUNT(1) FROM C6101_PROMISE_MTR WHERE PROMISE_ASSIGN_SEQ = '%s' AND CHK_YN ='1' AND CARD_LIST_YN = '1' AND ACCOUNT > 0 AND IFNULL(AMT_CHK_YN,'N') <> 'Y'",g_szCHK_EXEC_NUM, 0, 0 );
-				g_Sql_RetInt(szSql, &mtrCnt );
-
-				Mem_Set((byte*)szSql, 0x00, sizeof(szSql));
-				SPRINT(szSql, "SELECT MIN(REQ_YM) FROM C6101_NONPAY WHERE PROMISE_ASSIGN_SEQ = '%s' AND CHK = '1' AND CARD_LIST_YN = '1' AND UNPAY_AMT > 0 AND IFNULL(AMT_CHK_YN,'N') <> 'Y'", g_szCHK_EXEC_NUM, 0, 0);
-				g_Sql_RetStr( szSql, 10, szReqYm );
-
-				szUnpayAmt = 0 ;
-				Mem_Set((byte*)szSql, 0x00, sizeof(szSql));
-				SPRINT(szSql, "SELECT UNPAY_AMT FROM C6101_NONPAY WHERE PROMISE_ASSIGN_SEQ = '%s' AND CHK = '1' AND CARD_LIST_YN = '1' AND UNPAY_AMT > 0 AND REQ_YM = '%s' AND IFNULL(AMT_CHK_YN,'N') <> 'Y'", g_szCHK_EXEC_NUM, szReqYm, 0);
-				g_Sql_RetInt( szSql, &szUnpayAmt );
-
-				szNonpayAmt = 0;
-				Mem_Set( (byte*)szSql, 0x00, sizeof(szSql) );
-				SPRINT( szSql ,"SELECT ACCOUNT FROM C6101_PROMISE_MTR WHERE PROMISE_ASSIGN_SEQ = '%s' AND CHK_YN ='1' AND CARD_LIST_YN = '1' AND IFNULL(AMT_CHK_YN,'N') <> 'Y'",g_szCHK_EXEC_NUM, 0, 0 );
-				g_Sql_RetInt(szSql, &szNonpayAmt );
-
-				// gasacconut = 0;
-				// Mem_Set( (byte*)szSql, 0x00, sizeof(szSql) );
-				// SPRINT(szSql, "SELECT SUM(UNPAY_AMT) FROM C6101_NONPAY  WHERE PROMISE_ASSIGN_SEQ = '%s' AND CHK= '0' ", g_szCHK_EXEC_NUM, 0, 0   );
-				// g_Sql_RetInt( szSql, &gasacconut );
-
-				PRINT("szReqYmszReqYmszReqYm : %s",szReqYm,0,0); 
-				PRINT("szUnpayAmtszUnpayAmtszUnpayAmt : %d",szUnpayAmt,0,0); 
-				PRINT("nAdjAmtnAdjAmtnAdjAmtnAdjAmt : %d",nAdjAmt,0,0); 
-
-				//C6101_NONPAY에 카드 결제 건이 있으면
-				if(nonPayCnt > 0 )
-				{
-					PRINT("들어옴",0,0,0);
-					nAmt = szUnpayAmt - nAdjAmt ;		
-					//		
-					if(nAmt < 0)
-					{
-						nAdjAmt = nAdjAmt - szUnpayAmt ;
-					}
-					else
-					{
-						nAdjAmt = 0;
-					}
-				}
-				//C6101_PROMISE_MTR에 카드 결제 있을때
-				else if(mtrCnt > 0)
-				{
-					PRINT("들어옴111",0,0,0);
-					nAmt = szNonpayAmt - nAdjAmt ;
-					if(nAmt < 0)
-					{
-						nAdjAmt = nAdjAmt - szUnpayAmt ;
-					}
-					else
-					{
-						nAdjAmt = 0;
-					}
-				}
-				//예수금을 결제금액에서 빼도 예수금이 더 많이 남으면 
-				if(nAmt < 0)
-				{
-					PRINT("들어옴222",0,0,0);
-					nAmt = 0 ;
-				}
-
-				PRINT("nAmtnAmtnAmtnAmt : %d",nAmt,0,0);
-				Mem_Set( (byte*)szAmt, 0x00, sizeof(szAmt) );
-				Str_ItoA( nAmt, szAmt, 10 );
-
-				PRINT("szAmtszAmtszAmt : %s",szAmt,0,0);
-				
-				//C6101_NONPAY에 UPDATE 처리
-				if(nonPayCnt > 0)
-				{
-					PRINT("111111111111111",0,0,0);
-					
-					sql1 = STRING_Create(sqlstr1);
-					STRING_Empty(sql1);
-					STRING_Append(sql1,"UPDATE C6101_NONPAY");
-					STRING_Append(sql1,"   SET SUB_UNPAY_AMT = '");
-					STRING_Append(sql1, szAmt );
-					STRING_Append(sql1,"' ");
-					STRING_Append(sql1,", AMT_CHK_YN = 'Y'");
-					STRING_Append(sql1," WHERE PROMISE_ASSIGN_SEQ = '");
-					STRING_Append(sql1, g_szCHK_EXEC_NUM );
-					STRING_Append(sql1,"' ");
-					STRING_Append(sql1,"AND REQ_YM = '");
-					STRING_Append(sql1, szReqYm );
-					STRING_Append(sql1,"' ");
-					sqlstr1 = STRING_toString(sql1);
-					g_Sql_DirectExecute(sqlstr1);
-					STRING_Finalize(sql1);
-				}
-				else if(mtrCnt > 0)
-				{
-					PRINT("222222222222",0,0,0);
-					sql1 = STRING_Create(sqlstr1);
-					STRING_Empty(sql1);
-					STRING_Append(sql1,"UPDATE C6101_PROMISE_MTR");
-					STRING_Append(sql1,"   SET SUB_ACCOUNT = '");
-					STRING_Append(sql1, szAmt );
-					STRING_Append(sql1,"' ");
-					STRING_Append(sql1,", AMT_CHK_YN = 'Y'");
-					STRING_Append(sql1," WHERE PROMISE_ASSIGN_SEQ = '");
-					STRING_Append(sql1, g_szCHK_EXEC_NUM );
-					STRING_Append(sql1,"' ");
-					STRING_Append(sql1,"AND CHK_YN = '1'");
-					// STRING_Append(sql1,"'  AND CARD_LIST_YN = ");
-					// STRING_Append(sql1,"1" );
-					sqlstr1 = STRING_toString(sql1);
-					g_Sql_DirectExecute(sqlstr1);
-					STRING_Finalize(sql1);
-				}
-				else if (mtrCnt <= 0 && nonPayCnt <= 0)
-				{
-					break;
-				}
-			}
-		}
-		else if( m_lDfrrd_flag == 0 ){
-			
-			Str_ItoA( 0, szAmt, 10 );
-
-			sql1 = STRING_Create(sqlstr1);
-					STRING_Empty(sql1);
-					STRING_Append(sql1,"UPDATE C6101_NONPAY");
-					STRING_Append(sql1,"   SET SUB_UNPAY_AMT = '");
-					STRING_Append(sql1, szAmt );
-					STRING_Append(sql1,"' ");
-					STRING_Append(sql1,", AMT_CHK_YN = 'N'");
-					STRING_Append(sql1," WHERE PROMISE_ASSIGN_SEQ = '");
-					STRING_Append(sql1, g_szCHK_EXEC_NUM );
-					STRING_Append(sql1,"' ");
-					sqlstr1 = STRING_toString(sql1);
-					g_Sql_DirectExecute(sqlstr1);
-					STRING_Finalize(sql1);
-
-			sql2 = STRING_Create(sqlstr2);
-					STRING_Empty(sql2);
-					STRING_Append(sql2,"UPDATE C6101_PROMISE_MTR");
-					STRING_Append(sql2,"   SET SUB_ACCOUNT = '");
-					STRING_Append(sql2, szAmt );
-					STRING_Append(sql2,"' ");
-					STRING_Append(sql2,", AMT_CHK_YN = 'N'");
-					STRING_Append(sql2," WHERE PROMISE_ASSIGN_SEQ = '");
-					STRING_Append(sql2, g_szCHK_EXEC_NUM );
-					STRING_Append(sql2,"' ");
-					STRING_Append(sql2,"AND CHK_YN = '1'");
-					// STRING_Append(sql1,"'  AND CARD_LIST_YN = ");
-					// STRING_Append(sql1,"1" );
-					sqlstr2 = STRING_toString(sql2);
-					g_Sql_DirectExecute(sqlstr2);
-					STRING_Finalize(sql2);
-
-		}
-		
-		// if(nAdjAmt == 0)
-		// {
-		// 	Mem_Set((byte*)szSql, 0x00, sizeof(szSql));
-		// 	SPRINT(szSql, "UPDATE C6101_PROMISE_MTR SET ADJ_AMT_YN  = 'Y' WHERE PROMISE_ASSIGN_SEQ = %s ", g_szCHK_EXEC_NUM, 0, 0);		
-		// 	g_Sql_DirectExecute(szSql);
-		// }
-		// else
-		// {
-		// 	Mem_Set((byte*)szSql, 0x00, sizeof(szSql));
-		// 	SPRINT(szSql, "UPDATE C6101_PROMISE_MTR SET ADJ_AMT_YN  = 'N' WHERE PROMISE_ASSIGN_SEQ = %s ", g_szCHK_EXEC_NUM, 0, 0);		
-		// 	g_Sql_DirectExecute(szSql);
-		// }
-		
-		// Mem_Set((byte*)szSql, 0x00, sizeof(szSql));
-		// SPRINT(szSql, "UPDATE C6101_PROMISE_MTR SET ADJ_AMT_YN  = 'Y' WHERE PROMISE_ASSIGN_SEQ = %s ", g_szCHK_EXEC_NUM, 0, 0);		
-		// g_Sql_DirectExecute(szSql);
-
-		//20240130 카드 예수금처리 카드에 예수금이 붙어있으면 ADJ_AMT_YN Y로 넣어주고 GASCARD.mc 에서 Y 인거 확인하고 정산금액이랑 결제금액 바꿔서 넣어줘야함.
-		//그리고 Add_nonpay값에 예수금 처리된거 차감해줘야하는데 , 청구년월 가장 오래된걸 기준으로 차감
-		// else
-		// {
-		// 	Mem_Set((byte*)szSql, 0x00, sizeof(szSql));
-		// 	SPRINT(szSql, "UPDATE C6101_PROMISE_MTR SET ADJ_AMT_YN  = 'N' WHERE PROMISE_ASSIGN_SEQ = %s ", g_szCHK_EXEC_NUM, 0, 0);		
-		// 	g_Sql_DirectExecute(szSql);
-
-		// }
-
-		
-		
-		
-		if( stMw.szCard_onepay[0] == '2' && stMw.szAuto_yn[0] != 'Y' ) // 일회성 카드 결제시
+		if( stMw.szCard_onepay[0] == '2' && stMw.szAuto_yn[0] != 'Y' )
 			nCardAmt += Str_AtoI(stMw.szOnce_account);
-		else if( stMw.szAuto_yn[0] != 'Y' ) //일회성 현금 결제시
+		else if( stMw.szAuto_yn[0] != 'Y' )
 			nCashAmt += Str_AtoI(stMw.szOnce_account);
 		else
 			nCashAmt += 0;
@@ -4722,13 +4486,13 @@ Finally:
 
 
 		if( nCardAmt> 0 &&  nCashAmt > 0)
-			SPRINT(szSql, "[ 결제금액 확인111 ]\n카드 : %s원\n현금 : %s원\n수납하시겠습니까?", szCardAmt, szCashAmt, 0   );
+			SPRINT(szSql, "[ 결제금액 확인 ]\n카드 : %s원\n현금 : %s원\n수납하시겠습니까?", szCardAmt, szCashAmt, 0   );
 		else if( nCardAmt > 0 )
-			SPRINT(szSql, "[ 결제금액 확인222 ]\n카드 : %s원\n수납하시겠습니까?", szCardAmt, 0, 0   );
+			SPRINT(szSql, "[ 결제금액 확인 ]\n카드 : %s원\n수납하시겠습니까?", szCardAmt, 0, 0   );
 		else if( nCashAmt > 0 )
-			SPRINT(szSql, "[ 결제금액 확인333 ]\n현금 : %s원\n수납하시겠습니까?", szCashAmt, 0, 0   );
+			SPRINT(szSql, "[ 결제금액 확인 ]\n현금 : %s원\n수납하시겠습니까?", szCashAmt, 0, 0   );
 		else
-			SPRINT(szSql, "[ 결제금액 확인444 ]\n%s원으로 처리하시겠습니까?", szCashAmt, 0, 0   );
+			SPRINT(szSql, "[ 결제금액 확인 ]\n%s원으로 처리하시겠습니까?", szCashAmt, 0, 0   );
 
 		if( MessageBoxEx (CONFIRM_YESNO, szSql) != MB_OK)
 			return FALSE;

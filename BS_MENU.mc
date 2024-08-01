@@ -268,11 +268,11 @@ card BS_MENU
 		
 		Str_ItoA( Time_GetDate(), szToYYYYMM, 10);
 		
-		// if( Str_NCmp( szYYYYMM, szToYYYYMM, 6 ) != 0 && Str_Cmp( szYYYYMM, "" ) != 0 )
-		// {
-		// 	MessageBoxEx (CONFIRM_OK, "이월된 데이터는\n점검을 진행 할 수 없습니다.\n점검자료를 재 수신 해주세요.");
-		// 	return FALSE;
-		// }	
+		if( Str_NCmp( szYYYYMM, szToYYYYMM, 6 ) != 0 && Str_Cmp( szYYYYMM, "" ) != 0 )
+		{
+			MessageBoxEx (CONFIRM_OK, "이월된 데이터는\n점검을 진행 할 수 없습니다.\n점검자료를 재 수신 해주세요.");
+			return FALSE;
+		}	
 		
 		return TRUE;
 	}	
