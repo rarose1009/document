@@ -702,7 +702,7 @@ card BS_RFRMRSK
 					Str_ItoA ( d, m_szEndDate, 10);
 					Str_ItoA (Time_GetDate(), szTmp, 10 );
 
-					if( Str_AtoI(szTmp) <= Str_AtoI(m_szEndDate) )
+					if( Str_AtoI(szTmp) >= Str_AtoI(m_szEndDate) )
 					{
 						Str_Chg( m_szEndDate, STRCHG_DEL_NONDIGIT);
 					

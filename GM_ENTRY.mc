@@ -1179,6 +1179,7 @@ card GM_ENTRY
 				nLen = g_GetUtf8Size(EditCtrl_GetStr(Get_hDlgCtrlByID(EDT_VC)));
 
 				//요청서번호 : 2024020036 해당 계량기번호는 지침자릿수 제외
+				// if (Str_Cmp(stGm.MTR_NUM, "300015892") == 0)
 				if (Str_Cmp(stGm.MTR_NUM, "302094293") == 0)
 				{
 					if(nLen > 7)
@@ -1193,7 +1194,6 @@ card GM_ENTRY
 						// 넘어가면 마지막 char 삭제
 						ON_KEY(5);
 					}
-
 				}				
 				else if (nLen > Str_AtoI(stGm.MTR_DIGIT_CNT))
 				{
@@ -3272,7 +3272,7 @@ card GM_ENTRY
 			   , SELF_GMTR_END_YMD, BEFO_GMTR_SMS_YN, GMTR_MANAGE_STS, DEADLINE_CHG_YN, COMPENS_REMOVE_ALARM_2 \
 			   , INST_PLACE_NUM, OLD_COMPENS_REMOVE_ALARM_2, PHOTO_MTR_YN, PHOTO_COMPENS_VC_YN, PHOTO_COMPENS_VA_YN \
 			   , PHOTO_COMPENS_VM_YN, USE_CONT_STS_CD,GMTR_JOB_YMD_END,REMOTE_GMTR_YN,RECENT_INDI_MTR_MM_VC,RECENT_GMTR_JOB_YMD, SUBSTR(RECENT_GMTR_JOB_YMD,0,5) AS RECENT_GMTR_JOB_YMD_YEAR \
-		       , SUBSTR(RECENT_GMTR_JOB_YMD,5,2) AS RECENT_GMTR_JOB_YMD_MONTHS , SUBSTR(RECENT_GMTR_JOB_YMD,7,2) AS RECENT_GMTR_JOB_YMD_DAYS ,ZONE_MANAGE_NUM, SUBSTR(REQ_YM,5,2)\
+		       , SUBSTR(RECENT_GMTR_JOB_YMD,5,2) AS RECENT_GMTR_JOB_YMD_MONTHS , SUBSTR(RECENT_GMTR_JOB_YMD,7,2) AS RECENT_GMTR_JOB_YMD_DAYS ,ZONE_MANAGE_NUM, SUBSTR(REQ_YM,5,2) , DISC_CUST_YN \
 			FROM GUMDATA WHERE ROWID = ? \
 		   ORDER BY HOUSE_NUM_ORD, DONG_ORD, MTR_COURSE ");
 
@@ -3464,6 +3464,9 @@ card GM_ENTRY
 			sql->GetValue(sql, i++, 'U', (long *)stGm.RECENT_GMTR_JOB_YMD_DAYS, 4 + 1, DECRYPT);
 			sql->GetValue(sql, i++, 'U', (long *)stGm.ZONE_MANAGE_NUM, 5 + 1, DECRYPT);
 			sql->GetValue(sql, i++, 'U', (long *)stGm.AMI_REQ_YM, 3 + 1, DECRYPT);
+			sql->GetValue(sql, i++, 'U', (long *)stGm.DISC_CUST_YN, 2 + 1, DECRYPT);
+
+			
 		}
 		else
 		{
@@ -3581,6 +3584,25 @@ card GM_ENTRY
 			ButCtrl_SetForeColorEx(Get_hDlgCtrlByID(BID_SILSA), BTNMENUFRCOLOR);
 		}
 
+		EditCtrl_SetBkColorEx(Get_hDlgCtrlByID(TXT_DATA3), BTNMENUFRCOLOR);
+
+		if( Str_Cmp(stGm.PROD_CD, "순수취사") == 0 || Str_Cmp(stGm.PROD_CD, "겸용취사") == 0 || Str_Cmp(stGm.PROD_CD, "순수난방") == 0 || Str_Cmp(stGm.PROD_CD, "냉난방공조용") == 0)
+		{
+			if (Str_Cmp(stGm.DISC_CUST_YN, "Y") == 0)
+			{
+				EditCtrl_SetBkColorEx(Get_hDlgCtrlByID(TXT_DATA3), LIGHTPINK);
+			}
+			else
+			{
+				EditCtrl_SetBkColorEx(Get_hDlgCtrlByID(TXT_DATA3), BTNMENUFRCOLOR);
+			}
+		}
+
+		
+
+		
+
+		
 
 		/*****************************************/
 		/* AMI 계량기 3월 11월 검침 대상일시 사진버튼 색상 초록 */
@@ -3606,6 +3628,7 @@ card GM_ENTRY
 		/* EBPP_FLAG = L [LMS]					 */
 		/* EBPP_FLAG = M [모바일]				 */
 		/* EBPP_FLAG = S [송달]				     */
+		/* 2023-06-01 EBPP구분 추가              */
 		/* 이외          []						 */
 		/*****************************************/
 		/*
@@ -3646,6 +3669,30 @@ card GM_ENTRY
 		{
 			ButCtrl_SetText(Get_hDlgCtrlByID(BID_REQ), "송달");
 		}
+		// else if (Str_Cmp(stGm.EBPP_FLAG, "A") == 0)
+		// {
+		// 	ButCtrl_SetText(Get_hDlgCtrlByID(BID_REQ), "EM+송");
+		// }
+		// else if (Str_Cmp(stGm.EBPP_FLAG, "B") == 0)
+		// {
+		// 	ButCtrl_SetText(Get_hDlgCtrlByID(BID_REQ), "LMS+송");
+		// }
+		// else if (Str_Cmp(stGm.EBPP_FLAG, "C") == 0)
+		// {
+		// 	ButCtrl_SetText(Get_hDlgCtrlByID(BID_REQ), "모+송");
+		// }
+		// else if (Str_Cmp(stGm.EBPP_FLAG, "D") == 0)
+		// {
+		// 	ButCtrl_SetText(Get_hDlgCtrlByID(BID_REQ), "EM+LMS");
+		// }
+		// else if (Str_Cmp(stGm.EBPP_FLAG, "E") == 0)
+		// {
+		// 	ButCtrl_SetText(Get_hDlgCtrlByID(BID_REQ), "모+EM");
+		// }
+		// else if (Str_Cmp(stGm.EBPP_FLAG, "F") == 0)
+		// {
+		// 	ButCtrl_SetText(Get_hDlgCtrlByID(BID_REQ), "모+LMS");
+		// }
 		else
 		{
 			ButCtrl_SetText(Get_hDlgCtrlByID(BID_REQ), "");

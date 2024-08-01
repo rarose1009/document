@@ -149,6 +149,10 @@
 		char CHK_BULD_CENTER_CD 	 [2 +1];
 		char REMOTE_SYSTEM			 [2 +1];
 		char OLD_MTR_ID_NUM          [25 +1];
+		char AMI_OBJ_YN   		     [1 +1];
+		char CONCENT_INST_AMT_YN	 [1 +1];
+
+		
 
 		
 

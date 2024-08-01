@@ -295,6 +295,7 @@
 		char SOCIAL_WELF_FACI_YN [1  +1];
 		char FACI_STS_CD         [1  +1];
 		char MTR_DETA_LOC        [30  +1];
+		char BUILT_IN_YN		 [1   +1];
 	}	BSMTR;
 
 	global BSMTR stBsMtr;

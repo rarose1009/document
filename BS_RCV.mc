@@ -462,11 +462,15 @@ long date;
 		
 		Mem_Set((byte*)m_szchkyear, 0x00, sizeof(m_szchkyear));
 		Mem_Set((byte*)sztmp, 0x00, sizeof(sztmp));
+		Mem_Cpy( (byte*)sztmp, (byte*)m_szobj_ym+4, 2 );
+		
 		
 		if( Str_AtoI(sztmp) < 7 )
 			Str_Cpy(m_szchkorder, "10");
 		else
 			Str_Cpy(m_szchkorder, "70");
+
+		
 		if( g_pjcomm != NULL)
 		{
 			JSON_Finalize( g_pjcomm );
@@ -530,6 +534,7 @@ long date;
 		
 		callBackfunc = TR411302; //통신완료 후에 호출 함수
 		ret = HTTP_DownloadData(szUrl, "FR411302_IN",  "FR411302" , sndbuf, sztmp );		
+
 		
 	}
 	
@@ -847,6 +852,7 @@ long date;
 	char* sndbuf;
 	long ret;
 
+		
 		if( g_pjcomm != NULL)
 		{
 			JSON_Finalize( g_pjcomm );
@@ -969,6 +975,7 @@ long date;
 		
 		callBackfunc = TR411326; //통신완료 후에 호출 함수
 		ret = HTTP_DownloadData(szUrl, "FR411326_IN",  "FR411326" , sndbuf, sztmp );		
+
 		
 	}
 	
@@ -1012,6 +1019,7 @@ long date;
 		
 		callBackfunc = TR411327; //통신완료 후에 호출 함수
 		ret = HTTP_DownloadData(szUrl, "FR411327_IN",  "FR411327" , sndbuf, sztmp );		
+
 		
 	}
 	
@@ -1055,7 +1063,8 @@ long date;
 		
 		callBackfunc = TR411328; //통신완료 후에 호출 함수
 		ret = HTTP_DownloadData(szUrl, "FR411328_IN",  "FR411328" , sndbuf, sztmp );		
-		
+
+				
 	}
 	
 	long TR411328(void)
@@ -1099,6 +1108,7 @@ long date;
 		callBackfunc = TR411329; //통신완료 후에 호출 함수
 		ret = HTTP_DownloadData(szUrl, "FR411329_IN",  "FR411329" , sndbuf, sztmp );		
 		
+		
 	}
 	
 	long TR411329(void)
@@ -1141,6 +1151,8 @@ long date;
 		
 		callBackfunc = TR411330; //통신완료 후에 호출 함수
 		ret = HTTP_DownloadData(szUrl, "FR411330_IN",  "FR411330" , sndbuf, sztmp );		
+
+		
 		
 	}
 	

@@ -1825,9 +1825,9 @@ Finally:
 		Str_Cpy( szTime, EditCtrl_GetStr(Get_hDlgCtrlByID(CMB_TIME1)));
 		Str_Cpy( szTime2, EditCtrl_GetStr(Get_hDlgCtrlByID(CMB_TIME2)));
 
-		Str_Cpy(szMsg, "안녕하십니까 서울도시가스입니다.");
+		Str_Cpy(szMsg, "서울도시가스입니다.");
 		Str_Cat(szMsg, "\n도시가스 안전관리규정(가스사용자는 회사(공급자)가 수행하는 사용시설의 안전점검에 적극 협조하여야 한다)에 의하여,");
-		Str_Cat(szMsg, "\n아래와 같이 안전점검을 위해 방문 예정입니다.");
+		Str_Cat(szMsg, "\n상기와 같이 안전점검을 위해 방문 예정입니다.");
 		
 		SPRINT( szSql, "\n도시가스 안전점검 예정일 : %s\n방문예정시간 : %s시 ~ %s시", szDay, szTime, szTime2 );
 

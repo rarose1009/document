@@ -5008,11 +5008,8 @@ Finally:
 		
 		Str_Cpy( szTime, EditCtrl_GetStr(Get_hDlgCtrlByID(CMB_TIME1)));
 		Str_Cpy( szTime2, EditCtrl_GetStr(Get_hDlgCtrlByID(CMB_TIME2)));
-
-		Str_Cpy(szMsg, "안녕하십니까 서울도시가스입니다.");
-		Str_Cat(szMsg, "\n도시가스 안전관리규정(가스사용자는 회사(공급자)가 수행하는 사용시설의 안전점검에 적극 협조하여야 한다)에 의하여,");
-		Str_Cat(szMsg, "\n아래와 같이 안전점검을 위해 방문 예정입니다.");
 		
+		Str_Cpy(szMsg, "서울도시가스입니다.");
 		Str_Cat( szMsg, "\n방문주소 : " );
 		
 		SPRINT( szSql, " SELECT CASE WHEN SINGLE_COLIVE_FLAG = '20' THEN ( IFNULL( CO_LIVE_NM,'' ) || \
@@ -5031,6 +5028,8 @@ Finally:
 		g_Sql_RetStr( szSql, 50, szMsg2 );
 		
 		Str_Cat( szMsg, szMsg2 );
+		Str_Cat(szMsg, "\n도시가스 안전관리규정(가스사용자는 회사(공급자)가 수행하는 사용시설의 안전점검에 적극 협조하여야 합니다)에 의하여,");
+		Str_Cat(szMsg, "\n상기와 같이 안전점검을 위해 방문 예정입니다.");
 
 		
 		SPRINT( szSql, "\n도시가스 안전점검 예정일 : %s\n방문예정시간 : %s시 ~ %s시", szDay, szTime, szTime2 );
@@ -6012,10 +6011,8 @@ Finally:
 		Mem_Set( (byte*)szMsg2, 0x00, sizeof(szMsg2) );	
 		Mem_Set( (byte*)szSql, 0x00, sizeof(szSql) );
 
-		Str_Cpy(szMsg, "안녕하십니까 서울도시가스입니다.");
-		Str_Cat(szMsg, "\n도시가스 안전관리규정(가스사용자는 회사(공급자)가 수행하는 사용시설의 안전점검에 적극 협조하여야 한다)에 의하여,");
-		Str_Cat(szMsg, "\n안전점검을 시행하기 위해 방문하였으나 고객님 부재로 실시하지 못하였습니다.\n 아래 연락처로 연락주시면 방문하여 점검토록 하겠습니다.");
 		
+		Str_Cpy(szMsg, "서울도시가스입니다.");
 		Str_Cat( szMsg, "\n방문주소 : " );
 		
 		SPRINT( szSql, " SELECT CASE WHEN SINGLE_COLIVE_FLAG = '20' THEN ( IFNULL( CO_LIVE_NM,'' ) || \
@@ -6034,6 +6031,10 @@ Finally:
 		g_Sql_RetStr( szSql, 50, szMsg2 );
 		
 		Str_Cat( szMsg, szMsg2 );
+		
+		
+		Str_Cat(szMsg, "\n도시가스 안전관리규정(가스사용자는 회사(공급자)가 수행하는 사용시설의 안전점검에 적극 협조하여야 합니다)에 의하여,");
+		Str_Cat(szMsg, "\n안전점검을 시행하기 위해 방문하였으나 고객님 부재로 실시하지 못하였습니다.\n 아래 연락처로 연락주시면 방문하여 점검토록 하겠습니다.");
 		
 		/*******************************************************************/
 		/* 2.부재 문자 내용                                                */

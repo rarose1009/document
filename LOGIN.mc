@@ -2224,6 +2224,46 @@ card LOGIN
 				
 				nRet++;	
 				
+			case 98 :
+				Mem_Set((byte*)szSql ,0x00, sizeof(szSql) );				
+				Str_Cpy(szSql, "ALTER TABLE GUMDATA ADD COLUMN [DISC_CUST_YN] VARCHAR(1)");
+				g_Sql_DirectExecute( szSql );
+				Mem_Set((byte*)szSql ,0x00, sizeof(szSql) );
+			    Str_Cpy(szSql, "INSERT INTO TBL_REGIST (SEQ, GKEY, TXTDETAIL) VALUES(99, '20240711', '1.사회배려자 여부')");
+    		    nSqlRet = g_Sql_DirectExecute( szSql );
+				nRet++;	
+			case 99 :
+				Mem_Set((byte*)szSql ,0x00, sizeof(szSql) );				
+				Str_Cpy(szSql, "ALTER TABLE REGUMDATA ADD COLUMN [DISC_CUST_YN] VARCHAR(1)");
+				g_Sql_DirectExecute( szSql );
+				Mem_Set((byte*)szSql ,0x00, sizeof(szSql) );
+			    Str_Cpy(szSql, "INSERT INTO TBL_REGIST (SEQ, GKEY, TXTDETAIL) VALUES(100, '20240711', '1.사회배려자 여부')");
+    		    nSqlRet = g_Sql_DirectExecute( szSql );
+				nRet++;	
+			case 100 : 
+			    Mem_Set((byte*)szSql ,0x00, sizeof(szSql) );				
+				Str_Cpy(szSql, "ALTER TABLE C6301_CHANGEDATA ADD COLUMN [AMI_OBJ_YN] VARCHAR(1)");
+				g_Sql_DirectExecute( szSql );
+				Mem_Set((byte*)szSql ,0x00, sizeof(szSql) );
+			    Str_Cpy(szSql, "INSERT INTO TBL_REGIST (SEQ, GKEY, TXTDETAIL) VALUES(101, '20240624', '1. AMI 대상 수신')");
+    		    nSqlRet = g_Sql_DirectExecute( szSql );
+    		    nRet++;
+			case 101 : 
+			    Mem_Set((byte*)szSql ,0x00, sizeof(szSql) );				
+				Str_Cpy(szSql, "ALTER TABLE C6301_CHANGEDATA ADD COLUMN [CONCENT_INST_AMT_YN] VARCHAR(1)");
+				g_Sql_DirectExecute( szSql );
+				Mem_Set((byte*)szSql ,0x00, sizeof(szSql) );
+			    Str_Cpy(szSql, "INSERT INTO TBL_REGIST (SEQ, GKEY, TXTDETAIL) VALUES(102, '20240625', '1. 집중기설치비용')");
+    		    nSqlRet = g_Sql_DirectExecute( szSql );
+    		    nRet++;
+			case 102 : 
+			    Mem_Set((byte*)szSql ,0x00, sizeof(szSql) );				
+				Str_Cpy(szSql, "ALTER TABLE SPECIAL_MTR ADD COLUMN [BUILT_IN_YN] VARCHAR(1)");
+				g_Sql_DirectExecute( szSql );
+				Mem_Set((byte*)szSql ,0x00, sizeof(szSql) );
+			    Str_Cpy(szSql, "INSERT INTO TBL_REGIST (SEQ, GKEY, TXTDETAIL) VALUES(103, '20240701', '1. 특정점검 빌트인설치여부')");
+    		    nSqlRet = g_Sql_DirectExecute( szSql );
+    		    nRet++;
 			default:
 				break;
 		}

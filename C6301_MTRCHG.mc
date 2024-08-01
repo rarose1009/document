@@ -152,6 +152,7 @@ card C6301_MTRCHG
 		DEF_OBJECT_ID ( TXT_DATA65 )
 		DEF_OBJECT_ID ( TXT_DATA66 )
 		DEF_OBJECT_ID ( TXT_DATA67 )
+		DEF_OBJECT_ID ( TXT_DATA68 )
 
 		
 		
@@ -203,6 +204,7 @@ card C6301_MTRCHG
 		DEF_OBJECT_ID ( CMB_DATA10 = CMB_DATA9+3 )
 		DEF_OBJECT_ID ( CMB_DATA11 = CMB_DATA10+3 )
 		DEF_OBJECT_ID ( CMB_DATA12 = CMB_DATA11+3 )
+		DEF_OBJECT_ID ( CMB_DATA18 = CMB_DATA12+3 )
 //교체소요비용
 		DEF_OBJECT_ID ( CMB_DATA13 = CMB_DATA12+3 )
 		DEF_OBJECT_ID ( CMB_DATA14 = CMB_DATA13+3 )
@@ -567,21 +569,23 @@ card C6301_MTRCHG
 		DLG_BUTTON(STARTX+600, STARTY+450, 400, 70, 0, 0, BUTSTY_BOLD, BUTSTY_BORDER, BTNMENUFRCOLOR, BTNCTRLBKCOLOR, CALL_FUNC , "", BID_AMIOK , "확 인"),
 		DLG_BUTTON(STARTX+150, STARTY+450, 400, 70, 0, 0, BUTSTY_BOLD, BUTSTY_BORDER, BTNMENUFRCOLOR, BTNCTRLBKCOLOR, CALL_FUNC , "", BID_AMIBARCODE , "바코드"),
 		
-		DLG_TEXT(STARTX, 		 STARTY+65,  230, 50, 0, 0, 0, EDITSTY_BORDER, TXTTTLFRCOLOR, TXTCTRLBK, TXT_DATA42 , " 항 목 "),
+		DLG_TEXT(STARTX, 		 STARTY+65,  400, 50, 0, 0, 0, EDITSTY_BORDER, TXTTTLFRCOLOR, TXTCTRLBK, TXT_DATA42 , " 항 목 "),
 		// DLG_TEXT(STARTX+230, 	 STARTY+65,  350, 50, 0, 0, 0, EDITSTY_BORDER, TXTTTLFRCOLOR, TXTCTRLBK, TXT_DATA43 , "철거 계량기"),
-		DLG_TEXT(STARTX+230, 	 STARTY+65,  770, 50, 0, 0, 0, EDITSTY_BORDER, TXTTTLFRCOLOR, TXTCTRLBK, TXT_DATA44 , "설치 계량기"),
-		DLG_TEXT(STARTX, 		 STARTY+115, 230, 50, 0, 0, 0, EDITSTY_BORDER, TXTTTLFRCOLOR, TXTCTRLBK, TXT_DATA45 , "통신사"),
-		DLG_TEXT(STARTX, 		 STARTY+165, 230, 50, 0, 0, 0, EDITSTY_BORDER, TXTTTLFRCOLOR, TXTCTRLBK, TXT_DATA46 , "통신번호"),
-		DLG_TEXT(STARTX+230,     STARTY+165, 760, 50, 0, 0, 0, EDITSTY_BORDER|EDITSTY_BOLD, TXTFRCOLOR, EDTCTRLBK, TXT_DATA48, ""),
-		DLG_BUTTON(STARTX+230,   STARTY+165, 760, 50, 0, 0, BUTSTY_BOLD, BUTSTY_BORDER, BTNMENUFRCOLOR, BTNCTRLMNBKCOLOR, CALL_FUNC , "", BID_WRITE1,  ""),
-		DLG_TEXT(STARTX, 		 STARTY+215, 230, 50, 0, 0, 0, EDITSTY_BORDER, TXTTTLFRCOLOR, TXTCTRLBK, TXT_DATA47 , "유입구분"),
-		DLG_TEXT(STARTX, 		 STARTY+265, 230, 50, 0, 0, 0, EDITSTY_BORDER, TXTTTLFRCOLOR, TXTCTRLBK, TXT_DATA49 , "교체기관"),
-		DLG_TEXT(STARTX, 		 STARTY+315, 230, 50, 0, 0, 0, EDITSTY_BORDER, TXTTTLFRCOLOR, TXTCTRLBK, TXT_DATA50 , "교체사유"),
+		DLG_TEXT(STARTX+400, 	 STARTY+65,  600, 50, 0, 0, 0, EDITSTY_BORDER, TXTTTLFRCOLOR, TXTCTRLBK, TXT_DATA44 , "설치 계량기"),
+		DLG_TEXT(STARTX, 		 STARTY+115, 400, 50, 0, 0, 0, EDITSTY_BORDER, TXTTTLFRCOLOR, TXTCTRLBK, TXT_DATA45 , "통신사"),
+		DLG_TEXT(STARTX, 		 STARTY+165, 400, 50, 0, 0, 0, EDITSTY_BORDER, TXTTTLFRCOLOR, TXTCTRLBK, TXT_DATA46 , "통신번호"),
+		DLG_TEXT(STARTX+400,     STARTY+165, 600, 50, 0, 0, 0, EDITSTY_BORDER|EDITSTY_BOLD, TXTFRCOLOR, EDTCTRLBK, TXT_DATA48, ""),
+		DLG_BUTTON(STARTX+400,   STARTY+165, 600, 50, 0, 0, BUTSTY_BOLD, BUTSTY_BORDER, BTNMENUFRCOLOR, BTNCTRLMNBKCOLOR, CALL_FUNC , "", BID_WRITE1,  ""),
+		DLG_TEXT(STARTX, 		 STARTY+215, 400, 50, 0, 0, 0, EDITSTY_BORDER, TXTTTLFRCOLOR, TXTCTRLBK, TXT_DATA47 , "유입구분"),
+		DLG_TEXT(STARTX, 		 STARTY+265, 400, 50, 0, 0, 0, EDITSTY_BORDER, TXTTTLFRCOLOR, TXTCTRLBK, TXT_DATA68 , "집중기설치비용"),
+		DLG_TEXT(STARTX, 		 STARTY+315, 400, 50, 0, 0, 0, EDITSTY_BORDER, TXTTTLFRCOLOR, TXTCTRLBK, TXT_DATA49 , "교체기관"),
+		DLG_TEXT(STARTX, 		 STARTY+365, 400, 50, 0, 0, 0, EDITSTY_BORDER, TXTTTLFRCOLOR, TXTCTRLBK, TXT_DATA50 , "교체사유"),
 		
-		DLG_COMBO(STARTX+230,  STARTY+115, 770, 50, 80, 50, TXTFRCOLOR, TXTINCTRLBK, CALL_FUNC, "", CMB_DATA9, 15),
-		DLG_COMBO(STARTX+230,  STARTY+215, 770, 50, 80, 50, TXTFRCOLOR, TXTINCTRLBK, CALL_FUNC, "", CMB_DATA10, 15),
-		DLG_COMBO(STARTX+230,  STARTY+265, 770, 50, 80, 50, TXTFRCOLOR, TXTINCTRLBK, CALL_FUNC, "", CMB_DATA11, 15),
-		DLG_COMBO(STARTX+230,  STARTY+315, 770, 50, 80, 50, TXTFRCOLOR, TXTINCTRLBK, CALL_FUNC, "", CMB_DATA12, 15),
+		DLG_COMBO(STARTX+400,  STARTY+115, 600, 50, 80, 50, TXTFRCOLOR, TXTINCTRLBK, CALL_FUNC, "", CMB_DATA9, 15),
+		DLG_COMBO(STARTX+400,  STARTY+215, 600, 50, 80, 50, TXTFRCOLOR, TXTINCTRLBK, CALL_FUNC, "", CMB_DATA10, 15),
+		DLG_COMBO(STARTX+400,  STARTY+265, 600, 50, 80, 50, TXTFRCOLOR, TXTINCTRLBK, CALL_FUNC, "", CMB_DATA18, 15),
+		DLG_COMBO(STARTX+400,  STARTY+315, 600, 50, 80, 50, TXTFRCOLOR, TXTINCTRLBK, CALL_FUNC, "", CMB_DATA11, 15),
+		DLG_COMBO(STARTX+400,  STARTY+365, 600, 50, 80, 50, TXTFRCOLOR, TXTINCTRLBK, CALL_FUNC, "", CMB_DATA12, 15),
 
 		//숫자 자판
 		DLG_TEXT(0,    STARTY+940, 333, 90, 0, 0, 0, EDITSTY_BOLD|EDITSTY_BORDER, BTNMENUFRCOLOR, BTNCTRLBKCOLOR, TXT_KEY_ONE, "1"),
@@ -843,7 +847,15 @@ card C6301_MTRCHG
 				Mem_Set( (byte*)m_szTitle, 0x00, sizeof(m_szTitle) );
 				if( Str_Cmp(stMtrChg.REPL_OCCU_FLAG, "20") == 0 && Str_Cmp(stMtrChg.NOBILL_YN, "N") == 0)
 				{
-					Str_Cpy(m_szTitle, "가정용 민원교체");
+					if(Str_Cmp(stMtrChg.AMI_OBJ_YN, "Y") == 0)
+					{
+						Str_Cpy(m_szTitle, "AMI 민원교체");
+					}
+					else
+					{
+						Str_Cpy(m_szTitle, "가정용 민원교체");
+					}
+					
 				}
 				else if( Str_Cmp(stMtrChg.REPL_OCCU_FLAG, "10") == 0 )
 				{
@@ -1028,6 +1040,9 @@ card C6301_MTRCHG
 					Mem_Set( (byte*)m_szBartmp, 0x00, sizeof(m_szBartmp) );
 					Str_Cpy(m_szBartmp, EditCtrl_GetStr(Get_hDlgCtrlByID(EDT_DATA1)));
 					
+					PRINT("m_szBartmp0000000000000000 : %s",m_szBartmp,0,0);
+					PRINT("stMtrChg.MTR_ID_NUMstMtrChg.MTR_ID_NUM : %s",stMtrChg.MTR_ID_NUM,0,0);
+
 					if (Str_Cmp(m_szBartmp, stMtrChg.MTR_ID_NUM) == 0)
 					{
 						MessageBoxEx (CONFIRM_OK, "철거계량기와 설치계량기 \n 기물번호가 동일합니다.");
@@ -1038,6 +1053,7 @@ card C6301_MTRCHG
 						// Move_Card();
 						ON_DRAW();
 					}
+					
 				}
 				else
 				{
@@ -1196,19 +1212,19 @@ card C6301_MTRCHG
 				// }
 				else
 				{
-				ShowSip(FALSE);
-				g_Sipflag = 0;
-				
-				g_Del_GcPhoto();
-				Set_Index();
-				Card_Move("C6301_LST");
+					ShowSip(FALSE);
+					g_Sipflag = 0;
+					
+					g_Del_GcPhoto();
+					Set_Index();
+					Card_Move("C6301_LST");
 				}
 				break;	
 			case GID_VMEXIT:
 				Set_Index();
 				g_Exit_DelGcData();
 				break;
-				
+					
 //불가사유
 			case BID_IMPOK:
 				if( Save_Impossible() )
@@ -1895,8 +1911,7 @@ card C6301_MTRCHG
 					}
 					else if (Str_Cmp(EditCtrl_GetStr(Get_hDlgCtrlByID(CMB_DATA2)), "펄스") == 0)
 					{
-						
-						// if(Str_Cmp(m_szTmp, "10") != 0 ) //미설치가 아니면
+						// if(Str_Cmp(m_szTmp, "10") != 0 ) //미설치가 아니면						
 						if(Str_Cmp(m_szTmp, "20") == 0 || Str_Cmp(m_szTmp, "30") == 0 || Str_Cmp(m_szTmp, "40") == 0 || Str_Cmp(m_szTmp, "50") == 0 || Str_Cmp(m_szTmp, "60") == 0 )
 						{
 							if(Str_Cmp(stMtrChg.OLD_MTR_ID_NUM, "N") == 0)
@@ -1923,31 +1938,31 @@ card C6301_MTRCHG
 					{
 						ButCtrl_SetBkColorEx(Get_hDlgCtrlByID(BID_PAY), BTNCTRLBKCOLOR);
 					}
-					
-					if( Str_Cmp(stMtrChg.REPL_OCCU_FLAG, "10") == 0 ) //노후교체일때만
-					{
-						if(Str_Cmp(stMtrChg.MTR_REMOTE_FLAG,"50") == 0 ) //디지로그
-						{
-							if (Str_Cmp(m_szTmp, "20") == 0 || Str_Cmp(m_szTmp, "40") == 0 ) //지시부형과 통합원격으로 변경가능.
-							{}
-							else if(Str_Cmp(m_szTmp,stMtrChg.MTR_REMOTE_FLAG) != 0)
-							{
-								MessageBoxEx (CONFIRM_OK, "특수계량기 정보가 상이하여\n 처리 할 수 없습니다.");
-								return;
-							}
-							else
-							{
+					//20240723 박준범차장님 기존 디지로그만 변경가능이였는데 다른 원격구분도 변경가능하도록 요청(?)
+					// if( Str_Cmp(stMtrChg.REPL_OCCU_FLAG, "10") == 0 ) //노후교체일때만
+					// {
+					// 	if(Str_Cmp(stMtrChg.MTR_REMOTE_FLAG,"50") == 0 ) //디지로그
+					// 	{
+					// 		if (Str_Cmp(m_szTmp, "20") == 0 || Str_Cmp(m_szTmp, "40") == 0 ) //지시부형과 통합원격으로 변경가능.
+					// 		{}
+					// 		else if(Str_Cmp(m_szTmp,stMtrChg.MTR_REMOTE_FLAG) != 0)
+					// 		{
+					// 			MessageBoxEx (CONFIRM_OK, "특수계량기 정보가 상이하여\n 처리 할 수 없습니다.");
+					// 			return;
+					// 		}
+					// 		else
+					// 		{
 								
-							}
-						}
-						else if( Str_Cmp(stMtrChg.MTR_REMOTE_FLAG, stMtrChg.AFTER_MTR_REMOTE_FLAG) != 0)
-						{	
-							// MessageBoxEx (CONFIRM_OK, "철거계량기와 설치계량기\n 원격구분이 같아야 합니다.");
-							MessageBoxEx (CONFIRM_OK, "특수계량기 정보가 상이하여\n 처리 할 수 없습니다.");
-							return;
-						}
+					// 		}
+					// 	}
+					// 	else if( Str_Cmp(stMtrChg.MTR_REMOTE_FLAG, stMtrChg.AFTER_MTR_REMOTE_FLAG) != 0)
+					// 	{	
+					// 		// MessageBoxEx (CONFIRM_OK, "철거계량기와 설치계량기\n 원격구분이 같아야 합니다.");
+					// 		MessageBoxEx (CONFIRM_OK, "특수계량기 정보가 상이하여\n 처리 할 수 없습니다.");
+					// 		return;
+					// 	}
 
-					}
+					// }
 					
 
 					// if( Str_Cmp(stMtrChg.MTR_KIND,"20") == 0 && Str_Cmp(stMtrChg.AFTER_MTR_KIND,"21") == 0) //디지털은 디지털(듀얼)과 교체가능
@@ -2240,6 +2255,7 @@ card C6301_MTRCHG
 			EditCtrl_SetAlign( Get_hDlgCtrlByID(TXT_DATA45), EDITALIGN_CENTER|EDITALIGN_MIDDLE);
 			EditCtrl_SetAlign( Get_hDlgCtrlByID(TXT_DATA46), EDITALIGN_CENTER|EDITALIGN_MIDDLE);
 			EditCtrl_SetAlign( Get_hDlgCtrlByID(TXT_DATA47), EDITALIGN_CENTER|EDITALIGN_MIDDLE);			
+			EditCtrl_SetAlign( Get_hDlgCtrlByID(TXT_DATA68), EDITALIGN_CENTER|EDITALIGN_MIDDLE);			
 			EditCtrl_SetAlign( Get_hDlgCtrlByID(TXT_DATA48), EDITALIGN_TOP);
 			EditCtrl_SetAlign( Get_hDlgCtrlByID(TXT_DATA49), EDITALIGN_CENTER|EDITALIGN_MIDDLE);			
 			EditCtrl_SetAlign( Get_hDlgCtrlByID(TXT_DATA50), EDITALIGN_CENTER|EDITALIGN_MIDDLE);			
@@ -2250,6 +2266,7 @@ card C6301_MTRCHG
 			EditCtrl_SetAlign( Get_hDlgCtrlByID(CMB_DATA10), EDITALIGN_CENTER|EDITALIGN_MIDDLE);
 			EditCtrl_SetAlign( Get_hDlgCtrlByID(CMB_DATA11), EDITALIGN_CENTER|EDITALIGN_MIDDLE);
 			EditCtrl_SetAlign( Get_hDlgCtrlByID(CMB_DATA12), EDITALIGN_CENTER|EDITALIGN_MIDDLE);
+			EditCtrl_SetAlign( Get_hDlgCtrlByID(CMB_DATA18), EDITALIGN_CENTER|EDITALIGN_MIDDLE);
 		}
 		else if( m_bFirst == INIT_MTR )
 		{
@@ -2467,9 +2484,12 @@ card C6301_MTRCHG
 			//원격
 			Mem_Set( (byte*)m_szSql, 0x00, sizeof(m_szSql) );
 			g_Sql_SetCombo("SELECT ITEM_KNAME FROM COMMONCODE WHERE CODE_ID = 'C31074'", CMB_DATA9+2);
-			//종류
+			//유입구분
 			Mem_Set( (byte*)m_szSql, 0x00, sizeof(m_szSql) );
 			g_Sql_SetCombo("SELECT  ITEM_KNAME FROM COMMONCODE WHERE CODE_ID = 'C31072'", CMB_DATA10+2);
+			//집중기설치비용
+			Mem_Set( (byte*)m_szSql, 0x00, sizeof(m_szSql) );
+			g_Sql_SetCombo("SELECT  ITEM_KNAME FROM COMMONCODE WHERE CODE_ID = 'C30023' AND CODE_ITEM != 'U'", CMB_DATA18+2);
 			//무전표 교체기관
 			Mem_Set( (byte*)m_szSql, 0x00, sizeof(m_szSql) );
 			g_Sql_SetCombo("SELECT  ITEM_KNAME FROM COMMONCODE WHERE CODE_ID = 'C30054'", CMB_DATA11+2);
@@ -2580,7 +2600,7 @@ ROWID, MTR_NUM, OBJ_CRT_YMD, REPL_OCCU_FLAG, CENTER_CD, PDA_REPL_JOB_ITEM, INST_
 , JOBER_EMPID, MTR_PHOTO, COMPENS_PHOTO, CUST_SIGN, SEND_YN, AFTER_MTR_APPRO_YN, AFTER_FORM_APPRO_YN, INST_INDI_VM, INST_INDI_VA \
 , INST_INDI_VC, TEMPER, PRESS, REVIS_PARA, BEFO_TEMPER, BEFO_PRESS, BEFO_REVIS_PARA, UPD_DTM, UPD_EMPID, CRT_DTM, CRT_EMPID \
 , PDA_NUM, TREAT_FLAG, REVIS_FLAG, MTR_SUPPLY_STS, TRIM(COMPENS_MAKER_NM), VISIT_YMD, MEMO, LAW_TOWN, NEW_ROAD_NM, NEW_ADDR_M, NEW_ADDR_S, BACK_REPL_STS, CONT_STS_CD,COMM_NUM_24,COMM_FIRM,INFLOW_FLAG \
-, NOBILL_YN , PROD_CONT_SEQ ,BULD_CENTER_CD ,CHK_BULD_CENTER_CD, REPL_TREAT_INSTI , NO_BILL_REPL_WHY ,IFNULL(OTHER_PRICE,'') , IFNULL(BATTERY_YN,'') , IFNULL(MTRDISPLAY_YN,'') , IFNULL(REMOTE_SYSTEM,'') , OLD_MTR_ID_NUM \
+, NOBILL_YN , PROD_CONT_SEQ ,BULD_CENTER_CD ,CHK_BULD_CENTER_CD, REPL_TREAT_INSTI , NO_BILL_REPL_WHY ,IFNULL(OTHER_PRICE,'') , IFNULL(BATTERY_YN,'') , IFNULL(MTRDISPLAY_YN,'') , IFNULL(REMOTE_SYSTEM,'') , 'N' , AMI_OBJ_YN , CONCENT_INST_AMT_YN \
 FROM C6301_CHANGEDATA WHERE ROWID = ?"
 		);
 		
@@ -2744,6 +2764,12 @@ FROM C6301_CHANGEDATA WHERE ROWID = ?"
 			sql->GetValue( sql, i++, 'U', (long*) stMtrChg.MTRDISPLAY_YN           , 2  +1, DECRYPT );
 			sql->GetValue( sql, i++, 'U', (long*) stMtrChg.REMOTE_SYSTEM           , 2  +1, DECRYPT );
 			sql->GetValue( sql, i++, 'U', (long*) stMtrChg.OLD_MTR_ID_NUM          , 25  +1, DECRYPT );
+			sql->GetValue( sql, i++, 'U', (long*) stMtrChg.AMI_OBJ_YN          	   , 1  +1, DECRYPT );
+			sql->GetValue( sql, i++, 'U', (long*) stMtrChg.CONCENT_INST_AMT_YN        , 1  +1, DECRYPT );
+
+			
+
+			
 
 			
 
@@ -3191,6 +3217,8 @@ Finally:
 
 		EditCtrl_SetStr(Get_hDlgCtrlByID(TXT_DATA48), stMtrChg.COMM_NUM_24);
 
+		PRINT("1111111111111111111111111111111 : %s",stMtrChg.COMM_FIRM,0,0);
+
 		Mem_Set( (byte*)m_szSql, 0x00, sizeof(m_szSql) );
 		Mem_Set( (byte*)m_szTmp, 0x00, sizeof(m_szTmp) );
 		SPRINT(m_szSql, "SELECT ITEM_KNAME FROM COMMONCODE WHERE CODE_ID = 'C31074' AND CODE_ITEM = '%s' ", stMtrChg.COMM_FIRM, 0, 0 );
@@ -3271,6 +3299,23 @@ Finally:
 			DlgCtrl_SetGray( this->m_hDlg, Get_iDlgCtrlByID(CMB_DATA12+1), TRUE );
 
 		}
+
+		if( Str_Cmp(stMtrChg.AMI_OBJ_YN, "Y") != 0 )
+		{
+			DlgCtrl_SetEnable(this->m_hDlg, Get_iDlgCtrlByID(TXT_DATA68), FALSE );								
+			DlgCtrl_SetGray( this->m_hDlg, Get_iDlgCtrlByID(TXT_DATA68), TRUE );
+			DlgCtrl_SetEnable(this->m_hDlg, Get_iDlgCtrlByID(CMB_DATA18+1), FALSE );
+			DlgCtrl_SetGray( this->m_hDlg, Get_iDlgCtrlByID(CMB_DATA18+1), TRUE );
+		}
+		else
+		{
+			DlgCtrl_SetEnable(this->m_hDlg, Get_iDlgCtrlByID(TXT_DATA68), TRUE );								
+			DlgCtrl_SetGray( this->m_hDlg, Get_iDlgCtrlByID(TXT_DATA68), FALSE );
+			DlgCtrl_SetEnable(this->m_hDlg, Get_iDlgCtrlByID(CMB_DATA18+1), TRUE );
+			DlgCtrl_SetGray( this->m_hDlg, Get_iDlgCtrlByID(CMB_DATA18+1), FALSE );
+		}
+		
+
 
 		
 		ON_DRAW();
@@ -3901,8 +3946,17 @@ Finally:
 		if( Str_Cmp(stMtrChg.OTHER_PRICE, "기타부품") == 0 || Str_Cmp(stMtrChg.OTHER_PRICE, "") == 0 )
 		{
 			EditCtrl_SetStr(Get_hDlgCtrlByID(EDT_DATA11), "기타부품");
-			DlgCtrl_SetEnable(this->m_hDlg, Get_iDlgCtrlByID(EDT_DATA11), FALSE );
-			DlgCtrl_SetGray( this->m_hDlg, Get_iDlgCtrlByID(EDT_DATA11), TRUE );
+			if( Str_Cmp(stMtrChg.AMI_OBJ_YN, "Y") == 0)
+			{
+				DlgCtrl_SetEnable(this->m_hDlg, Get_iDlgCtrlByID(EDT_DATA11), TRUE );
+				DlgCtrl_SetGray( this->m_hDlg, Get_iDlgCtrlByID(EDT_DATA11), FALSE );
+			}
+			else
+			{
+				DlgCtrl_SetEnable(this->m_hDlg, Get_iDlgCtrlByID(EDT_DATA11), FALSE );
+				DlgCtrl_SetGray( this->m_hDlg, Get_iDlgCtrlByID(EDT_DATA11), TRUE );
+			}
+			
 			
 		}
 		else
@@ -4586,7 +4640,7 @@ MTR_FEE_FREE_FLAG = ? , MTR_REPL_WHY = ? , MTR_BAR = ? , AFTER_MTR_ID_NUM = ? \
 , REMOVE_INDI_VC = ? , MTR_REMOTE_FLAG = ? , REPL_NOT_PERMIT_WHY = ? , JOB_DTM = ? , JOBER_EMPID = ? \
 , CUST_SIGN = ? , SEND_YN = ? , TEMPER = ? , PRESS = ? , TREAT_FLAG = '10' , REVIS_PARA = ? \
 , INST_INDI_VM = ? , INST_INDI_VA = ? , INST_INDI_VC = ?, CRT_EMPID = ?, PDA_NUM = ?, UPD_EMPID = ?, VISIT_YMD = ? , COMM_NUM_24 = ? , COMM_FIRM = ? , INFLOW_FLAG = ? , BATTERY_YN = ? , MTRDISPLAY_YN = ? , OTHER_PRICE = ? , REMOTE_SYSTEM = ? , OLD_MTR_ID_NUM = ? \
-, REPL_TREAT_INSTI = ? , NO_BILL_REPL_WHY = ? \
+, REPL_TREAT_INSTI = ? , NO_BILL_REPL_WHY = ? , CONCENT_INST_AMT_YN = ?\
 WHERE MTR_NUM = ? AND OBJ_CRT_YMD = ? "
         );
         
@@ -4655,7 +4709,9 @@ WHERE MTR_NUM = ? AND OBJ_CRT_YMD = ? "
 
 		
 		sql->Bind(sql, idx++, 'U', (long *)stMtrChg.REPL_TREAT_INSTI        ,2 ,DECRYPT);
-		sql->Bind(sql, idx++, 'U', (long *)stMtrChg.NO_BILL_REPL_WHY             ,9 ,DECRYPT);
+		sql->Bind(sql, idx++, 'U', (long *)stMtrChg.NO_BILL_REPL_WHY        ,9 ,DECRYPT);
+		sql->Bind(sql, idx++, 'U', (long *)stMtrChg.CONCENT_INST_AMT_YN     ,1 ,DECRYPT);
+		
 		
 
 		sql->Bind(sql, idx++, 'U', (long *)stMtrChg.MTR_NUM		          ,9  ,DECRYPT);
@@ -4926,7 +4982,6 @@ Finally:
 						Mem_Cpy((byte *)szTmp, (byte *)m_szBartmp+5, 1);
 						i = Str_AtoI(szTmp);
 
-						
 						//1213
 						// if(Str_Cmp(stMtrChg.CHK_BULD_CENTER_CD,"41") == 0 || Str_Cmp(stMtrChg.CHK_BULD_CENTER_CD,"42") == 0 
 						// 	|| Str_Cmp(stMtrChg.CHK_BULD_CENTER_CD,"43") == 0 || Str_Cmp(stMtrChg.CHK_BULD_CENTER_CD,"44") == 0
@@ -5702,6 +5757,16 @@ Finally:
 			goto Finally;
 		}
 
+		if( Str_Cmp(stMtrChg.AMI_OBJ_YN, "Y") == 0 )
+		{
+			if( Str_Len(EditCtrl_GetStr(Get_hDlgCtrlByID(CMB_DATA18))) == 0 )
+			{
+				MessageBoxEx (CONFIRM_OK, "집중기설치비용을 선택하세요.");
+				lRet = FALSE;
+				goto Finally;
+			}
+		}
+
 		Mem_Set( (byte*)m_szSql, 0x00, sizeof(m_szSql) );
 		Mem_Set( (byte*)m_szTmp, 0x00, sizeof(m_szTmp) );
 		SPRINT(m_szSql, "SELECT CODE_ITEM FROM COMMONCODE WHERE CODE_ID = 'C31074' AND ITEM_KNAME == '%s' ",EditCtrl_GetStr(Get_hDlgCtrlByID(CMB_DATA9)), 0, 0   );
@@ -5730,10 +5795,12 @@ Finally:
 		g_Sql_RetStr( m_szSql, 20, m_szTmp );
 		Str_Cpy(stMtrChg.NO_BILL_REPL_WHY, m_szTmp);
 
-		// Mem_Set( (byte*)m_szTmp, 0x00, sizeof(m_szTmp) );
-		// Str_Cpy(m_szTmp, EditCtrl_GetStr(Get_hDlgCtrlByID(CMB_DATA10)));
-		// Str_Chg(m_szTmp, STRCHG_DEL_NONDIGIT);
-		// Str_Cpy(stMtrChg.COMMTYPE, m_szTmp);
+		Mem_Set( (byte*)m_szSql, 0x00, sizeof(m_szSql) );
+		Mem_Set( (byte*)m_szTmp, 0x00, sizeof(m_szTmp) );
+		SPRINT(m_szSql, "SELECT CODE_ITEM FROM COMMONCODE WHERE CODE_ID = 'C30023' AND ITEM_KNAME == '%s' ",EditCtrl_GetStr(Get_hDlgCtrlByID(CMB_DATA18)), 0, 0   );
+		g_Sql_RetStr( m_szSql, 20, m_szTmp );
+		Str_Cpy(stMtrChg.CONCENT_INST_AMT_YN, m_szTmp);
+		
 
 Finally:
 
@@ -6228,7 +6295,7 @@ Finally:
 		Mem_Set( (byte*)szMtrKindCd, 0x00, sizeof(szMtrKindCd) );
  
 		// MessageBoxEx (CONFIRM_OK, m_szBartmp);
-		
+
 		// g_szBartmp에 바코드 저장
 		Mem_Set( (byte*)g_szBartmp, 0x00, sizeof(g_szBartmp) );
 		Str_Cpy(g_szBartmp, m_szBartmp);
@@ -6483,6 +6550,7 @@ Finally:
 		// Mem_Set( (byte*)szOldMtrIdNum, 0x00, sizeof(szOldMtrIdNum) );
 		// Str_Cpy(szOldMtrIdNum, m_szTmp);
 
+		
 		//제조사 코드
 		Mem_Set( (byte*)szTmp, 0x00, sizeof(szTmp) );
 		Mem_Cpy((byte *)szTmp, (byte *)m_szBartmp+2, 1);
@@ -6726,6 +6794,11 @@ Finally:
 							DlgCtrl_SetEnable(this->m_hDlg, Get_iDlgCtrlByID(CMB_DATA2+1), TRUE );
 							DlgCtrl_SetGray( this->m_hDlg, Get_iDlgCtrlByID(CMB_DATA2+1), FALSE );
 							Str_Cpy(szMtrKindCd, "");
+
+							EditCtrl_SetStr( Get_hDlgCtrlByID(CMB_DATA1), ListCtrl_GetStr( Get_hDlgCtrlByID(CMB_DATA1+2), 0));
+							DlgCtrl_SetEnable(this->m_hDlg, Get_iDlgCtrlByID(CMB_DATA1+1), FALSE );
+							DlgCtrl_SetGray( this->m_hDlg, Get_iDlgCtrlByID(CMB_DATA1+1), TRUE );
+							Str_Cpy(szRemoteCd, "10");
 						}
 						else if (Str_Cmp(stMtrChg.MTR_KIND, "30") == 0 && Str_Cmp(stMtrChg.MTR_REMOTE_FLAG, "10") == 0)
 						{
@@ -6834,6 +6907,11 @@ Finally:
 						DlgCtrl_SetEnable(this->m_hDlg, Get_iDlgCtrlByID(CMB_DATA2+1), FALSE );
 						DlgCtrl_SetGray( this->m_hDlg, Get_iDlgCtrlByID(CMB_DATA2+1), TRUE );
 						Str_Cpy(szMtrKindCd, "30");
+
+						EditCtrl_SetStr( Get_hDlgCtrlByID(CMB_DATA1), ListCtrl_GetStr( Get_hDlgCtrlByID(CMB_DATA1+2), 0));
+						DlgCtrl_SetEnable(this->m_hDlg, Get_iDlgCtrlByID(CMB_DATA1+1), FALSE );
+						DlgCtrl_SetGray( this->m_hDlg, Get_iDlgCtrlByID(CMB_DATA1+1), TRUE );
+						Str_Cpy(szRemoteCd, "10");
 						
 						
 						if( Str_Cmp(stMtrChg.MTR_KIND, "10") == 0 || Str_Cmp(stMtrChg.MTR_KIND, "70") == 0) //일반 및 각도변형
@@ -6847,8 +6925,7 @@ Finally:
 							DlgCtrl_SetEnable(this->m_hDlg, Get_iDlgCtrlByID(CMB_DATA2+1), TRUE );
 							DlgCtrl_SetGray( this->m_hDlg, Get_iDlgCtrlByID(CMB_DATA2+1), FALSE );
 							Str_Cpy(szMtrKindCd, "");
-
-							//원격 : 미설치, 비활성화
+							
 							EditCtrl_SetStr( Get_hDlgCtrlByID(CMB_DATA1), ListCtrl_GetStr( Get_hDlgCtrlByID(CMB_DATA1+2), 0));
 							DlgCtrl_SetEnable(this->m_hDlg, Get_iDlgCtrlByID(CMB_DATA1+1), FALSE );
 							DlgCtrl_SetGray( this->m_hDlg, Get_iDlgCtrlByID(CMB_DATA1+1), TRUE );
@@ -6903,7 +6980,6 @@ Finally:
 							ClearData();
 							goto Finally;
 						}	
-						
 
 						if( Str_Cmp(stMtrChg.MTR_REMOTE_FLAG,"50") == 0 ) //원격 구분이 디지로그인 경우에는 통합원격, 지시부 선택가능
 						{
@@ -6917,8 +6993,10 @@ Finally:
 						}
 						else
 						{	
+							// 원격 : 비활성화
 							DlgCtrl_SetEnable(this->m_hDlg, Get_iDlgCtrlByID(CMB_DATA1+1), FALSE );
 							DlgCtrl_SetGray( this->m_hDlg, Get_iDlgCtrlByID(CMB_DATA1+1), TRUE );
+							// Str_Cpy(szRemoteCd, "10");
 						}
 
 						if( Str_Cmp(stMtrChg.MTR_REMOTE_FLAG,"20") == 0  || Str_Cmp(stMtrChg.MTR_REMOTE_FLAG,"30") == 0
@@ -7783,6 +7861,35 @@ Finally:
 
 						}
 					}
+					// else
+					// {
+					// 	// 종류 : 각도변형
+					// 	EditCtrl_SetStr( Get_hDlgCtrlByID(CMB_DATA2), ListCtrl_GetStr( Get_hDlgCtrlByID(CMB_DATA2+2), 12));
+					// 	DlgCtrl_SetEnable(this->m_hDlg, Get_iDlgCtrlByID(CMB_DATA2+1), FALSE );
+					// 	DlgCtrl_SetGray( this->m_hDlg, Get_iDlgCtrlByID(CMB_DATA2+1), TRUE );
+					// 	Str_Cpy(szMtrKindCd, "70");
+						
+					// 	// 원격 : 미설치, 비활성화
+					// 	EditCtrl_SetStr( Get_hDlgCtrlByID(CMB_DATA1), ListCtrl_GetStr( Get_hDlgCtrlByID(CMB_DATA1+2), 0));
+					// 	DlgCtrl_SetEnable(this->m_hDlg, Get_iDlgCtrlByID(CMB_DATA1+1), FALSE );
+					// 	DlgCtrl_SetGray( this->m_hDlg, Get_iDlgCtrlByID(CMB_DATA1+1), TRUE );
+					// 	Str_Cpy(szRemoteCd, "10");
+					// }
+				// }
+				// else
+				// {
+				// 	// 종류 : 각도변형
+				// 	EditCtrl_SetStr( Get_hDlgCtrlByID(CMB_DATA2), ListCtrl_GetStr( Get_hDlgCtrlByID(CMB_DATA2+2), 12));
+				// 	DlgCtrl_SetEnable(this->m_hDlg, Get_iDlgCtrlByID(CMB_DATA2+1), FALSE );
+				// 	DlgCtrl_SetGray( this->m_hDlg, Get_iDlgCtrlByID(CMB_DATA2+1), TRUE );
+				// 	Str_Cpy(szMtrKindCd, "70");
+					
+				// 	// 원격 : 미설치, 비활성화
+				// 	EditCtrl_SetStr( Get_hDlgCtrlByID(CMB_DATA1), ListCtrl_GetStr( Get_hDlgCtrlByID(CMB_DATA1+2), 0));
+				// 	DlgCtrl_SetEnable(this->m_hDlg, Get_iDlgCtrlByID(CMB_DATA1+1), FALSE );
+				// 	DlgCtrl_SetGray( this->m_hDlg, Get_iDlgCtrlByID(CMB_DATA1+1), TRUE );
+				// 	Str_Cpy(szRemoteCd, "10");
+				// }
 				
 				break;
 			case 8:
@@ -7790,8 +7897,8 @@ Finally:
 				{
 					// 원격 : NB-IOT 
 					EditCtrl_SetStr( Get_hDlgCtrlByID(CMB_DATA1), ListCtrl_GetStr( Get_hDlgCtrlByID(CMB_DATA1+2), 6));
-					DlgCtrl_SetEnable(this->m_hDlg, Get_iDlgCtrlByID(CMB_DATA1+1), TRUE );
-					DlgCtrl_SetGray( this->m_hDlg, Get_iDlgCtrlByID(CMB_DATA1+1), FALSE );
+					DlgCtrl_SetEnable(this->m_hDlg, Get_iDlgCtrlByID(CMB_DATA1+1), FALSE );
+					DlgCtrl_SetGray( this->m_hDlg, Get_iDlgCtrlByID(CMB_DATA1+1), TRUE );
 					Str_Cpy(szRemoteCd, "81");
 
 					Str_Cpy(stMtrChg.COMM_FIRM, "20"); //통신사 KT
@@ -7808,8 +7915,8 @@ Finally:
 				{
 					// 원격 : LORAWan
 					EditCtrl_SetStr( Get_hDlgCtrlByID(CMB_DATA1), ListCtrl_GetStr( Get_hDlgCtrlByID(CMB_DATA1+2), 13));
-					DlgCtrl_SetEnable(this->m_hDlg, Get_iDlgCtrlByID(CMB_DATA1+1), TRUE );
-					DlgCtrl_SetGray( this->m_hDlg, Get_iDlgCtrlByID(CMB_DATA1+1), FALSE );
+					DlgCtrl_SetEnable(this->m_hDlg, Get_iDlgCtrlByID(CMB_DATA1+1), FALSE );
+					DlgCtrl_SetGray( this->m_hDlg, Get_iDlgCtrlByID(CMB_DATA1+1), TRUE );
 					Str_Cpy(szRemoteCd, "88");
 
 					Str_Cpy(stMtrChg.COMM_FIRM, "20"); //통신사 KT
@@ -7822,8 +7929,8 @@ Finally:
 				{
 					// 원격 : 다채널
 					EditCtrl_SetStr( Get_hDlgCtrlByID(CMB_DATA1), ListCtrl_GetStr( Get_hDlgCtrlByID(CMB_DATA1+2), 11));
-					DlgCtrl_SetEnable(this->m_hDlg, Get_iDlgCtrlByID(CMB_DATA1+1), TRUE );
-					DlgCtrl_SetGray( this->m_hDlg, Get_iDlgCtrlByID(CMB_DATA1+1), FALSE );
+					DlgCtrl_SetEnable(this->m_hDlg, Get_iDlgCtrlByID(CMB_DATA1+1), FALSE );
+					DlgCtrl_SetGray( this->m_hDlg, Get_iDlgCtrlByID(CMB_DATA1+1), TRUE );
 					Str_Cpy(szRemoteCd, "86");
 
 					Str_Cpy(stMtrChg.COMM_FIRM, "20"); //통신사 KT
@@ -7836,8 +7943,8 @@ Finally:
 				{
 					// 원격 : 다채널
 					EditCtrl_SetStr( Get_hDlgCtrlByID(CMB_DATA1), ListCtrl_GetStr( Get_hDlgCtrlByID(CMB_DATA1+2), 7));
-					DlgCtrl_SetEnable(this->m_hDlg, Get_iDlgCtrlByID(CMB_DATA1+1), TRUE );
-					DlgCtrl_SetGray( this->m_hDlg, Get_iDlgCtrlByID(CMB_DATA1+1), FALSE );
+					DlgCtrl_SetEnable(this->m_hDlg, Get_iDlgCtrlByID(CMB_DATA1+1), FALSE );
+					DlgCtrl_SetGray( this->m_hDlg, Get_iDlgCtrlByID(CMB_DATA1+1), TRUE );
 					Str_Cpy(szRemoteCd, "82");
 
 					Str_Cpy(stMtrChg.COMM_FIRM, "20"); //통신사 KT
@@ -7883,8 +7990,8 @@ Finally:
 				{
 					// 원격 : NB-IOT 
 					EditCtrl_SetStr( Get_hDlgCtrlByID(CMB_DATA1), ListCtrl_GetStr( Get_hDlgCtrlByID(CMB_DATA1+2), 6));
-					DlgCtrl_SetEnable(this->m_hDlg, Get_iDlgCtrlByID(CMB_DATA1+1), TRUE );
-					DlgCtrl_SetGray( this->m_hDlg, Get_iDlgCtrlByID(CMB_DATA1+1), FALSE );
+					DlgCtrl_SetEnable(this->m_hDlg, Get_iDlgCtrlByID(CMB_DATA1+1), FALSE );
+					DlgCtrl_SetGray( this->m_hDlg, Get_iDlgCtrlByID(CMB_DATA1+1), TRUE );
 					Str_Cpy(szRemoteCd, "81");
 
 					Str_Cpy(stMtrChg.COMM_FIRM, "30"); //통신사 LGT
@@ -7901,8 +8008,8 @@ Finally:
 				{
 					// 원격 : LORAWan
 					EditCtrl_SetStr( Get_hDlgCtrlByID(CMB_DATA1), ListCtrl_GetStr( Get_hDlgCtrlByID(CMB_DATA1+2), 13));
-					DlgCtrl_SetEnable(this->m_hDlg, Get_iDlgCtrlByID(CMB_DATA1+1), TRUE );
-					DlgCtrl_SetGray( this->m_hDlg, Get_iDlgCtrlByID(CMB_DATA1+1), FALSE );
+					DlgCtrl_SetEnable(this->m_hDlg, Get_iDlgCtrlByID(CMB_DATA1+1), FALSE );
+					DlgCtrl_SetGray( this->m_hDlg, Get_iDlgCtrlByID(CMB_DATA1+1), TRUE );
 					Str_Cpy(szRemoteCd, "88");
 
 					Str_Cpy(stMtrChg.COMM_FIRM, "30"); //통신사 LGT
@@ -7915,8 +8022,8 @@ Finally:
 				{
 					// 원격 : 다채널
 					EditCtrl_SetStr( Get_hDlgCtrlByID(CMB_DATA1), ListCtrl_GetStr( Get_hDlgCtrlByID(CMB_DATA1+2), 11));
-					DlgCtrl_SetEnable(this->m_hDlg, Get_iDlgCtrlByID(CMB_DATA1+1), TRUE );
-					DlgCtrl_SetGray( this->m_hDlg, Get_iDlgCtrlByID(CMB_DATA1+1), FALSE );
+					DlgCtrl_SetEnable(this->m_hDlg, Get_iDlgCtrlByID(CMB_DATA1+1), FALSE );
+					DlgCtrl_SetGray( this->m_hDlg, Get_iDlgCtrlByID(CMB_DATA1+1), TRUE );
 					Str_Cpy(szRemoteCd, "86");
 
 					Str_Cpy(stMtrChg.COMM_FIRM, "30"); //통신사 LGT
@@ -7929,8 +8036,8 @@ Finally:
 				{
 					// 원격 : 다채널
 					EditCtrl_SetStr( Get_hDlgCtrlByID(CMB_DATA1), ListCtrl_GetStr( Get_hDlgCtrlByID(CMB_DATA1+2), 7));
-					DlgCtrl_SetEnable(this->m_hDlg, Get_iDlgCtrlByID(CMB_DATA1+1), TRUE );
-					DlgCtrl_SetGray( this->m_hDlg, Get_iDlgCtrlByID(CMB_DATA1+1), FALSE );
+					DlgCtrl_SetEnable(this->m_hDlg, Get_iDlgCtrlByID(CMB_DATA1+1), FALSE );
+					DlgCtrl_SetGray( this->m_hDlg, Get_iDlgCtrlByID(CMB_DATA1+1), TRUE );
 					Str_Cpy(szRemoteCd, "82");
 
 					Str_Cpy(stMtrChg.COMM_FIRM, "30"); //통신사 LGT

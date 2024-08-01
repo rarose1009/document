@@ -277,7 +277,7 @@ PRINT("OnTask szVm_Upgrade : %s , %d",szVm_Upgrade,Str_Len(szVm_Upgrade),0);
 					MessageBoxEx(CONFIRM_OK, "체납 담당자만 이용 할 수 있습니다.");
 				}
 			
-				Card_Move("C6202_MENU");
+				//Card_Move("C6202_MENU");
 				break;
 			case BID_GCMENU:
 				//메인메뉴에 버튼 생기면 그쪽으로 이동.
