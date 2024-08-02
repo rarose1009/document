@@ -493,11 +493,11 @@ Finally:
 					default:
 						CREATE_GLOBAL_BUTTON (SysButRes_MAIN);
 
-						#ifndef VER_RELEASE
-							#error ">>>>>>>> [FIXME] PLS, Remove the below code for product build!!! <<<<<<<"
-							//[FIXME] 테스트 코드 이므로, 최종 테스트나 배포시 제거하시오.
-							g_nWorkFlag = 700;
-						#endif
+						// #ifndef VER_RELEASE
+						// 	#error ">>>>>>>> [FIXME] PLS, Remove the below code for product build!!! <<<<<<<"
+						// 	//[FIXME] 테스트 코드 이므로, 최종 테스트나 배포시 제거하시오.
+						// 	g_nWorkFlag = 700;
+						// #endif
 
 						PRINT(">>>>>> g_nGmKind => %d", g_nGmKind, 0, 0);
 
