@@ -412,7 +412,7 @@ card C6101_WCUST
 			/* 고객정보                     */
 			/********************************/
 			case INIT_MAIN:
-				PRINT("@dkjung >>> g_nWorkFlag => %d", g_nWorkFlag,0,0);
+				// PRINT("@dkjung >>> g_nWorkFlag => %d", g_nWorkFlag,0,0);
 				if( g_nWorkFlag == 610 )
 				{
 					CREATE_DIALOG_OBJECT (DlgRes_M, SIZEOF(DlgRes_M));
@@ -592,7 +592,7 @@ card C6101_WCUST
 						pszStr = "사전여부를 취소하시겠습니까?";
 					}
 
-					PRINT("@dkjung >>>> g_szSERV_ADD_YN[0] = '%c'", g_szSERV_ADD_YN[0],0,0);
+					// PRINT("@dkjung >>>> g_szSERV_ADD_YN[0] = '%c'", g_szSERV_ADD_YN[0],0,0);
 
 					if( MessageBoxEx (CONFIRM_YESNO, pszStr) == MB_OK)
 					{
@@ -600,7 +600,7 @@ card C6101_WCUST
 						if (g_szSERV_ADD_YN[0] == 'Y')
 						{
 							g_szSERV_ADD_YN[0] = 'N';
-							PRINT("@dkjung 취소됨 >>>> g_szSERV_ADD_YN[0] = '%c'", g_szSERV_ADD_YN[0],0,0);
+							// PRINT("@dkjung 취소됨 >>>> g_szSERV_ADD_YN[0] = '%c'", g_szSERV_ADD_YN[0],0,0);
 						}
 
 						Mem_Set((byte*)stMw.szSend_Info_Trans_yn, 0x00, sizeof(stMw.szSend_Info_Trans_yn));
@@ -1223,8 +1223,9 @@ card C6101_WCUST
 					ButCtrl_SetText(Get_hDlgCtrlByID(BID_INFO_TRANS_YN_INFO), "연계여부");
 				}
 
-				PRINT("@dkjung ===> stMw.szInfo_Trans_yn = %s", stMw.szInfo_Trans_yn, 0, 0);
-				PRINT("@dkjung ===> g_szSERV_ADD_YN[0] = %c", g_szSERV_ADD_YN[0], 0, 0);
+				// PRINT("@dkjung ===> stMw.szSend_Info_Trans_yn = %s", stMw.szSend_Info_Trans_yn, 0, 0);
+				// PRINT("@dkjung ===> stMw.szInfo_Trans_yn = %s", stMw.szInfo_Trans_yn, 0, 0);
+				// PRINT("@dkjung ===> g_szSERV_ADD_YN[0] = %c", g_szSERV_ADD_YN[0], 0, 0);
 
 				// 연계여부
 				if( stMw.szInfo_Trans_yn[0] == 'Y' || g_szSERV_ADD_YN[0] == 'Y')
@@ -1440,7 +1441,8 @@ card C6101_WCUST
 				}
 				
 				// 연계
-				if( Str_Cmp( stMw.szSend_Info_Trans_yn, "Y" ) == 0 )
+				// if( Str_Cmp( stMw.szSend_Info_Trans_yn, "Y" ) == 0 )
+				if( stMw.szSend_Info_Trans_yn[0] == 'Y' || g_szSERV_ADD_YN[0] == 'Y')
 				{
 					ButCtrl_SetText(Get_hDlgCtrlByID(BID_INFO_TRANS_YN_Y), INFO_TRANS_Y2);
 					ButCtrl_SetText(Get_hDlgCtrlByID(BID_INFO_TRANS_YN_N), INFO_TRANS_N1);
