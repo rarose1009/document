@@ -837,8 +837,11 @@ Finally:
 			SPRINT( szSql, " UPDATE C6101_PROMISE_ASSIGN SET SEND_YN = 'Y' WHERE Promise_assign_seq = '%s' ", g_szCHK_EXEC_NUM, 0, 0 );
 			g_Sql_DirectExecute( szSql );
 			
-			if( Str_Cmp( stMw.szInfo_Trans_yn, "Y") == 0 )
+			// if( Str_Cmp( stMw.szInfo_Trans_yn, "Y") == 0 )
+			//[TODO] 20240725 => 작업중 두 변수가 동시에 Y가 될 수 없음.
+			if( Str_Cmp( stMw.szInfo_Trans_yn, "Y") == 0 || g_szSERV_ADD_YN[0] == 'Y')
 			{
+				//FR68303 => 전입지 이관
 			    Snd_Info_Trans();
 			    ON_DRAW();
 			    return 1;
@@ -1125,8 +1128,7 @@ FROM C6101_PROMISE_ASSIGN WHERE PROMISE_ASSIGN_SEQ = ? AND SEND_YN = 'S' ");
 			sql->GetValue( sql, i++, 'U', (long*)stMw.szInfo_Trans_yn         ,2  +1, DECRYPT );
 			sql->GetValue( sql, i++, 'U', (long*)stMw.szSend_Info_Trans_yn    ,2  +1, DECRYPT );
 			sql->GetValue( sql, i++, 'U', (long*)stMw.szProd_chg   			  ,2  +1, DECRYPT );
-			
-			
+
 			ret = 1;
 		}
 		
@@ -1163,7 +1165,7 @@ Finally:
 ,burner_capa,burner_capa_unit,burner_inst_ymd,burner_remov_ymd,burner_model_nm \
 ,maker_nm,boiler_form,maker_num,make_num,make_ymd,inst_flag \
 ,inst_loc,boiler_inst_firm_cd \
- FROM C6101_PROMISE_BUR WHERE PROMISE_ASSIGN_SEQ= ? AND SUBSTR(BURNER_NUM,1,1) = '1' AND SEND_YN = 'S' ");
+FROM C6101_PROMISE_BUR WHERE PROMISE_ASSIGN_SEQ= ? AND SUBSTR(BURNER_NUM,1,1) = '1' AND SEND_YN = 'S' ");
 		if( hstmt == NULL )
 		{
 			PRINT("::SQL_CreateStatement fail [%s]", sql->GetLastError(sql), 0, 0);

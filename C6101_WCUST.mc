@@ -52,7 +52,7 @@ card C6101_WCUST
 		DEF_BUTTON_ID ( BID_WFIN )		    	// 완료
 		DEF_BUTTON_ID ( BID_INFO_TRANS_YN_Y )   // 연계여부_Y
 		DEF_BUTTON_ID ( BID_INFO_TRANS_YN_N )	// 연계여부_N
-		DEF_BUTTON_ID ( BID_INFO_TRANS_YN_INFO )// 연계항목
+		DEF_BUTTON_ID ( BID_INFO_TRANS_YN_INFO )// 연계항목, 사전항목
 		
 		/********************************/
 		/* 이전계약                     */
@@ -412,6 +412,7 @@ card C6101_WCUST
 			/* 고객정보                     */
 			/********************************/
 			case INIT_MAIN:
+				PRINT("@dkjung >>> g_nWorkFlag => %d", g_nWorkFlag,0,0);
 				if( g_nWorkFlag == 610 )
 				{
 					CREATE_DIALOG_OBJECT (DlgRes_M, SIZEOF(DlgRes_M));
@@ -584,20 +585,35 @@ card C6101_WCUST
 				break;
 				
 			case BID_INFO_TRANS_YN_N:
-				
-				if( MessageBoxEx (CONFIRM_YESNO, "전입연계를 취소하시겠습니까?")  == MB_OK)
 				{
-					Mem_Set((byte*)stMw.szSend_Info_Trans_yn, 0x00, sizeof(stMw.szSend_Info_Trans_yn));
-					Str_Cpy( stMw.szSend_Info_Trans_yn, "N" );
-					
-					Mem_Set( (byte*)szSql, 0x00, sizeof(szSql) );
-					SPRINT(szSql, "UPDATE C6101_PROMISE_ASSIGN SET SEND_INFO_TRANS_YN = 'N' WHERE PROMISE_ASSIGN_SEQ = '%s'", g_szCHK_EXEC_NUM, 0, 0);
-					g_Sql_DirectExecute(szSql);
-					
-					ButCtrl_SetText(Get_hDlgCtrlByID(BID_INFO_TRANS_YN_Y), INFO_TRANS_Y1);
-					ButCtrl_SetText(Get_hDlgCtrlByID(BID_INFO_TRANS_YN_N), INFO_TRANS_N2);	
-				}			
-				
+					char* pszStr = "전입연계를 취소하시겠습니까?";
+					if (g_szSERV_ADD_YN[0] == 'Y')
+					{
+						pszStr = "사전여부를 취소하시겠습니까?";
+					}
+
+					PRINT("@dkjung >>>> g_szSERV_ADD_YN[0] = '%c'", g_szSERV_ADD_YN[0],0,0);
+
+					if( MessageBoxEx (CONFIRM_YESNO, pszStr) == MB_OK)
+					{
+						//[TODO] 취소처리
+						if (g_szSERV_ADD_YN[0] == 'Y')
+						{
+							g_szSERV_ADD_YN[0] = 'N';
+							PRINT("@dkjung 취소됨 >>>> g_szSERV_ADD_YN[0] = '%c'", g_szSERV_ADD_YN[0],0,0);
+						}
+
+						Mem_Set((byte*)stMw.szSend_Info_Trans_yn, 0x00, sizeof(stMw.szSend_Info_Trans_yn));
+						Str_Cpy( stMw.szSend_Info_Trans_yn, "N" );
+						
+						Mem_Set( (byte*)szSql, 0x00, sizeof(szSql) );
+						SPRINT(szSql, "UPDATE C6101_PROMISE_ASSIGN SET SEND_INFO_TRANS_YN = 'N' WHERE PROMISE_ASSIGN_SEQ = '%s'", g_szCHK_EXEC_NUM, 0, 0);
+						g_Sql_DirectExecute(szSql);
+						
+						ButCtrl_SetText(Get_hDlgCtrlByID(BID_INFO_TRANS_YN_Y), INFO_TRANS_Y1);
+						ButCtrl_SetText(Get_hDlgCtrlByID(BID_INFO_TRANS_YN_N), INFO_TRANS_N2);
+					}			
+				}				
 				break;
 				
 			case BID_PRECUST:
@@ -1192,9 +1208,26 @@ card C6101_WCUST
 				EditCtrl_SetAlign( Get_hDlgCtrlByID(TXT_KEY_NINE), EDITALIGN_CENTER|EDITALIGN_MIDDLE);
 				EditCtrl_SetAlign( Get_hDlgCtrlByID(TXT_KEY_ZERO), EDITALIGN_CENTER|EDITALIGN_MIDDLE);
 				EditCtrl_SetAlign( Get_hDlgCtrlByID(TXT_KEY_DEL), EDITALIGN_CENTER|EDITALIGN_MIDDLE);
-				
+
+				//[FIXME] 테스트용 설정 => 배포시 제거 필요.
+				// stMw.szInfo_Trans_yn[0] = 'N';
+				// g_szSERV_ADD_YN[0] = 'Y';
+
+				//사전여부
+				if (g_szSERV_ADD_YN[0] == 'Y')
+				{
+					ButCtrl_SetText(Get_hDlgCtrlByID(BID_INFO_TRANS_YN_INFO), "사전여부");
+				}
+				else
+				{
+					ButCtrl_SetText(Get_hDlgCtrlByID(BID_INFO_TRANS_YN_INFO), "연계여부");
+				}
+
+				PRINT("@dkjung ===> stMw.szInfo_Trans_yn = %s", stMw.szInfo_Trans_yn, 0, 0);
+				PRINT("@dkjung ===> g_szSERV_ADD_YN[0] = %c", g_szSERV_ADD_YN[0], 0, 0);
+
 				// 연계여부
-				if( Str_Cmp( stMw.szInfo_Trans_yn, "Y" ) == 0 )
+				if( stMw.szInfo_Trans_yn[0] == 'Y' || g_szSERV_ADD_YN[0] == 'Y')
 				{
 					DlgCtrl_SetVisible(hCurDlg, Get_iDlgCtrlByID(BID_INFO_TRANS_YN_INFO), TRUE);
 					DlgCtrl_SetVisible(hCurDlg, Get_iDlgCtrlByID(BID_INFO_TRANS_YN_Y), TRUE);
@@ -1202,6 +1235,7 @@ card C6101_WCUST
 				}
 				else
 				{
+
 					DlgCtrl_SetVisible(hCurDlg, Get_iDlgCtrlByID(BID_INFO_TRANS_YN_INFO), FALSE);
 					DlgCtrl_SetVisible(hCurDlg, Get_iDlgCtrlByID(BID_INFO_TRANS_YN_Y), FALSE);
 					DlgCtrl_SetVisible(hCurDlg, Get_iDlgCtrlByID(BID_INFO_TRANS_YN_N), FALSE);

@@ -20,12 +20,14 @@
     ],
     "bookmarks.sideBar.expanded": true,
     "files.associations": {
+        "*.embeddedhtml": "html",
         "*.mc": "c",
         "*.lib": "c",
         "include.h": "c",
         "globalcard.h": "c",
         "defevent.h": "c",
-        "sqldb.h": "c"
+        "sqldb.h": "c",
+        "migration.h": "c"
     },
     "C_Cpp.errorSquiggles": "disabled",
     "files.candidateGuessEncodings": [

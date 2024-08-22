@@ -145,7 +145,6 @@ typedef struct _MWINFO
   char szInfo_Trans_yn         [2  +1];
   char szSend_Info_Trans_yn    [2  +1];
   char szProd_chg			   [2  +1];
-
 }	MWINFO;
 global MWINFO stMw;
 

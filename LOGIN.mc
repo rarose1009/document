@@ -9,6 +9,7 @@ card LOGIN
 	#include <include.h>
 	#include "globalcard.h"
 	#include "SQL.lib"
+	#include "migration.h"
 
 	//-----------------------------------------------------------------
 	//__USE_RELEASE__ -> 운영 버전업그레이드 주소   |||  __USE_RELEASE__ 주석처리 -> 테스트 버전업그레이드 주소
@@ -26,7 +27,8 @@ card LOGIN
 	//DefType.h에 릴리즈가 선언될 경우, 자동으로 비활성화 됨.
 	//-----------------------------------------------------------------
 	//-----------------------------------------------------------------
-	#define __USE_DEV_CARD__
+	//[CHECK_RELEASE] 배포시 체크요망
+	// #define __USE_DEV_CARD__
 	
 	//릴리즈시 반드시 선언 및 제거 되어야 하는 것들 정의
 
@@ -64,7 +66,10 @@ card LOGIN
 	#ifdef 	__USE_DEV_CARD__
 	
 		//#define TEST_CARD	"C6101_MENU"
-		#define TEST_CARD	"C6301_LST"
+		// #define TEST_CARD	"C6301_LST"
+		// #define TEST_CARD	"C6101_WINFO"
+		// #define TEST_CARD	"C6101_WCUST"
+		#define TEST_CARD	"SC_BOILCHK"	
 		
 		#define CALL_DEV_CARD()	{Card_Move(TEST_CARD);return TRUE;}
 		
@@ -840,7 +845,7 @@ card LOGIN
 		Mem_Set((byte*)szSql ,0x00, sizeof(szSql) );
 		Str_Cpy(szSql, "SELECT MAX(SEQ) FROM TBL_REGIST");	
 		g_Sql_RetInt( szSql, &nRet );
-		//PRINT("nRet : %d",nRet,0,0);
+		// PRINT("nRet : %d",nRet,0,0);
 
 		switch(nRet)
 		{
@@ -2265,10 +2270,11 @@ card LOGIN
     		    nSqlRet = g_Sql_DirectExecute( szSql );
     		    nRet++;
 			default:
+				Migration(nRet);
 				break;
 		}
 	}
-	
+
 	//----------------------------------------------------------------------------------------
 	void Table_Add(void)
 	{
@@ -5361,9 +5367,11 @@ Finally:
 #endif //__USE_VM_UPGRADE__
 
 		Str_Cpy(g_szAppName, (char*)m_stAppinfo.aAppName);
-//PRINT("UPGRADE  g_szAppName: %s, aAppName : %s",g_szAppName,m_stAppinfo.aAppName,0);
-//PRINT("UPGRADE  _VM_AppInfo.wAppVersion : %d",m_stAppinfo.wAppVersion,0,0);
-//PRINT("MDM_GetAppGuid() : %s", MDM_GetAppGuid(), 0,0);
+// PRINT("UPGRADE  g_szAppName: %s, aAppName : %s",g_szAppName,m_stAppinfo.aAppName,0);
+// PRINT("UPGRADE  _VM_AppInfo.wAppVersion : %d",m_stAppinfo.wAppVersion,0,0);
+// PRINT("MDM_GetAppGuid() : %s", MDM_GetAppGuid(), 0,0);
+
+// PRINT("lVmUpgradeRet => %d", lVmUpgradeRet,0,0);
 
 		if ( lVmUpgradeRet > -1 ) 
 		{

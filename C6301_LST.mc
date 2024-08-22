@@ -518,9 +518,6 @@ Finally:
 								EditCtrl_SetStr(Get_hDlgCtrlByID(CMB_GMTYPE), ListCtrl_GetSelStr(h));
 							}
 
-							//아래와 같이 변수가 필요 할 수 도 있다.
-							// Str_Cpy(m_szCobSel, "전체");
-
 							m_bChgGmFlag = TRUE;
 						}
 						else
@@ -861,7 +858,7 @@ Finally:
 				}
 			}
 
-			PRINT("m_nGmKind = %d vs kind = %d", g_nGmKind, kind, 0);
+			PRINT("g_nGmKind = %d vs kind = %d", g_nGmKind, kind, 0);
 
 			if (m_bChgGmFlag)
 			{
@@ -885,7 +882,10 @@ Finally:
 			// if( Str_Cmp(m_szCobSel, szcmb ) != 0 )
 			if( !MATCH(m_szCobSel, szcmb) || gmTypeFlag)
 			{
+				//g_nWorkFlag 코드에 따라(전체,미실시,교체) 결정 됨.
 				Str_Cpy(m_szCobSel, szcmb);
+
+				PRINT("m_szCobSel = %s", m_szCobSel, 0, 0);
 
 				//업무 별 g_nWorkFlag 셋팅
 				SetWorkFlag();
@@ -1357,6 +1357,7 @@ Finally:
 				case 2: //특수형
 						M("Special");
 						//미설치 아닐때만, 30은 포함되어야 한다.
+						//[FIXME] 쿼리 조건 체크 필요.
 						strcpy(szTypeWhere, " AND case when MTR_REMOTE_FLAG <> 10 then MTR_KIND IN (20,21,30,50,60,61,65,66) else MTR_KIND IN (20,21,50,60,61,65,66) end");
 						break;
 			}

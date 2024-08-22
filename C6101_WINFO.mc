@@ -568,7 +568,9 @@ card C6101_WINFO
 
 		DLG_TEXT( STARTX,     Line(11),  240, SYH, 0, 0, EDITSTY_BORDER, 0, TXTFRCOLOR, WHITE, TTL_CUST, ">°í°´Á¤º¸"),
 		
-		DLG_TEXT( STARTX+467,     Line(11),  535, SYH, 0, 0, EDITSTY_BORDER, 0, RED, WHITE, TTL_SERVADD, "¸ð¹ÙÀÏ »çÀüÁ¢¼ö °í°´´Ô"),
+		//DLG_TEXT( STARTX+467,     Line(11),  535, SYH, 0, 0, EDITSTY_BORDER, 0, RED, WHITE, TTL_SERVADD, "»çÀüÁ¢¼ö °í°´´Ô"),
+		//20240725
+		DLG_TEXT( STARTX+467,     Line(11),  535, SYH, 0, 0, EDITSTY_BORDER, 0, RED, WHITE, TTL_SERVADD, "Á¤º¸¿¬°è °í°´´Ô"), //szInfo_Trans_yn  Y ÀÎ °æ¿ì
 		
 		DLG_TEXT( STARTX,     Line(12),  240, SYH, 0, 0, 0, EDITSTY_BORDER, TXTTTLFRCOLOR, TXTCTRLBK, TTL_CUST_NM, "°í °´ ¸í"),
 		DLG_TEXT( STARTX+240, Line(12),  510, SYH, 0, 0, 0, EDITSTY_BORDER, TXTFRCOLOR, TXTINCTRLBK, TXT_CUST_NM, ""),
@@ -1736,6 +1738,7 @@ card C6101_WINFO
 			EditCtrl_SetAlign( Get_hDlgCtrlByID(TXT_MEMO_DATA1), EDITALIGN_LEFT);
 			EditCtrl_SetMultiLine(Get_hDlgCtrlByID(TXT_MEMO_DATA1), TRUE, 2, EDITSEP_NONE );
 		}
+
 	}
 
 	//----------------------------------------------------------------------------------------------------
@@ -1783,7 +1786,6 @@ card C6101_WINFO
 											   , SPECIAL_TAX_EXEMP_YN, ZERO_TAX_RT_APPLY_YN, GET_SPC_TAX_CHK, MTR_PHOTO_YN, PLACE_PHOTO_YN \
 											   , SOCIAL_WELF_DISC_YN, APPRO_STATUS_FLAG, APPRO_GUBUN, INFO_TRANS_YN, SEND_INFO_TRANS_YN \
 											FROM C6101_PROMISE_ASSIGN WHERE PROMISE_ASSIGN_SEQ = ?");
-		
 		if( hstmt == NULL )
 		{
 			PRINT("::SQL_CreateStatement fail [%s]", sql->GetLastError(sql), 0, 0);
@@ -2162,14 +2164,23 @@ Finally:
 				DlgCtrl_SetVisible( this->m_hDlg, Get_iDlgCtrlByID(TTL_CLASS_NM), TRUE );
 				DlgCtrl_SetVisible( this->m_hDlg, Get_iDlgCtrlByID(BID_USE_CONT_NUM), FALSE );
 			}
-			
-			if(g_szSERV_ADD_YN[0] == 'Y')
+
 			{
-				DlgCtrl_SetVisible(hCurDlg, Get_iDlgCtrlByID(TTL_SERVADD), TRUE);	
-			}
-			else
-			{
-				DlgCtrl_SetVisible(hCurDlg, Get_iDlgCtrlByID(TTL_SERVADD), FALSE);
+				char* pszStr = "Á¤º¸¿¬°è °í°´´Ô";
+				if(g_szSERV_ADD_YN[0] == 'Y')
+				{
+					pszStr = "»çÀüÁ¢¼ö °í°´´Ô";
+				}
+				EditCtrl_SetStr(Get_hDlgCtrlByID(TTL_SERVADD), pszStr);
+
+				if(g_szSERV_ADD_YN[0] == 'Y' || stMw.szInfo_Trans_yn[0] == 'Y')
+				{
+					DlgCtrl_SetVisible(hCurDlg, Get_iDlgCtrlByID(TTL_SERVADD), TRUE);
+				}
+				else
+				{
+					DlgCtrl_SetVisible(hCurDlg, Get_iDlgCtrlByID(TTL_SERVADD), FALSE);
+				}
 			}
 				
 			if(g_lDataflag == 0 )
@@ -4167,12 +4178,20 @@ Finally:
 				
 		if( ret >= 0)
 		{	
+			char* pszStr = "Á¤º¸¿¬°è °í°´´Ô";
 			if(g_szSERV_ADD_YN[0] == 'Y')
+			{
+				pszStr = "»çÀüÁ¢¼ö °í°´´Ô";
+			}
+			EditCtrl_SetStr(Get_hDlgCtrlByID(TTL_SERVADD), pszStr);
+
+			if(g_szSERV_ADD_YN[0] == 'Y' || stMw.szInfo_Trans_yn[0] == 'Y')
 			{
 				DlgCtrl_SetVisible(hCurDlg, Get_iDlgCtrlByID(TTL_SERVADD), TRUE);	
 			}
 			else
 			{
+				// szInfo_Trans_yn => Á¤º¸¿¬°è °í°´´Ô
 				DlgCtrl_SetVisible(hCurDlg, Get_iDlgCtrlByID(TTL_SERVADD), FALSE);		
 			}
 			
