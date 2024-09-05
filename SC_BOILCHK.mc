@@ -240,6 +240,8 @@ card SC_BOILCHK
 	#define INIT_BOILCHK	2
 	#define INIT_BOILCHG	3
 	#define INIT_BOILPHOTO	4
+
+	#define ETC_MAKER_NUM	"50999"
 	
 	//---------------------------------------------------------------
 	// Global Param
@@ -938,7 +940,7 @@ card SC_BOILCHK
 		
 		Str_Cpy( sztmp, EditCtrl_GetStr(Get_hDlgCtrlByID(EDT_DATA8)) );	
 
-		PRINT("sztmpsztmpsztmp : %s",sztmp,0,0);
+		//PRINT("@dkjung >> sztmpsztmpsztmp : %s",sztmp,0,0);
 
 		Mem_Set( (byte*)szSql, 0x00, sizeof(szSql) );
 		
@@ -1538,6 +1540,13 @@ card SC_BOILCHK
 					break;
 				}
 
+				// PRINT( "@dkjung >>> stScBur.MAKER_NUM => %s", stScBur.MAKER_NUM, 0, 0);
+				// if ( !MATCH(stScBur.MAKER_NUM, ETC_MAKER_NUM) )
+				// {
+				// 	MessageBoxEx (CONFIRM_OK, "기존 기타 제조사는 제조사명을 다시 입력해야합니다.");
+				// 	break;
+				// }
+
 				if( Str_Cmp(EditCtrl_GetStr(Get_hDlgCtrlByID(CMB_DATA2)), "기타") == 0 && Str_Cmp(EditCtrl_GetStr(Get_hDlgCtrlByID(EDT_DATA8)), "") == 0)
 				{
 					MessageBoxEx (CONFIRM_OK, "제조사명을 '기타' 외 \n 다른 제조사명을 입력 또는 선택해주세요.");
@@ -1630,8 +1639,10 @@ card SC_BOILCHK
 			Mem_Set( (byte*)m_szSql, 0x00, sizeof(m_szSql));
 			Str_Cpy(m_szSql, EditCtrl_GetStr(Get_hDlgCtrlByID(CMB_DATA2)));	
 
-			if(Str_Cmp(m_szSql, "기타") == 0 )
+			if( MATCH(m_szSql, "기타") )
 			{
+				//M("@dkjung >>> 기타 비교 #1");
+
 				DlgCtrl_SetGray( this->m_hDlg, Get_iDlgCtrlByID(BID_WRITE3), FALSE );
 				DlgCtrl_SetEnable( this->m_hDlg, Get_iDlgCtrlByID(BID_WRITE3), TRUE);
 				DlgCtrl_SetGray( this->m_hDlg, Get_iDlgCtrlByID(EDT_DATA8), FALSE );
@@ -1642,9 +1653,7 @@ card SC_BOILCHK
 				DlgCtrl_SetGray( this->m_hDlg, Get_iDlgCtrlByID(BID_WRITE3), TRUE );
 				DlgCtrl_SetEnable( this->m_hDlg, Get_iDlgCtrlByID(BID_WRITE3), FALSE);
 				DlgCtrl_SetGray( this->m_hDlg, Get_iDlgCtrlByID(EDT_DATA8), TRUE );
-				DlgCtrl_SetEnable( this->m_hDlg, Get_iDlgCtrlByID(EDT_DATA8), FALSE);
-
-				
+				DlgCtrl_SetEnable( this->m_hDlg, Get_iDlgCtrlByID(EDT_DATA8), FALSE);	
 			}
 
 		}
@@ -2256,6 +2265,7 @@ Finally:
 
 		if( Str_Cmp(EditCtrl_GetStr(Get_hDlgCtrlByID(CMB_DATA2)), "기타") == 0 )
 		{
+			//M("@dkjung >>> 기타 비교 #2");
 			DlgCtrl_SetGray( this->m_hDlg, Get_iDlgCtrlByID(BID_WRITE3), FALSE );
 			DlgCtrl_SetEnable( this->m_hDlg, Get_iDlgCtrlByID(BID_WRITE3), TRUE);
 			DlgCtrl_SetGray( this->m_hDlg, Get_iDlgCtrlByID(EDT_DATA8), FALSE );
@@ -2671,14 +2681,15 @@ Finally3:
 			Str_Cpy(stScBur.BURNER_CLASS_NM, BURNERCLASS[i].Str);
 		
 		// 8. 제조사명
-
+		//[TODO] 제조사명 기타인 경우, 갱신 처리
 		if( Str_Cmp(EditCtrl_GetStr(Get_hDlgCtrlByID(CMB_DATA2)), "기타") == 0 )
 		{
+			//M("@dkjung >>> 기타 비교 #3");
 			// Str_Cpy(stScBur.MAKER_NM, EditCtrl_GetStr(Get_hDlgCtrlByID(CMB_DATA2)));
 			Str_Cpy(stScBur.MAKER_NM, EditCtrl_GetStr(Get_hDlgCtrlByID(EDT_DATA8)));
-			Str_Cpy(stScBur.MAKER_NUM, "50999");
+			Str_Cpy(stScBur.MAKER_NUM, ETC_MAKER_NUM);
 			//MAKER_NUM 50999 직접입력한 제조사명
-			PRINT("stScBur.MAKER_NM : %s",stScBur.MAKER_NM,0,0);
+			//PRINT("@dkjung >>> stScBur.MAKER_NM : %s",stScBur.MAKER_NM,0,0);
 
 			Mem_Set( (byte*)szSql, 0x00, sizeof(szSql) );
 			SPRINT(szSql, "SELECT COUNT(*) FROM USE_MAKER WHERE BOILER_SEQ  = 0 AND MAKER_FLAG ='50'", 0, 0, 0);
@@ -2695,14 +2706,13 @@ Finally3:
 					goto Finally;
 				}
 				
-				hstmt = sql->CreateStatement(sql, " UPDATE USE_MAKER \
-													  SET MAKER_NUM ='50999'\
-														 ,MAKER_NM = ? \
-													WHERE MAKER_NUM ='50999' AND MAKER_FLAG ='50'");
+				memset( (byte*)szSql, 0x00, sizeof(szSql) );
+				sprintf(szSql, "UPDATE USE_MAKER SET MAKER_NUM ='%s', MAKER_NM = ? WHERE MAKER_NUM ='%s' AND MAKER_FLAG ='50'", ETC_MAKER_NUM, ETC_MAKER_NUM);
 
+				hstmt = sql->CreateStatement(sql, szSql);
 				if( hstmt == NULL )
 				{
-					PRINT("::555555555555SQL_CreateStatement fail [%s]", sql->GetLastError(sql), 0, 0);
+					PRINT("::SQL_CreateStatement fail [%s]", sql->GetLastError(sql), 0, 0);
 					ret = FALSE;
 					goto Finally2;
 				}
@@ -2730,11 +2740,11 @@ Finally3:
 					ret = FALSE;
 					goto Finally;
 				}
-				
-				hstmt = sql->CreateStatement(sql, "INSERT INTO USE_MAKER \
-													(MAKER_NUM, MAKER_FLAG,MAKER_NM,BOILER_SEQ) \
-													VALUES \
-													('50999' ,'50' , ? ,0)" );
+
+				memset( (byte*)szSql, 0x00, sizeof(szSql) );
+				sprintf(szSql, "INSERT INTO USE_MAKER (MAKER_NUM, MAKER_FLAG,MAKER_NM,BOILER_SEQ) VALUES ('%s','50', ?, 0)", ETC_MAKER_NUM);
+
+				hstmt = sql->CreateStatement(sql, szSql);
 
 				if( hstmt == NULL )
 				{
@@ -2954,6 +2964,7 @@ Finally:
 	
 		if (Str_Cmp(EditCtrl_GetStr(Get_hDlgCtrlByID(CMB_DATA2)), "기타") == 0)
 		{
+			//M("@dkjung >>> 기타 비교 #4");
 			if(Str_Cmp(m_stScBoil.MAKER_NM        , EditCtrl_GetStr(Get_hDlgCtrlByID(EDT_DATA8))) != 0)
 			{
 				ret = FALSE;

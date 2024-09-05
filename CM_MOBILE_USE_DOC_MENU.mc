@@ -223,15 +223,30 @@ card CM_MOBILE_USE_DOC_MENU
 			DlgCtrl_SetVisible( this->m_hDlg, Get_iDlgCtrlByID(BID_NAME_CHANGE), TRUE );
 			DlgCtrl_SetVisible( this->m_hDlg, Get_iDlgCtrlByID(BID_NAME_NEW), TRUE );
 		}
+
+// g_nWorkFlag = 610;
+// g_szSERV_ADD_YN[0] = 'N';
+// stMw.szSend_Info_Trans_yn[0] = 'Y';
 		
+		//전입[고객, 연소기, 상품, 일회성, 요금 ]
 		if( g_nWorkFlag == 610 )
 		{
+			//[FIXME] 전입연계 추가 작업 중...
+			char* pszStr = "!! 모바일 전입연계 고객님입니다. !!";
+			if (g_szSERV_ADD_YN[0] == 'Y')
+			{
+				pszStr = "!! 모바일 사전접수 고객님입니다. !!";
+			}
+
+			// PRINT("@dkjung >>>> pszStr = %s", pszStr,0,0);
+
+			EditCtrl_SetStr(Get_hDlgCtrlByID(TXT_SERVADD), pszStr);
 			EditCtrl_SetAlign( Get_hDlgCtrlByID(TXT_SERVADD), EDITALIGN_CENTER|EDITALIGN_MIDDLE);
-			
-			if(g_szSERV_ADD_YN[0] == 'Y')
+
+			if(g_szSERV_ADD_YN[0] == 'Y' || stMw.szSend_Info_Trans_yn[0] == 'Y')
 			{
 				ButCtrl_SetBkColorEx(Get_hDlgCtrlByID(BID_TRANS_IN_NEW), RED);
-				DlgCtrl_SetVisible(hCurDlg, Get_iDlgCtrlByID(TXT_SERVADD), TRUE);	
+				DlgCtrl_SetVisible(hCurDlg, Get_iDlgCtrlByID(TXT_SERVADD), TRUE);
 			}
 			else
 			{
@@ -356,17 +371,16 @@ card CM_MOBILE_USE_DOC_MENU
 	long Rcv_91001(void)	
 	{
 		long ret = 0;
-		
+
 		ret = Chk_Json_91001();
-		
+
 		g_Sock_Close();
 		CloseMessageBox();
-		
+
 		if( ret >= 0)
 		{
 			Card_Move("CM_MOBILE_USE_DOC");
 			return 1;
-			
 		}
 		else
 		{

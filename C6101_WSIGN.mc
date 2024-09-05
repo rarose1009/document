@@ -153,7 +153,7 @@ card C6101_WSIGN
 	long TR62604(void);	
 	long Chk_Json_62604(void);
 	
-	void Snd_Info_Trans(void);
+	void Snd_Info_Trans(char* pszSend_Info_Trans_yn);
 	long Rcv_Info_Trans(void);
 	
 	long Move_card(void);
@@ -1522,7 +1522,7 @@ WHERE PROMISE_ASSIGN_SEQ = ? " );
 			|| ( Str_AtoI(stMw.szOnce_account) > 0 && stMw.szAuto_yn[0] != 'Y'  &&  Str_Cmp (stMw.szPda_duty_flag, "20") != 0 ) 
 			|| ( Str_Cmp (stMw.szPda_duty_flag, "20") == 0 ) )
 			{
-				if( MessageBoxEx (CONFIRM_YESNO, "민원완료 영수증을\n발행하시겠습니까?")  == MB_OK)
+				if( MessageBoxEx (CONFIRM_YESNO, "민원완료 영수증을\n발행하시겠습니까?") == MB_OK )
 				{
 					if( Str_Cmp (stMw.szPda_duty_flag, "10") == 0 )
 					{
@@ -1536,9 +1536,10 @@ WHERE PROMISE_ASSIGN_SEQ = ? " );
 				}
 				else
 				{
-					if( g_nWorkFlag == 610 && Str_Cmp( stMw.szInfo_Trans_yn, "Y") == 0 )
+					//전입[고객, 연소기, 상품, 일회성, 요금 ]
+					if( g_nWorkFlag == 610 && (stMw.szInfo_Trans_yn[0] == 'Y' || g_szSERV_ADD_YN[0] == 'Y') )
 					{
-						Snd_Info_Trans();
+						Snd_Info_Trans("Y");
 						return 0;
 					}
 					else
@@ -1564,9 +1565,10 @@ WHERE PROMISE_ASSIGN_SEQ = ? " );
 			}
 			else
 			{
-				if( g_nWorkFlag == 610 && Str_Cmp( stMw.szInfo_Trans_yn, "Y") == 0 )
+				//전입[고객, 연소기, 상품, 일회성, 요금 ]
+				if( g_nWorkFlag == 610 && (stMw.szInfo_Trans_yn[0] == 'Y' || g_szSERV_ADD_YN[0] == 'Y') )
 				{
-					Snd_Info_Trans();
+					Snd_Info_Trans("Y");
 					return 0;
 				}
 				else
@@ -1611,7 +1613,7 @@ WHERE PROMISE_ASSIGN_SEQ = ? " );
 	Param  : 
 	Return : 
 	========================================================================================*/
-	void Snd_Info_Trans(void)
+	void Snd_Info_Trans(char* pszSend_Info_Trans_yn)
 	{
 		char szUrl[300];
 		char szbuf[300];
@@ -1659,6 +1661,7 @@ WHERE PROMISE_ASSIGN_SEQ = ? " );
 		JSON_SetValue( g_pjcomm, 'C', "assign_req_cp_exn", stMw.szReq_cp_exn );
 		JSON_SetValue( g_pjcomm, 'C', "assign_req_cp_num", stMw.szReq_cp_num );
 		
+		Str_Cpy(stMw.szSend_Info_Trans_yn, pszSend_Info_Trans_yn);
 		JSON_SetValue( g_pjcomm, 'C', "send_info_trans_yn", stMw.szSend_Info_Trans_yn );
 		
 		sndbuf = JSON_toString(g_pjcomm);
@@ -4746,9 +4749,9 @@ FROM C6101_ONCE_INFO A , C6101_ONCE_ITEM B WHERE A.PROMISE_ASSIGN_SEQ = ? AND A.
 	========================================================================================*/	
 	long Move_card(void)
 	{
-		if( g_nWorkFlag == 610 && Str_Cmp( stMw.szInfo_Trans_yn, "Y") == 0 )
+		if( g_nWorkFlag == 610 && (stMw.szInfo_Trans_yn[0] == 'Y' || g_szSERV_ADD_YN[0] == 'Y') )
 		{
-			Snd_Info_Trans();
+			Snd_Info_Trans("Y");
 			return 0;
 		}
 		else

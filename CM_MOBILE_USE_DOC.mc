@@ -6238,7 +6238,8 @@ Finally:
 		
 		JSON_SetValue( g_pjcomm, 'C', "chk_chg_userinfo_flag", stOzData.CHK_CHG_USERINFO_FLAG );
 		
-		if( Str_Cmp( g_szSERV_ADD_YN, "Y") == 0 )
+		//[FIXME] szSend_Info_Trans_yn 조건 추가 serv_add_yn 체크 필요 함.
+		if( g_szSERV_ADD_YN[0] == 'Y' || stMw.szSend_Info_Trans_yn[0] == 'Y')
 		{
 			JSON_SetValue( g_pjcomm, 'C', "serv_add_yn", "Y" );
 		}

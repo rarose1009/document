@@ -748,6 +748,11 @@ card C6301_MTRCHG
 	{
 		long lCnt;
 		char szDate[15];
+
+		//[FIXME] 화면테스트
+		#ifndef VER_RELEASE
+			bFirst = INIT_PAY;
+		#endif //VER_RELEASE
 		
 		m_bFirst = bFirst;
 		
@@ -4589,7 +4594,7 @@ Finally:
 				// {}
 				// else
 				// {
-					Str_Cpy(stMtrChg.BATTERY_YN, "");
+					Str_Cpy(stMtrChg.BATTERY_YN, "Y");
 					Str_Cpy(stMtrChg.MTRDISPLAY_YN, "");
 					Str_Cpy(stMtrChg.OTHER_PRICE, "");
 				// }
@@ -4702,22 +4707,13 @@ WHERE MTR_NUM = ? AND OBJ_CRT_YMD = ? "
 		sql->Bind(sql, idx++, 'U', (long *)stMtrChg.OTHER_PRICE           ,10 ,DECRYPT);
 		sql->Bind(sql, idx++, 'U', (long *)stMtrChg.REMOTE_SYSTEM         ,2 ,DECRYPT);
 		sql->Bind(sql, idx++, 'U', (long *)stMtrChg.OLD_MTR_ID_NUM        ,25 ,DECRYPT);
-
-		
-
-		
-
 		
 		sql->Bind(sql, idx++, 'U', (long *)stMtrChg.REPL_TREAT_INSTI        ,2 ,DECRYPT);
 		sql->Bind(sql, idx++, 'U', (long *)stMtrChg.NO_BILL_REPL_WHY        ,9 ,DECRYPT);
 		sql->Bind(sql, idx++, 'U', (long *)stMtrChg.CONCENT_INST_AMT_YN     ,1 ,DECRYPT);
-		
-		
 
 		sql->Bind(sql, idx++, 'U', (long *)stMtrChg.MTR_NUM		          ,9  ,DECRYPT);
 		sql->Bind(sql, idx++, 'U', (long *)stMtrChg.OBJ_CRT_YMD			  ,8  ,DECRYPT);
-				
-
 
 		if(sql->Execute(sql) == FALSE)
 		{
@@ -5844,6 +5840,8 @@ Finally:
 		Mem_Set( (byte*)m_szSql, 0x00, sizeof(m_szSql) );
 		SPRINT(m_szSql, "SELECT CODE_ITEM FROM COMMONCODE WHERE CODE_ID = 'C30023' AND CODE_ITEM != 'U' AND ITEM_KNAME = '%s' ", EditCtrl_GetStr(Get_hDlgCtrlByID(CMB_DATA13)), 0, 0 );
 		g_Sql_RetStr( m_szSql, 20, stMtrChg.BATTERY_YN );
+
+		PRINT("@dkjung ==> stMtrChg.BATTERY_YN = %s", stMtrChg.BATTERY_YN,0,0);
 
 		Mem_Set( (byte*)m_szSql, 0x00, sizeof(m_szSql) );
 		SPRINT(m_szSql, "SELECT CODE_ITEM FROM COMMONCODE WHERE CODE_ID = 'C30023' AND CODE_ITEM != 'U' AND ITEM_KNAME = '%s' ", EditCtrl_GetStr(Get_hDlgCtrlByID(CMB_DATA14)), 0, 0 );

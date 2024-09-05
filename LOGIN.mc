@@ -28,7 +28,7 @@ card LOGIN
 	//-----------------------------------------------------------------
 	//-----------------------------------------------------------------
 	//[CHECK_RELEASE] 배포시 체크요망
-	// #define __USE_DEV_CARD__
+	//#define __USE_DEV_CARD__
 	
 	//릴리즈시 반드시 선언 및 제거 되어야 하는 것들 정의
 
@@ -67,10 +67,15 @@ card LOGIN
 	
 		//#define TEST_CARD	"C6101_MENU"
 		// #define TEST_CARD	"C6301_LST"
+		// #define TEST_CARD	"C6301_SND"
 		// #define TEST_CARD	"C6101_WINFO"
 		// #define TEST_CARD	"C6101_WCUST"
-		#define TEST_CARD	"SC_BOILCHK"	
-		
+		// #define TEST_CARD	"C6101_WSIGN"		
+		// #define TEST_CARD	"SC_BOILCHK"
+		// #define TEST_CARD	"CM_MOBILE_USE_DOC"
+		// #define TEST_CARD	"CM_MOBILE_USE_DOC_MENU"
+		#define TEST_CARD	"C6301_MTRCHG"
+
 		#define CALL_DEV_CARD()	{Card_Move(TEST_CARD);return TRUE;}
 		
 	#else
