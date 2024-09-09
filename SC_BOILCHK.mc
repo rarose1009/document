@@ -3663,7 +3663,7 @@ Finally:
 		long nRet1, nRet2;
 		long lChkCnt = 0;
 		long lChkFirm = 0;
-		
+	
 		/******************************/
 		/* 보일러 점검 여부           */
 		/******************************/
@@ -3715,12 +3715,17 @@ Finally:
 
 		//[TODO] 보일러 기타 타입 체크
 		//dkjung 2024-09-10 (RQ-240822)
-		if( MATCH(EditCtrl_GetStr(Get_hDlgCtrlByID(CMB_DATA2)), "기타") && !MATCH(stScBur.MAKER_NUM, ETC_MAKER_NUM) )
 		{
-			MessageBoxEx (CONFIRM_OK, "기존 기타 제조사는 제조사명을 다시 입력해야합니다.");
-			return FALSE;
-		}		
-		
+			char* s = EditCtrl_GetStr(Get_hDlgCtrlByID(TXT_DATA21));
+			PRINT("s = %s", s, 0,0);
+
+			if( MATCH(s, "기타") && !MATCH(stScBur.MAKER_NUM, ETC_MAKER_NUM) )
+			{
+				MessageBoxEx (CONFIRM_OK, "기존 기타 제조사는 제조사명을 다시 입력해야합니다.");
+				return FALSE;
+			}
+		}
+
 		/******************************/
 		/* 보일러 사진 여부           */
 		/******************************/
