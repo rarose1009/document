@@ -1540,13 +1540,6 @@ card SC_BOILCHK
 					break;
 				}
 
-				// PRINT( "@dkjung >>> stScBur.MAKER_NUM => %s", stScBur.MAKER_NUM, 0, 0);
-				// if ( !MATCH(stScBur.MAKER_NUM, ETC_MAKER_NUM) )
-				// {
-				// 	MessageBoxEx (CONFIRM_OK, "기존 기타 제조사는 제조사명을 다시 입력해야합니다.");
-				// 	break;
-				// }
-
 				if( Str_Cmp(EditCtrl_GetStr(Get_hDlgCtrlByID(CMB_DATA2)), "기타") == 0 && Str_Cmp(EditCtrl_GetStr(Get_hDlgCtrlByID(EDT_DATA8)), "") == 0)
 				{
 					MessageBoxEx (CONFIRM_OK, "제조사명을 '기타' 외 \n 다른 제조사명을 입력 또는 선택해주세요.");
@@ -3696,7 +3689,6 @@ Finally:
 
 		// PRINT("lChkFirmlChkFirmlChkFirmlChkFirm : %d ",lChkFirm,0,0);
 
-
 		if( lChkCnt > 0 && lChkFirm > 0)
 		// PRINT("stScBur.BOILER_FORM : %s ",stScBur.BOILER_FORM,0,0);
 		// if(Str_Cmp( stScBur.MAKER_NUM, "50099" ) == 0 && Str_Cmp( stScBur.BOILER_FORM, "" ) == 0)
@@ -3720,11 +3712,19 @@ Finally:
 			// ON_EXIT();
 			// OnInit(INIT_BOILCHG);
 		}
+
+		//[TODO] 보일러 기타 타입 체크
+		//dkjung 2024-09-10 (RQ-240822)
+		if( MATCH(EditCtrl_GetStr(Get_hDlgCtrlByID(CMB_DATA2)), "기타") && !MATCH(stScBur.MAKER_NUM, ETC_MAKER_NUM) )
+		{
+			MessageBoxEx (CONFIRM_OK, "기존 기타 제조사는 제조사명을 다시 입력해야합니다.");
+			return FALSE;
+		}		
 		
 		/******************************/
 		/* 보일러 사진 여부           */
 		/******************************/
-		if( Str_Cmp(stSc.OLD_BOILER_YN, "Y") == 0 )
+		if( MATCH(stSc.OLD_BOILER_YN, "Y") )
 		{
 			/* 
 				Mem_Set((byte*)szDirPath, 0x00, sizeof(szDirPath));
@@ -3776,15 +3776,14 @@ Finally:
 			Str_Cat( szTmp, "_");			
 			Str_Cat( szTmp, stSc.INST_PLACE_NUM);
 			Str_Cat( szTmp, ".jjp" );
-			
+
 			nRet1 = g_FindFiles( szDirPath, szTmp , szScrPht);
-				
+
 			if( nRet1 <= 0 && Str_Cmp(stSc.PHOTO_BOIL_YN1,"Y") != 0 )
 			{
 				MessageBoxEx (CONFIRM_OK, "보일러 사진을 촬영해주세요.");
 				return FALSE;
 			}
-			
 		}
 		
 		return TRUE;
